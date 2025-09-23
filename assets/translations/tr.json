@@ -1,0 +1,17 @@
+{
+
+    "home": {
+        "title": "Ana Sayfa",
+        "description": "Bu bir açıklamadır."
+    },
+    "general": {
+      "button": {
+        "save": "Kaydet",
+        "cancel": "İptal"
+      }
+    },
+    "dialog": {
+        "version": "Versiyon"
+    }
+
+}

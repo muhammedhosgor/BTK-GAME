@@ -1,0 +1,17 @@
+{
+
+    "home": {
+        "title": "Home Page",
+        "description": "This is a description."
+    },
+    "general": {
+      "button": {
+        "save": "Save",
+        "cancel": "Cancel"
+      }
+    },
+    "dialog": {
+        "version": "Version"
+    }
+
+}
