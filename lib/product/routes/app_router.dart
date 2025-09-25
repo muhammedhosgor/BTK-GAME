@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_base_app/feature/auth/splash/view/splash_view.dart';
-import 'package:flutter_base_app/feature/home/home_view.dart';
+import 'package:flutter_base_app/feature/auth/login/view/login_view.dart';
+import 'package:flutter_base_app/feature/home/view/home_view.dart';
 import 'package:go_router/go_router.dart';
 
 class AppRoute {
@@ -14,9 +15,15 @@ class AppRoute {
         routes: <RouteBase>[
           //! Örnek Routelar
           GoRoute(
+            path: 'login_view',
+            builder: (BuildContext context, GoRouterState state) {
+              return const LoginView();
+            },
+          ),
+          GoRoute(
             path: 'home_view',
             builder: (BuildContext context, GoRouterState state) {
-              return HomeView();
+              return CardGamePage();
             },
           ),
           // GoRoute(

@@ -4,15 +4,16 @@ import 'package:flutter_base_app/product/components/button/primary_game_button.d
 import 'package:flutter_base_app/product/components/container/gold_nav.dart';
 import 'package:flutter_base_app/product/constant/color_constants.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
-class HomeView extends StatefulWidget {
-  const HomeView({super.key});
+class LoginView extends StatefulWidget {
+  const LoginView({super.key});
 
   @override
-  State<HomeView> createState() => _HomeViewState();
+  State<LoginView> createState() => _LoginViewState();
 }
 
-class _HomeViewState extends State<HomeView> {
+class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -113,11 +114,19 @@ class _HomeViewState extends State<HomeView> {
           ),
           SizedBox(height: 20.h),
           Container(
-            width: 0.8.sw,
-            height: 0.5.sh,
+            width: 0.85.sw,
+            height: 0.55.sh,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10.r),
-              border: Border.all(color: kWhiteColor, width: 2),
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(color: kWhiteColor.withOpacity(0.8), width: 2),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.black.withOpacity(0.6),
+                  Colors.black.withOpacity(0.3),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               image: const DecorationImage(
                 image: AssetImage('assets/asset/bg.jpg'),
                 fit: BoxFit.cover,
@@ -125,41 +134,61 @@ class _HomeViewState extends State<HomeView> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: kBlackColor.withOpacity(0.5),
-                  spreadRadius: 2,
-                  blurRadius: 5,
-                  offset: const Offset(0, 3), // changes position of shadow
+                  color: kBlackColor.withOpacity(0.7),
+                  spreadRadius: 4,
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.h, vertical: 4.0.w),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
               child: Column(
-                spacing: 15.h,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(height: 2.h),
-                  Text("Play Now!", style: TextStyle(color: kWhiteColor, fontSize: 22.sp, fontWeight: FontWeight.bold)),
+                  Text(
+                    "Play Now!",
+                    style: TextStyle(
+                      color: kWhiteColor,
+                      fontSize: 28.sp,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.5,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.7),
+                          blurRadius: 6,
+                          offset: const Offset(2, 3),
+                        ),
+                        Shadow(
+                          color: kSuitGold.withOpacity(0.5),
+                          blurRadius: 8,
+                          offset: const Offset(0, 0),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 20.h),
                   const GoldNavContainer(),
+                  SizedBox(height: 15.h),
                   PrimaryGameButton(
                     buttonColor: kButtonGreen,
                     text: 'Login',
                     icon: Icons.login,
+                    onTap: () => context.push('/home_view'),
                   ),
+                  SizedBox(height: 10.h),
                   PrimaryGameButton(
                     buttonColor: Colors.blue,
                     text: 'Guest Login',
                     icon: Icons.person_outline,
                   ),
-                  PrimaryGameButton(
-                    buttonColor: Colors.deepOrange,
-                    text: 'Offline Play',
-                    icon: Icons.wifi_off,
-                  ),
+                  SizedBox(height: 10.h),
                   PrimaryGameButton(
                     buttonColor: kSuitRed,
                     text: 'Exit Game',
                     icon: Icons.exit_to_app,
                   ),
+                  SizedBox(height: 10.h),
                   PrimaryGameButton(
                     buttonColor: Colors.deepPurpleAccent,
                     text: 'Privacy Policy',

@@ -8,39 +8,68 @@ class PrimaryGameButton extends StatelessWidget {
     required this.buttonColor,
     required this.text,
     this.icon,
+    this.onTap,
   });
 
-  Color buttonColor;
-  String text;
-  IconData? icon;
+  final Color buttonColor;
+  final String text;
+  final IconData? icon;
+  void Function()? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {},
+    return InkWell(
+      borderRadius: BorderRadius.circular(15.r),
+      onTap: onTap,
       child: Container(
         width: 0.8.sw,
-        height: 50.h,
+        height: 60.h, // biraz daha büyük
         decoration: BoxDecoration(
-          color: buttonColor,
-          borderRadius: BorderRadius.circular(10.r),
-          border: Border.all(color: kSuitGold, width: 2),
-        ),
-        child: Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              SizedBox(width: 20.w),
-              Icon(icon ?? Icons.videogame_asset, color: kWhiteColor, size: 24.sp),
-              const Spacer(),
-              Text(
-                text,
-                style: TextStyle(color: kWhiteColor, fontSize: 18.sp, fontWeight: FontWeight.bold),
-              ),
-              const Spacer(),
-              const Spacer(),
+          gradient: LinearGradient(
+            colors: [
+              buttonColor.withOpacity(0.9),
+              buttonColor.withOpacity(0.7),
             ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
+          borderRadius: BorderRadius.circular(15.r),
+          border: Border.all(color: kSuitGold, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: buttonColor.withOpacity(0.6),
+              blurRadius: 12,
+              spreadRadius: 1,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon ?? Icons.videogame_asset,
+              color: kWhiteColor,
+              size: 28.sp,
+            ),
+            SizedBox(width: 10.w),
+            Text(
+              text,
+              style: TextStyle(
+                color: kWhiteColor,
+                fontSize: 20.sp, // yazılar büyütüldü
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withOpacity(0.6),
+                    blurRadius: 4,
+                    offset: const Offset(1, 2),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
