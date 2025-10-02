@@ -65,7 +65,10 @@ class MyApp extends StatelessWidget {
 
           debugShowCheckedModeBanner: false,
           routerConfig: AppRoute.router,
-          theme: ThemeData() //MyThemeData().lightThemeData(context),
+          theme: ThemeData(
+            brightness: Brightness.light,
+            primarySwatch: Colors.blue,
+          ) //MyThemeData().lightThemeData(context),
           ),
     );
   }

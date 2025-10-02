@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_base_app/product/components/button/image_button.dart';
 import 'package:flutter_base_app/product/constant/color_constants.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lottie/lottie.dart';
 
 enum Suit { hearts, diamonds, clubs, spades }
 
@@ -652,39 +653,111 @@ class _CardGamePageState extends State<CardGamePage> {
 
   Future<void> _showMatchResultDialog() async {
     String overall;
-    if (userHandWins > oppHandWins)
+    String lottiePath;
+    if (userHandWins > oppHandWins) {
       overall = 'Maçın kazananı: Siz!';
-    else if (oppHandWins > userHandWins)
+      lottiePath = 'assets/lottie/win.json'; // konfeti, kupa animasyonu
+    } else if (oppHandWins > userHandWins) {
       overall = 'Maçın kazananı: Bot!';
-    else
+      lottiePath = 'assets/lottie/lose.json'; // üzgün surat, kırık kalp animasyonu
+    } else {
       overall = 'Maç berabere!';
+      lottiePath = 'assets/lottie/draw.json'; // el sıkışma vb.
+    }
 
-    await showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) {
-          return AlertDialog(
-            title: const Text('3 El Tamamlandı'),
-            content: Text('$overall\n\nSkor — Siz: $userHandWins  Bot: $oppHandWins'),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    // Maçı sıfırla ve yeni maç başlat
-
-                    _startNewMatch();
-                  },
-                  child: const Text('Yeniden Başlat')),
-              TextButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    // sadece yeni el başlatmak istemiyorsak maçı sonlandırılmış bırakabiliriz
-                    // burada yeni el başlatma yerine mevcut durumu tutuyoruz
-                  },
-                  child: const Text('Kapat')),
-            ],
-          );
-        });
+    await showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: "Result",
+      transitionDuration: const Duration(milliseconds: 500),
+      pageBuilder: (_, __, ___) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.8,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.grey[900],
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.6),
+                    blurRadius: 20,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "3 El Tamamlandı",
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: 120,
+                    height: 120,
+                    child: Lottie.asset(lottiePath, repeat: true),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    '$overall\n\nSkor — Siz: $userHandWins  Bot: $oppHandWins',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white70, fontSize: 16),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _startNewMatch();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.refresh, color: Colors.white),
+                        label: const Text("Yeniden Başlat", style: TextStyle(color: Colors.white)),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        label: const Text("Kapat", style: TextStyle(color: Colors.white)),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      transitionBuilder: (_, anim, __, child) {
+        return Transform.scale(
+          scale: Curves.easeOutBack.transform(anim.value),
+          child: Opacity(
+            opacity: anim.value,
+            child: child,
+          ),
+        );
+      },
+    );
   }
 }
 
