@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_base_app/product/components/button/image_button.dart';
 import 'package:flutter_base_app/product/constant/color_constants.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -97,13 +98,29 @@ class _CardGamePageState extends State<CardGamePage> {
   List<bool> oppSelected = List.filled(5, false);
   String log = '';
 
+  // Yeni: maç/elde sayacı
+  int currentHand = 1;
+  final int maxHands = 3; // 3 el oynanacak
+  int userHandWins = 0;
+  int oppHandWins = 0;
+
   @override
   void initState() {
     super.initState();
-    _newRound();
+    _startNewMatch();
   }
 
-  void _newRound() {
+  void _startNewMatch() {
+    currentHand = 1;
+    userHandWins = 0;
+    oppHandWins = 0;
+    log = '';
+    _appendLog('=== Yeni Maç Başladı ===');
+
+    _startNewHand();
+  }
+
+  void _startNewHand() {
     deck = Deck();
     user = PlayerState(name: 'Siz', isBot: false);
     opponent = PlayerState(name: 'Bot', isBot: true);
@@ -111,11 +128,14 @@ class _CardGamePageState extends State<CardGamePage> {
     oppSelected = List.filled(5, false);
     selectionPhase = true;
     userTurnToSelect = true;
-    log = '';
+    // Hand-specific flags
+    log = '--- El $currentHand başlıyor (Toplam $maxHands el) ---\n' + log;
     _dealInitial();
   }
 
   void _dealInitial() {
+    user.hand.clear();
+    opponent.hand.clear();
     for (int i = 0; i < 5; i++) {
       user.hand.add(deck.drawCard());
       opponent.hand.add(deck.drawCard());
@@ -145,7 +165,7 @@ class _CardGamePageState extends State<CardGamePage> {
     userTurnToSelect = false; // şimdi bot seçer
     setState(() {});
     // Bot seçimini hemen çalıştır
-    Future.delayed(Duration(milliseconds: 350), () => _botReplace());
+    Future.delayed(const Duration(milliseconds: 350), () => _botReplace());
   }
 
   void _botReplace() {
@@ -179,12 +199,7 @@ class _CardGamePageState extends State<CardGamePage> {
     _appendLog(
         'Eller açıldı. Başlangıç toplamları: Siz=$userInitial, Bot=$oppInitial. ${userStarts ? 'Siz' : 'Bot'} başlıyor.');
 
-    // Her iki oyuncunun özel kart listesini al
-    List<PlayingCard> userSpecials = user.hand.where((c) => c.isKingOfHearts || c.isClubs2 || c.isDiamonds2).toList();
-    List<PlayingCard> oppSpecials =
-        opponent.hand.where((c) => c.isKingOfHearts || c.isClubs2 || c.isDiamonds2).toList();
-
-    // Sıralı uygulama: önce başlayan oyuncu kendi tüm özel kartlarını sırayla uygular, sonra diğer oyuncu uygular.
+    // Özel kartların uygulanması sırası
     if (userStarts) {
       await _applySpecialsForPlayer(user, opponent);
       await _applySpecialsForPlayer(opponent, user);
@@ -200,17 +215,30 @@ class _CardGamePageState extends State<CardGamePage> {
     _appendLog('Son durum: Siz=${userFinal}, Bot=${oppFinal}.');
 
     String result;
-    if (userFinal > oppFinal)
-      result = 'Kazanan: Siz!';
-    else if (oppFinal > userFinal)
-      result = 'Kazanan: Bot!';
-    else
-      result = 'Berabere!';
+    if (userFinal > oppFinal) {
+      result = 'Kazanan bu el: Siz!';
+      userHandWins++;
+    } else if (oppFinal > userFinal) {
+      result = 'Kazanan bu el: Bot!';
+      oppHandWins++;
+    } else {
+      result = 'Bu el berabere!';
+    }
 
     _appendLog(result);
 
-    // Oyun bitti, butonla yeniden başlatılabilir
     setState(() {});
+
+    // Maçın 3 el olarak oynanması: eğer en son else toplam kazananı göster
+    if (currentHand >= maxHands) {
+      await Future.delayed(const Duration(milliseconds: 400));
+      _showMatchResultDialog();
+    } else {
+      // Sonraki ele geçiş: round++ ve yeni el başlat
+      currentHand++;
+      await Future.delayed(const Duration(seconds: 1));
+      _startNewHand();
+    }
   }
 
   Future<void> _applySpecialsForPlayer(PlayerState actor, PlayerState target) async {
@@ -354,7 +382,8 @@ class _CardGamePageState extends State<CardGamePage> {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOut,
         margin: EdgeInsets.only(top: selected ? 0 : 8),
         transform: Matrix4.translationValues(0, selected ? -14 : 0, 0),
         decoration: BoxDecoration(
@@ -384,13 +413,11 @@ class _CardGamePageState extends State<CardGamePage> {
     );
   }
 
+  final ScrollController _logController = ScrollController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kTableGreen,
-      // appBar: AppBar(title: const Text('2 Kişilik Kart Oyunu — İskambil (52)')),
-      //Log kayıtlarını drwaer içine alalım
-
       drawer: Drawer(
         elevation: 16,
         child: SafeArea(
@@ -412,68 +439,153 @@ class _CardGamePageState extends State<CardGamePage> {
         ),
       ),
       body: Container(
+        width: 1.sw,
+        height: 1.sh,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/asset/table.png'),
-            fit: BoxFit.contain,
+            image: AssetImage('assets/asset/bg.jpg'),
+            fit: BoxFit.cover,
+            opacity: 0.9,
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            children: [
-              ElevatedButton(onPressed: _newRound, child: const Text('Yeniden Başlat')),
-              SizedBox(height: 30.h),
-
-              // Opponent hand (görünüyor mu? Seçim aşamasında görünmeyecek, açılma aşamasında görünecek)
-              _buildHandRow(opponent, isTop: true),
-              const SizedBox(height: 12),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 55.w,
-                    height: 80.h,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: Colors.yellowAccent, width: 2),
-                    ),
-                    child: Center(
-                      child: Text('${deck.remaining()} kart', style: TextStyle(color: kWhiteColor, fontSize: 14.sp)),
-                    ), //! destede kalan kart sayısı
-                  ),
-                ],
-              ),
-              if (selectionPhase && userTurnToSelect)
-                Column(children: [
-                  Text('Kart değişimi: En fazla 3 kart seçebilirsiniz.',
-                      style: TextStyle(color: kWhiteColor, fontSize: 16.sp)),
-                  const SizedBox(height: 6),
-                  ElevatedButton(
-                    onPressed: () {
-                      _applyUserReplacement();
-                    },
-                    child: const Text('Seçili kartları değiştir'),
-                  ),
-                ]),
-
-              // User hand
-              _buildHandRow(user, isTop: false),
-
-              if (!selectionPhase) ...[
-                const SizedBox(height: 8),
-                ElevatedButton(onPressed: _revealAndResolve, child: const Text('Eller Aç ve Özel Kartları Uygula')),
-              ],
-
-              Expanded(
-                child: SingleChildScrollView(
-                  reverse: true,
-                  child: Text(log, style: const TextStyle(fontFamily: 'monospace', color: Colors.white)),
+        child: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/asset/table.png'),
+              fit: BoxFit.contain,
+            ),
+          ),
+          child: Center(
+            child: Column(
+              children: [
+                SizedBox(height: 10.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    ImageButton(onTap: _startNewMatch, imagePath: 'assets/asset/refresh.png'),
+                    SizedBox(width: 10.w),
+                  ],
                 ),
-              ),
-            ],
+                SizedBox(height: 30.h),
+                InfoProfile(
+                    p: opponent,
+                    currentHand: currentHand,
+                    maxHands: maxHands,
+                    userWins: userHandWins,
+                    oppWins: oppHandWins),
+                const Spacer(),
+                _buildHandRow(opponent, isTop: true),
+                Container(
+                  width: 100.w,
+                  height: 150.h,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(image: Image.asset('assets/asset/deck.png').image, fit: BoxFit.cover),
+                  ),
+                  child: Center(
+                      child: Container(
+                    margin: const EdgeInsets.all(1),
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: kTableNavy, width: 2),
+                    ),
+                    child: Text('${deck.remaining()} kart',
+                        style: TextStyle(color: kTableNavy, fontSize: 20.sp, fontWeight: FontWeight.bold)),
+                  )),
+                ),
+                if (selectionPhase && userTurnToSelect)
+                  Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(height: 15.h),
+                        Text('Kart değişimi: En fazla 3 kart seçebilirsiniz.',
+                            style: TextStyle(color: kWhiteColor, fontSize: 16.sp)),
+                        const SizedBox(height: 6),
+                        ElevatedButton(
+                          onPressed: () {
+                            _applyUserReplacement();
+                          },
+                          child: const Text('Seçili kartları değiştir'),
+                        ),
+                      ]),
+                _buildHandRow(user, isTop: false),
+                Expanded(
+                  child: Container(
+                    width: 0.8.sw,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.black.withOpacity(0.95),
+                          Colors.grey.shade900,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white24, width: 1),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.5),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: SingleChildScrollView(
+                      controller: _logController,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: log.split('\n').map((line) {
+                          Color textColor = Colors.white;
+                          if (line.toLowerCase().contains("kullanıcı")) {
+                            textColor = Colors.cyanAccent;
+                          } else if (line.toLowerCase().contains("bot")) {
+                            textColor = Colors.pinkAccent;
+                          } else if (line.toLowerCase().contains("kazanan")) {
+                            textColor = Colors.greenAccent;
+                          }
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Text(
+                              line,
+                              style: TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 13,
+                                height: 1.3,
+                                color: textColor,
+                                shadows: [
+                                  Shadow(
+                                    blurRadius: 6,
+                                    color: textColor.withOpacity(0.6),
+                                    offset: const Offset(0, 0),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                ),
+                if (!selectionPhase) ...[
+                  const SizedBox(height: 8),
+                  ElevatedButton(onPressed: _revealAndResolve, child: const Text('Eller Aç ve Özel Kartları Uygula')),
+                  SizedBox(height: 30.h),
+                ],
+                InfoProfile(
+                    p: user,
+                    currentHand: currentHand,
+                    maxHands: maxHands,
+                    userWins: userHandWins,
+                    oppWins: oppHandWins),
+                const Spacer(),
+              ],
+            ),
           ),
         ),
       ),
@@ -481,61 +593,36 @@ class _CardGamePageState extends State<CardGamePage> {
   }
 
   Widget _buildHandRow(PlayerState p, {required bool isTop}) {
-    bool showFace = !selectionPhase; // seçim aşamasında rakibin kartı gizli olmalı
+    bool showFace = !selectionPhase;
+    bool isCurrentTurn =
+        (p == user && userTurnToSelect && selectionPhase) || (p == opponent && !userTurnToSelect && selectionPhase);
+
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Center(
-          child: Container(
-            width: 0.9.sw,
-            height: 60.h,
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.6),
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: Colors.yellowAccent, width: 2),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 800),
+          curve: Curves.easeInOut,
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: isCurrentTurn ? Colors.yellowAccent : Colors.transparent,
+              width: isCurrentTurn ? 4 : 0,
             ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 22.sp,
-                  backgroundColor: Colors.white,
-                  child: const Icon(Icons.person, color: Colors.grey),
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('${p.name} — Toplam: ${p.currentTotal()}  (multiplier: ${p.multiplier}x)',
-                        style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: Colors.white)),
-                  ],
-                ),
-              ],
-            ),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: isCurrentTurn
+                ? [BoxShadow(color: Colors.yellow.withOpacity(0.7), blurRadius: 20, spreadRadius: 2)]
+                : [],
           ),
-          // Row(
-          //   mainAxisSize: MainAxisSize.min,
-          //   children: [
-          //     CircleAvatar(
-          //         radius: 10,
-          //         backgroundColor: isTop ? Colors.redAccent : Colors.blueAccent,
-          //         child: Icon(isTop ? Icons.smart_toy : Icons.person, size: 20, color: Colors.white)),
-          //     const SizedBox(width: 6),
-          //     Text('${p.name} — Toplam: ${p.currentTotal()}  (multiplier: ${p.multiplier}x)',
-          //         style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: Colors.white)),
-          //   ],
-          // ),
-        ),
-        SizedBox(
-          height: 200,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(p.hand.length, (i) {
               var c = p.hand[i];
               bool selected = p == user ? userSelected[i] : oppSelected[i];
-              return Padding(
-                padding: const EdgeInsets.only(right: 8.0),
+              return AnimatedSwitcher(
+                duration: const Duration(milliseconds: 400),
+                transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
                 child: GestureDetector(
+                  key: ValueKey('${c.rank}${c.suitSymbol}${c.disabled}'),
                   onTap: () {
                     if (p == user) _toggleSelectUser(i);
                   },
@@ -544,8 +631,8 @@ class _CardGamePageState extends State<CardGamePage> {
                           if (p == user) _toggleSelectUser(i);
                         })
                       : Container(
-                          width: 55,
-                          height: 80,
+                          width: 50,
+                          height: 70,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
                             image: const DecorationImage(
@@ -560,6 +647,97 @@ class _CardGamePageState extends State<CardGamePage> {
           ),
         ),
       ],
+    );
+  }
+
+  Future<void> _showMatchResultDialog() async {
+    String overall;
+    if (userHandWins > oppHandWins)
+      overall = 'Maçın kazananı: Siz!';
+    else if (oppHandWins > userHandWins)
+      overall = 'Maçın kazananı: Bot!';
+    else
+      overall = 'Maç berabere!';
+
+    await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) {
+          return AlertDialog(
+            title: const Text('3 El Tamamlandı'),
+            content: Text('$overall\n\nSkor — Siz: $userHandWins  Bot: $oppHandWins'),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    // Maçı sıfırla ve yeni maç başlat
+
+                    _startNewMatch();
+                  },
+                  child: const Text('Yeniden Başlat')),
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    // sadece yeni el başlatmak istemiyorsak maçı sonlandırılmış bırakabiliriz
+                    // burada yeni el başlatma yerine mevcut durumu tutuyoruz
+                  },
+                  child: const Text('Kapat')),
+            ],
+          );
+        });
+  }
+}
+
+class InfoProfile extends StatelessWidget {
+  InfoProfile({
+    super.key,
+    required this.p,
+    this.currentHand = 1,
+    this.maxHands = 3,
+    this.userWins = 0,
+    this.oppWins = 0,
+  });
+  PlayerState p;
+  int currentHand;
+  int maxHands;
+  int userWins;
+  int oppWins;
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: 0.9.sw,
+        height: 60.h,
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.6),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: Colors.yellowAccent, width: 2),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 22.sp,
+              backgroundColor: Colors.white,
+              child: const Icon(Icons.person, color: Colors.grey),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('${p.name} — Toplam: ${p.currentTotal()}  (multiplier: ${p.multiplier}x)',
+                      style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: Colors.white)),
+                  const SizedBox(height: 2),
+                  Text('El $currentHand / $maxHands  • Skor: Siz $userWins - Bot $oppWins',
+                      style: TextStyle(fontSize: 12.sp, color: Colors.white70)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
