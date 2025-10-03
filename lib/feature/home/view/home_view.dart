@@ -492,41 +492,164 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
     return oppCardKeys[idx];
   }
 
-  // --- Kullanıcı seçim dialogları (aynı kod yapısı korunarak) ---
   Future<List<int>?> _askUserToPickTwoCards(List<PlayingCard> myHand, List<PlayingCard> oppHand, String title) async {
-    // Basit dialog: iki aşamada seçim alınır
     int? myPick;
     int? oppPick;
 
-    // Kullanıcının kendi kartını seçmesi
+    // Kendi kartını seç
     myPick = await showDialog<int>(
-        context: context,
-        builder: (ctx) {
-          return SimpleDialog(
-            title: Text('$title — Kendi kartınızdan seçin'),
-            children: List.generate(myHand.length, (i) {
-              return SimpleDialogOption(
-                onPressed: () => Navigator.pop(ctx, i),
-                child: Text('[$i] ${myHand[i]} ${myHand[i].disabled ? '(etkisiz)' : ''}'),
-              );
-            }),
-          );
-        });
+      context: context,
+      builder: (ctx) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.green.shade900, Colors.green.shade700],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white24, width: 2),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.6), blurRadius: 10, offset: const Offset(2, 4)),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text("$title\nKendi kartınızı seçin",
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: List.generate(myHand.length, (i) {
+                    final card = myHand[i];
+                    return GestureDetector(
+                      onTap: () => Navigator.pop(ctx, i),
+                      child: Container(
+                        width: 70,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: card.disabled ? Colors.grey.shade400 : Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.amber, width: 2),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black26, blurRadius: 5, offset: Offset(2, 2)),
+                          ],
+                        ),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(card.rank,
+                                  style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: (card.suit == Suit.hearts || card.suit == Suit.diamonds)
+                                          ? Colors.red
+                                          : Colors.black)),
+                              Text(card.suitSymbol,
+                                  style: TextStyle(
+                                      fontSize: 22,
+                                      color: (card.suit == Suit.hearts || card.suit == Suit.diamonds)
+                                          ? Colors.red
+                                          : Colors.black)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
     if (myPick == null) return null;
 
+    // Rakibin kartını seç
     oppPick = await showDialog<int>(
-        context: context,
-        builder: (ctx) {
-          return SimpleDialog(
-            title: Text('$title — Rakibin kartından seçin'),
-            children: List.generate(oppHand.length, (i) {
-              return SimpleDialogOption(
-                onPressed: () => Navigator.pop(ctx, i),
-                child: Text('[$i] ${oppHand[i]} ${oppHand[i].disabled ? '(etkisiz)' : ''}'),
-              );
-            }),
-          );
-        });
+      context: context,
+      builder: (ctx) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.green.shade900, Colors.green.shade700],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white24, width: 2),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.6), blurRadius: 10, offset: const Offset(2, 4)),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text("$title\nRakibin kartını seçin",
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: List.generate(oppHand.length, (i) {
+                    final card = oppHand[i];
+                    return GestureDetector(
+                      onTap: () => Navigator.pop(ctx, i),
+                      child: Container(
+                        width: 70,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: card.disabled ? Colors.grey.shade400 : Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.red, width: 2),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black26, blurRadius: 5, offset: Offset(2, 2)),
+                          ],
+                        ),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(card.rank,
+                                  style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: (card.suit == Suit.hearts || card.suit == Suit.diamonds)
+                                          ? Colors.red
+                                          : Colors.black)),
+                              Text(card.suitSymbol,
+                                  style: TextStyle(
+                                      fontSize: 22,
+                                      color: (card.suit == Suit.hearts || card.suit == Suit.diamonds)
+                                          ? Colors.red
+                                          : Colors.black)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
     if (oppPick == null) return null;
 
     return [myPick, oppPick];
@@ -534,18 +657,80 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
 
   Future<int?> _askUserToPickOneCard(List<PlayingCard> hand, String title) async {
     int? pick = await showDialog<int>(
-        context: context,
-        builder: (ctx) {
-          return SimpleDialog(
-            title: Text(title),
-            children: List.generate(hand.length, (i) {
-              return SimpleDialogOption(
-                onPressed: () => Navigator.pop(ctx, i),
-                child: Text('[$i] ${hand[i]} ${hand[i].disabled ? '(etkisiz)' : ''}'),
-              );
-            }),
-          );
-        });
+      context: context,
+      builder: (ctx) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.green.shade900, Colors.green.shade700],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white24, width: 2),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.6), blurRadius: 10, offset: const Offset(2, 4)),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: List.generate(hand.length, (i) {
+                    final card = hand[i];
+                    return GestureDetector(
+                      onTap: () => Navigator.pop(ctx, i),
+                      child: Container(
+                        width: 70,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: card.disabled ? Colors.grey.shade400 : Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.blue, width: 2),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black26, blurRadius: 5, offset: Offset(2, 2)),
+                          ],
+                        ),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(card.rank,
+                                  style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: (card.suit == Suit.hearts || card.suit == Suit.diamonds)
+                                          ? Colors.red
+                                          : Colors.black)),
+                              Text(card.suitSymbol,
+                                  style: TextStyle(
+                                      fontSize: 22,
+                                      color: (card.suit == Suit.hearts || card.suit == Suit.diamonds)
+                                          ? Colors.red
+                                          : Colors.black)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
     return pick;
   }
 
@@ -566,27 +751,55 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
         margin: EdgeInsets.only(top: selected ? 0 : 8),
         transform: Matrix4.translationValues(0, selected ? -14 : 0, 0),
         decoration: BoxDecoration(
-          color: c.disabled ? Colors.grey[300] : Colors.white,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: selected ? Colors.blue : Colors.black26, width: selected ? 2 : 1),
           boxShadow: const [BoxShadow(blurRadius: 4, color: Colors.black12, offset: Offset(1, 2))],
         ),
         width: 55,
         height: 85,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(c.rank, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 6),
-              Text(c.suitSymbol,
-                  style: TextStyle(
-                      fontSize: 18,
-                      color: (c.suit == Suit.hearts || c.suit == Suit.diamonds) ? Colors.red : Colors.black)),
-              const SizedBox(height: 6),
-              Text('${c.disabled ? 0 : c.value}', style: const TextStyle(fontSize: 12)),
-            ],
-          ),
+        child: Stack(
+          children: [
+            // Kart içeriği
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(c.rank, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 6),
+                  Text(c.suitSymbol,
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: (c.suit == Suit.hearts || c.suit == Suit.diamonds) ? Colors.red : Colors.black)),
+                  const SizedBox(height: 6),
+                  Text('${c.disabled ? 0 : c.value}', style: const TextStyle(fontSize: 12)),
+                ],
+              ),
+            ),
+            // Etkisiz overlay ve animasyon
+            if (c.disabled)
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: -0.05, end: 0.05),
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeInOut,
+                builder: (context, angle, child) {
+                  return Transform.rotate(
+                    angle: angle,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.redAccent, width: 2),
+                      ),
+                      child: CustomPaint(
+                        painter: _DisabledStripePainter(),
+                      ),
+                    ),
+                  );
+                },
+                onEnd: () {}, // Animasyon sürekli ters yön
+              ),
+          ],
         ),
       ),
     );
@@ -1038,4 +1251,21 @@ class InfoProfile extends StatelessWidget {
       ),
     );
   }
+}
+
+// Çapraz çizgili overlay painter
+class _DisabledStripePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.red.withOpacity(0.4)
+      ..strokeWidth = 2;
+
+    for (double i = -size.height; i < size.width; i += 8) {
+      canvas.drawLine(Offset(i, 0), Offset(i + size.height, size.height), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
