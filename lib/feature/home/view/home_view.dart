@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_base_app/product/components/button/image_button.dart';
 import 'package:flutter_base_app/product/constant/color_constants.dart';
@@ -70,7 +71,7 @@ class Deck {
 
 class PlayerState {
   List<PlayingCard> hand = [];
-  int selectionCount = 0; // seçim ekranında seçilenler
+  int selectionCount = 0; // seçim ekranında seçilenler (kullanılmadı ama bırakıldı)
   double multiplier = 1.0; // kupa papaz etkisi için
   String name;
   bool isBot;
@@ -89,7 +90,8 @@ class CardGamePage extends StatefulWidget {
   State<CardGamePage> createState() => _CardGamePageState();
 }
 
-class _CardGamePageState extends State<CardGamePage> {
+// TickerProviderStateMixin eklendi — overlay animasyonlar için gerekli
+class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMixin {
   late Deck deck;
   late PlayerState user;
   late PlayerState opponent;
@@ -105,12 +107,27 @@ class _CardGamePageState extends State<CardGamePage> {
   int userHandWins = 0;
   int oppHandWins = 0;
 
+  // Hazır mekanizması
+  bool userReady = false;
+  bool botReady = false;
+
+  // Card keys for animation overlay
+  late List<GlobalKey> userCardKeys;
+  late List<GlobalKey> oppCardKeys;
+
+  // Log scroll controller
+  final ScrollController _logController = ScrollController();
+
   @override
   void initState() {
     super.initState();
+    // initialize keys
+    userCardKeys = List.generate(5, (_) => GlobalKey());
+    oppCardKeys = List.generate(5, (_) => GlobalKey());
     _startNewMatch();
   }
 
+  // --- MATCH START: Deck oluşturulur sadece burada (maç boyunca aynı desteden çekilir)
   void _startNewMatch() {
     currentHand = 1;
     userHandWins = 0;
@@ -118,23 +135,63 @@ class _CardGamePageState extends State<CardGamePage> {
     log = '';
     _appendLog('=== Yeni Maç Başladı ===');
 
-    _startNewHand();
-  }
-
-  void _startNewHand() {
-    deck = Deck();
+    deck = Deck(); // sadece maç başında oluşturuldu (önemli revize)
+    // Oyuncuları bir kere oluştur (eller maç boyunca aynı elden çekilecek)
     user = PlayerState(name: 'Siz', isBot: false);
     opponent = PlayerState(name: 'Bot', isBot: true);
+
+    // İlk el için kartları dağıt
+    _dealInitial();
+
+    // Hazırlık (ready) sürecini başlat
+    _prepareHandStart();
+  }
+
+  // Yeni el hazırlığı (her elde çağrılır). ÖNEMLİ: oyuncu/opp nesnelerini yeniden oluşturma! (eller saklanır)
+  void _startNewHand() {
+    // sıfırlamalar: multiplier el başında sıfırlanır, seçilenler sıfırlanır
+    user.multiplier = 1.0;
+    opponent.multiplier = 1.0;
     userSelected = List.filled(5, false);
     oppSelected = List.filled(5, false);
-    selectionPhase = true;
+
+    selectionPhase = false; // hazır-olduktan sonra true olacak
     userTurnToSelect = true;
-    // Hand-specific flags
-    log = '--- El $currentHand başlıyor (Toplam $maxHands el) ---\n' + log;
-    _dealInitial();
+    _appendLog('--- El $currentHand başlıyor (Toplam $maxHands el) ---');
+
+    _prepareHandStart();
+  }
+
+  // Her el başında hazır-durumu kur
+  void _prepareHandStart() {
+    userReady = false;
+    botReady = false;
+    setState(() {});
+    // Bot otomatik hazır olur (rastgele 700-1400 ms)
+    Future.delayed(Duration(milliseconds: 700 + Random().nextInt(700)), () {
+      botReady = true;
+      _appendLog('Bot hazır oldu.');
+      setState(() {});
+      _checkStartHand();
+    });
+  }
+
+  // Her iki taraf da hazırsa el başlar (seçim fazı açılır)
+  void _checkStartHand() {
+    if (userReady && botReady) {
+      _appendLog('Her iki taraf da hazır. Seçim fazı başlıyor.');
+      // Küçük bir görsel gecikme ver
+      Future.delayed(const Duration(milliseconds: 700), () {
+        selectionPhase = true;
+        userTurnToSelect = true;
+        setState(() {});
+      });
+    }
   }
 
   void _dealInitial() {
+    // Eğer eller zaten doluysa, tekrardan dağıtma (maç başındaki ilk deal için çalışır)
+    if (user.hand.isNotEmpty || opponent.hand.isNotEmpty) return;
     user.hand.clear();
     opponent.hand.clear();
     for (int i = 0; i < 5; i++) {
@@ -159,14 +216,23 @@ class _CardGamePageState extends State<CardGamePage> {
     for (int i = 0; i < userSelected.length; i++) {
       if (userSelected[i]) indices.add(i);
     }
+    if (indices.isEmpty) {
+      _appendLog('Hiç kart seçilmedi.');
+      return;
+    }
+    // limit: eğer destede kart kalmamışsa hata vermez, sadece kalan kadar değiştirir
     for (var i in indices) {
+      if (deck.remaining() == 0) {
+        _appendLog('Destede kart kalmadığı için daha fazla değişim yapılamıyor.');
+        break;
+      }
       user.hand[i] = deck.drawCard();
     }
     userSelected = List.filled(5, false);
     userTurnToSelect = false; // şimdi bot seçer
     setState(() {});
-    // Bot seçimini hemen çalıştır
-    Future.delayed(const Duration(milliseconds: 350), () => _botReplace());
+    // Bot seçimini hemen çalıştır (daha yavaş)
+    Future.delayed(const Duration(milliseconds: 900), () => _botReplace());
   }
 
   void _botReplace() {
@@ -176,11 +242,12 @@ class _CardGamePageState extends State<CardGamePage> {
     Set<int> chosen = {};
     while (chosen.length < toReplace) chosen.add(rnd.nextInt(5));
     for (var idx in chosen) {
+      if (deck.remaining() == 0) break;
       opponent.hand[idx] = deck.drawCard();
       oppSelected[idx] = true;
     }
     // kısa süre sonra oppSelected'i temizle (sadece gösterim amaçlı değil)
-    Future.delayed(const Duration(milliseconds: 600), () {
+    Future.delayed(const Duration(milliseconds: 900), () {
       oppSelected = List.filled(5, false);
       selectionPhase = false; // seçimler bitti
       setState(() {});
@@ -190,7 +257,10 @@ class _CardGamePageState extends State<CardGamePage> {
 
   // Reveal ve özel kart işleme
   void _revealAndResolve() async {
-    if (selectionPhase) return; // önce seçimler tamamlanmalı
+    if (selectionPhase) {
+      _appendLog('Önce seçimler tamamlanmalı.');
+      return; // önce seçimler tamamlanmalı
+    }
 
     // İlk olarak eller açılmadan önce kim başlayacak onu belirleyelim: "eller ilk açıldığında"ki toplam
     int userInitial = user.currentTotal();
@@ -232,16 +302,17 @@ class _CardGamePageState extends State<CardGamePage> {
 
     // Maçın 3 el olarak oynanması: eğer en son else toplam kazananı göster
     if (currentHand >= maxHands) {
-      await Future.delayed(const Duration(milliseconds: 400));
+      await Future.delayed(const Duration(milliseconds: 900));
       _showMatchResultDialog();
     } else {
       // Sonraki ele geçiş: round++ ve yeni el başlat
       currentHand++;
       await Future.delayed(const Duration(seconds: 1));
-      _startNewHand();
+      _startNewHand(); // ÖNEMLİ: eller sıfırlanmıyor — sadece multipliers ve seçimler resetleniyor
     }
   }
 
+  // ----- ÖZEL KART UYGULAMALARI -----
   Future<void> _applySpecialsForPlayer(PlayerState actor, PlayerState target) async {
     // actor sahip olduğu özel kartları tespit et ve sırayla uygula
     // Uygulama sırası: Kupa Papaz (King hearts) -> Sinek 2 (Clubs 2) -> Karo 2 (Diamonds 2)
@@ -260,7 +331,7 @@ class _CardGamePageState extends State<CardGamePage> {
     for (var idx in kingIndices) {
       actor.multiplier *= 2;
       _appendLog('${actor.name} Kupa Papaz (K♥) kullandı. Toplamı 2 ile çarpıldı.');
-      await Future.delayed(const Duration(milliseconds: 400));
+      await Future.delayed(const Duration(milliseconds: 900));
     }
 
     // Clubs 2: oyuncu kendi elinden seçtiği bir kart ile karşı oyuncunun elinden seçtiği bir kartı değiştirir
@@ -270,6 +341,13 @@ class _CardGamePageState extends State<CardGamePage> {
         var rnd = Random();
         int myIdx = rnd.nextInt(actor.hand.length);
         int oppIdx = rnd.nextInt(target.hand.length);
+
+        // Bot'un yaptığı değişimi animasyonlu göster (rakibin kartının bot eline doğru hareketi)
+        await _animateCardTake(
+            fromKey: oppCardKeyForIndex(oppIdx), // rakibin kartından alınıyor
+            toKey: userCardKeyForIndex(myIdx), // bot kendi kartına koyuyormuş gibi göster (gösterim amaçlı)
+            card: target.hand[oppIdx]);
+
         var myCard = actor.hand[myIdx];
         var oppCard = target.hand[oppIdx];
         actor.hand[myIdx] = oppCard;
@@ -282,6 +360,11 @@ class _CardGamePageState extends State<CardGamePage> {
         if (pair != null) {
           int myIdx = pair[0];
           int oppIdx = pair[1];
+
+          // Animasyon: rakibin kartı kullanıcının yerine doğru hareket etsin (görsel)
+          await _animateCardTake(
+              fromKey: oppCardKeyForIndex(oppIdx), toKey: userCardKeyForIndex(myIdx), card: target.hand[oppIdx]);
+
           var myCard = actor.hand[myIdx];
           var oppCard = target.hand[oppIdx];
           actor.hand[myIdx] = oppCard;
@@ -291,7 +374,7 @@ class _CardGamePageState extends State<CardGamePage> {
           _appendLog('Sinek 2 atlandı (seçim yapılmadı).');
         }
       }
-      await Future.delayed(const Duration(milliseconds: 400));
+      await Future.delayed(const Duration(milliseconds: 900));
     }
 
     // Diamonds 2: oyuncu rakip oyuncunun elinden seçtiği bir kartı etkisiz hale getirir.
@@ -311,12 +394,105 @@ class _CardGamePageState extends State<CardGamePage> {
           _appendLog('Karo 2 atlandı (seçim yapılmadı).');
         }
       }
-      await Future.delayed(const Duration(milliseconds: 400));
+      await Future.delayed(const Duration(milliseconds: 900));
     }
 
     setState(() {});
   }
 
+  // --- Kart alma animasyonu (overlay ile) ---
+  // fromKey/toKey: GlobalKey'ler ile widget pozisyonları alınır, card gösterimi overlay'de hareket eder.
+  Future<void> _animateCardTake(
+      {required GlobalKey? fromKey, required GlobalKey? toKey, required PlayingCard card}) async {
+    // Eğer key'ler yoksa model değişimini yapıp geri dön
+    if (fromKey == null || toKey == null) return;
+
+    final fromContext = fromKey.currentContext;
+    final toContext = toKey.currentContext;
+    if (fromContext == null || toContext == null) return;
+
+    final fromBox = fromContext.findRenderObject() as RenderBox?;
+    final toBox = toContext.findRenderObject() as RenderBox?;
+    if (fromBox == null || toBox == null) return;
+
+    final fromPos = fromBox.localToGlobal(Offset.zero);
+    final toPos = toBox.localToGlobal(Offset.zero);
+
+    final overlay = Overlay.of(context);
+    if (overlay == null) return;
+
+    final controller = AnimationController(duration: const Duration(milliseconds: 900), vsync: this);
+    final animation = CurvedAnimation(parent: controller, curve: Curves.easeInOut);
+
+    OverlayEntry? entry;
+    entry = OverlayEntry(builder: (ctx) {
+      return AnimatedBuilder(
+        animation: animation,
+        builder: (_, __) {
+          final dx = lerpDouble(fromPos.dx, toPos.dx, animation.value)!;
+          final dy = lerpDouble(fromPos.dy, toPos.dy, animation.value)!;
+          return Positioned(
+            left: dx,
+            top: dy,
+            child: Material(
+              color: Colors.transparent,
+              child: Opacity(
+                opacity: 1.0 - (animation.value * 0.05),
+                child: _overlayCardWidget(card),
+              ),
+            ),
+          );
+        },
+      );
+    });
+
+    overlay.insert(entry);
+    try {
+      await controller.forward();
+    } finally {
+      entry.remove();
+      controller.dispose();
+    }
+  }
+
+  // Overlay'de gösterilecek basit kart widget
+  Widget _overlayCardWidget(PlayingCard c) {
+    return Container(
+      width: 60,
+      height: 90,
+      decoration: BoxDecoration(
+        color: c.disabled ? Colors.grey[300] : Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.black26, width: 1),
+        boxShadow: const [BoxShadow(blurRadius: 6, color: Colors.black26, offset: Offset(2, 4))],
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(c.rank, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            Text(c.suitSymbol, style: const TextStyle(fontSize: 18)),
+            const SizedBox(height: 6),
+            Text('${c.disabled ? 0 : c.value}', style: const TextStyle(fontSize: 12)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Yardımcı: given index, uygun GlobalKey döndürür
+  GlobalKey? userCardKeyForIndex(int idx) {
+    if (idx < 0 || idx >= userCardKeys.length) return null;
+    return userCardKeys[idx];
+  }
+
+  GlobalKey? oppCardKeyForIndex(int idx) {
+    if (idx < 0 || idx >= oppCardKeys.length) return null;
+    return oppCardKeys[idx];
+  }
+
+  // --- Kullanıcı seçim dialogları (aynı kod yapısı korunarak) ---
   Future<List<int>?> _askUserToPickTwoCards(List<PlayingCard> myHand, List<PlayingCard> oppHand, String title) async {
     // Basit dialog: iki aşamada seçim alınır
     int? myPick;
@@ -375,10 +551,12 @@ class _CardGamePageState extends State<CardGamePage> {
 
   void _appendLog(String s) {
     setState(() {
-      log = '${DateTime.now().toIso8601String().split('T').last.substring(0, 8)} - $s\n' + log;
+      final time = DateTime.now().toIso8601String().split('T').last.substring(0, 8);
+      log = '$time - $s\n' + log;
     });
   }
 
+  // Kart widget (orijinal yapıyı koruyarak)
   Widget _buildCardWidget(PlayingCard c, bool selected, {required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
@@ -414,7 +592,6 @@ class _CardGamePageState extends State<CardGamePage> {
     );
   }
 
-  final ScrollController _logController = ScrollController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -467,7 +644,47 @@ class _CardGamePageState extends State<CardGamePage> {
                     SizedBox(width: 10.w),
                   ],
                 ),
-                SizedBox(height: 30.h),
+                SizedBox(height: 6.h),
+
+                // Hazır durumu göstergesi
+                Container(
+                  width: 0.9.sw,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('El $currentHand / $maxHands', style: TextStyle(color: Colors.white, fontSize: 14.sp)),
+                      Row(
+                        children: [
+                          Chip(
+                            backgroundColor: botReady ? Colors.green[400] : Colors.grey[600],
+                            label: Text('Bot: ${botReady ? "Hazır" : "Bekliyor"}'),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              if (!userReady) {
+                                setState(() {
+                                  userReady = true;
+                                  _appendLog('Siz hazır oldunuz.');
+                                });
+                                _checkStartHand();
+                              }
+                            },
+                            child: Text(userReady ? 'Hazır' : 'Hazırım'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                SizedBox(height: 18.h),
                 InfoProfile(
                     p: opponent,
                     currentHand: currentHand,
@@ -619,29 +836,37 @@ class _CardGamePageState extends State<CardGamePage> {
             children: List.generate(p.hand.length, (i) {
               var c = p.hand[i];
               bool selected = p == user ? userSelected[i] : oppSelected[i];
+
+              // container'a global key ver (animasyon için)
+              final gw = p == user ? userCardKeys[i] : oppCardKeys[i];
+
               return AnimatedSwitcher(
                 duration: const Duration(milliseconds: 400),
                 transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
                 child: GestureDetector(
-                  key: ValueKey('${c.rank}${c.suitSymbol}${c.disabled}'),
+                  key: ValueKey('${c.rank}${c.suitSymbol}${c.disabled}${p == user ? "u" : "o"}$i'),
                   onTap: () {
                     if (p == user) _toggleSelectUser(i);
                   },
-                  child: showFace || p == user
-                      ? _buildCardWidget(c, selected, onTap: () {
-                          if (p == user) _toggleSelectUser(i);
-                        })
-                      : Container(
-                          width: 50,
-                          height: 70,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            image: const DecorationImage(
-                              image: AssetImage('assets/asset/lock.png'),
-                              fit: BoxFit.cover,
+                  child: Container(
+                    key: gw,
+                    margin: const EdgeInsets.symmetric(horizontal: 6),
+                    child: showFace || p == user
+                        ? _buildCardWidget(c, selected, onTap: () {
+                            if (p == user) _toggleSelectUser(i);
+                          })
+                        : Container(
+                            width: 50,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              image: const DecorationImage(
+                                image: AssetImage('assets/asset/lock.png'),
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
-                        ),
+                  ),
                 ),
               );
             }),
