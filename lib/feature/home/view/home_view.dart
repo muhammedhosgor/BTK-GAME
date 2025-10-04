@@ -151,6 +151,11 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
     // Yeni: Swapped kartları sıfırla
     swappedUserIndex = null;
     swappedOppIndex = null;
+
+    // FIX 1: Yeni maç başladığında kartların kapalı (hidden) ve seçim fazının aktif olması için
+    selectionPhase = true;
+    userTurnToSelect = true;
+
     _appendLog('=== Yeni Maç Başladı ===');
 
     deck = Deck(); // sadece maç başında oluşturuldu (önemli revize)
@@ -179,7 +184,8 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
     swappedUserIndex = null;
     swappedOppIndex = null;
 
-    selectionPhase = false; // hazır-olduktan sonra true olacak
+    // FIX 2: Yeni el başlarken seçim fazı aktif olmalı (rakip kartları kapalı).
+    selectionPhase = true;
     userTurnToSelect = true;
     _appendLog('--- El $currentHand başlıyor (Toplam $maxHands el) ---');
 
@@ -220,7 +226,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
       // Küçük bir görsel gecikme ver
       Future.delayed(const Duration(milliseconds: 2000), () {
         if (mounted) {
-          selectionPhase = true;
+          // selectionPhase = true; // FIX 3: Zaten _startNewHand içinde true olarak ayarlandı.
           userTurnToSelect = true;
           setState(() {});
         }
@@ -255,18 +261,21 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
     for (int i = 0; i < userSelected.length; i++) {
       if (userSelected[i]) indices.add(i);
     }
+
+    // REVİZYON: Hiç kart seçilmese bile akışın devam etmesi sağlandı.
     if (indices.isEmpty) {
-      _appendLog('Hiç kart seçilmedi.');
-      return;
-    }
-    // limit: eğer destede kart kalmamışsa hata vermez, sadece kalan kadar değiştirir
-    for (var i in indices) {
-      if (deck.remaining() == 0) {
-        _appendLog('Destede kart kalmadığı için daha fazla değişim yapılamıyor.');
-        break;
+      _appendLog('Hiç kart seçilmedi. Değişim atlanıyor.');
+    } else {
+      // limit: eğer destede kart kalmamışsa hata vermez, sadece kalan kadar değiştirir
+      for (var i in indices) {
+        if (deck.remaining() == 0) {
+          _appendLog('Destede kart kalmadığı için daha fazla değişim yapılamıyor.');
+          break;
+        }
+        user.hand[i] = deck.drawCard();
       }
-      user.hand[i] = deck.drawCard();
     }
+
     userSelected = List.filled(5, false);
     userTurnToSelect = false; // şimdi bot seçer
     setState(() {});
@@ -289,7 +298,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
     await Future.delayed(const Duration(milliseconds: 1200), () {
       if (mounted) {
         oppSelected = List.filled(5, false);
-        selectionPhase = false; // seçimler bitti
+        selectionPhase = false; // seçimler bitti (kartlar açılır)
         setState(() {});
       }
     });
@@ -535,6 +544,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
 
   // --- Kart alma animasyonu (overlay ile) ---
   // fromKey/toKey: GlobalKey'ler ile widget pozisyonları alınır, card gösterimi overlay'de hareket eder.
+  // REVİZYON 2: Daha dramatik animasyon
   Future<void> _animateCardTake(
       {required GlobalKey? fromKey, required GlobalKey? toKey, required PlayingCard card}) async {
     // Eğer key'ler yoksa model değişimini yapıp geri dön
@@ -554,8 +564,10 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
     final overlay = Overlay.of(context);
     if (overlay == null) return;
 
-    final controller = AnimationController(duration: const Duration(milliseconds: 900), vsync: this);
-    final animation = CurvedAnimation(parent: controller, curve: Curves.easeInOut);
+    // Revizyon: Daha uzun süre ve dramatik eğri
+    final controller = AnimationController(duration: const Duration(milliseconds: 1200), vsync: this); // 900 -> 1200 ms
+    final animation =
+        CurvedAnimation(parent: controller, curve: Curves.fastOutSlowIn); // Curves.easeInOut -> Curves.fastOutSlowIn
 
     OverlayEntry? entry;
     entry = OverlayEntry(builder: (ctx) {
@@ -564,14 +576,20 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
         builder: (_, __) {
           final dx = lerpDouble(fromPos.dx, toPos.dx, animation.value)!;
           final dy = lerpDouble(fromPos.dy, toPos.dy, animation.value)!;
+          final rotation = lerpDouble(0, 2 * pi, animation.value)!; // Ekstra: Kartı 360 derece döndür
+
           return Positioned(
             left: dx,
             top: dy,
-            child: Material(
-              color: Colors.transparent,
-              child: Opacity(
-                opacity: 1.0 - (animation.value * 0.05),
-                child: _overlayCardWidget(card),
+            child: Transform.rotate(
+              // Dönüşü ekle
+              angle: rotation,
+              child: Material(
+                color: Colors.transparent,
+                child: Opacity(
+                  opacity: 1.0 - (animation.value * 0.05),
+                  child: _overlayCardWidget(card),
+                ),
               ),
             ),
           );
@@ -588,26 +606,28 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
     }
   }
 
-  // Overlay'de gösterilecek basit kart widget
+  // Overlay'de gösterilecek basit kart widget (Boyutları daha büyük ve belirgin)
   Widget _overlayCardWidget(PlayingCard c) {
+    final isRed = c.suit == Suit.hearts || c.suit == Suit.diamonds;
     return Container(
-      width: 60,
-      height: 90,
+      width: 70, // Daha belirgin
+      height: 100, // Daha belirgin
       decoration: BoxDecoration(
-        color: c.disabled ? Colors.grey[300] : Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.black26, width: 1),
-        boxShadow: const [BoxShadow(blurRadius: 6, color: Colors.black26, offset: Offset(2, 4))],
+        color: c.disabled ? Colors.grey[400] : Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: isRed ? Colors.red.shade800 : Colors.black, width: 2),
+        boxShadow: const [BoxShadow(blurRadius: 10, color: Colors.black54, offset: Offset(4, 6))],
       ),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(c.rank, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 6),
-            Text(c.suitSymbol, style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 6),
-            Text('${c.disabled ? 0 : c.value}', style: const TextStyle(fontSize: 12)),
+            Text(c.rank,
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: isRed ? Colors.red : Colors.black)),
+            const SizedBox(height: 8),
+            Text(c.suitSymbol, style: TextStyle(fontSize: 24, color: isRed ? Colors.red : Colors.black)),
+            const SizedBox(height: 8),
+            Text('${c.disabled ? 0 : c.value}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
           ],
         ),
       ),
@@ -625,6 +645,91 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
     return oppCardKeys[idx];
   }
 
+  // REVİZYON 1: Geliştirilmiş Kart Seçim Dialogları
+  Widget _buildCardSelectionDialog({
+    required String title,
+    required String subtitle,
+    required List<PlayingCard> hand,
+    required Function(int) onCardTap,
+    required VoidCallback onCancel,
+    required Color borderColor,
+  }) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: kTableNavy, // Koyu Tema
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: borderColor, width: 3), // Accent çerçeve
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.8), blurRadius: 25, offset: const Offset(0, 8)),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(title,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.w900, color: Colors.white)),
+            const SizedBox(height: 8),
+            Text(subtitle, textAlign: TextAlign.center, style: TextStyle(fontSize: 16.sp, color: Colors.white70)),
+            const Divider(color: Colors.white12, height: 24),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: List.generate(hand.length, (i) {
+                final card = hand[i];
+                final isRed = (card.suit == Suit.hearts || card.suit == Suit.diamonds);
+                return GestureDetector(
+                  onTap: () => onCardTap(i),
+                  child: Container(
+                    width: 70,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: card.disabled ? Colors.grey.shade600 : Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: borderColor, width: 3), // Accent border
+                      boxShadow: [
+                        BoxShadow(color: borderColor.withOpacity(0.5), blurRadius: 8),
+                      ],
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(card.rank,
+                              style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: isRed ? Colors.red.shade800 : Colors.black)),
+                          Text(card.suitSymbol,
+                              style: TextStyle(fontSize: 24, color: isRed ? Colors.red.shade800 : Colors.black)),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: onCancel,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade600,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: Text('VAZGEÇ / ATLA',
+                  style: TextStyle(fontSize: 16.sp, color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<List<int>?> _askUserToPickTwoCards(List<PlayingCard> myHand, List<PlayingCard> oppHand, String title) async {
     int? myPick;
     int? oppPick;
@@ -632,76 +737,15 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
     // Kendi kartını seç
     myPick = await showDialog<int>(
       context: context,
+      barrierDismissible: false,
       builder: (ctx) {
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.green.shade900, Colors.green.shade700],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white24, width: 2),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.6), blurRadius: 10, offset: const Offset(2, 4)),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text("$title\nKendi kartınızı seçin",
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: List.generate(myHand.length, (i) {
-                    final card = myHand[i];
-                    return GestureDetector(
-                      onTap: () => Navigator.pop(ctx, i),
-                      child: Container(
-                        width: 70,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: card.disabled ? Colors.grey.shade400 : Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.amber, width: 2),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black26, blurRadius: 5, offset: Offset(2, 2)),
-                          ],
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(card.rank,
-                                  style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      color: (card.suit == Suit.hearts || card.suit == Suit.diamonds)
-                                          ? Colors.red
-                                          : Colors.black)),
-                              Text(card.suitSymbol,
-                                  style: TextStyle(
-                                      fontSize: 22,
-                                      color: (card.suit == Suit.hearts || card.suit == Suit.diamonds)
-                                          ? Colors.red
-                                          : Colors.black)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-              ],
-            ),
-          ),
+        return _buildCardSelectionDialog(
+          title: title,
+          subtitle: 'Adım 1/2: Kendi elinizden bir kart seçin (Sinek 2: Takas)',
+          hand: myHand,
+          onCardTap: (i) => Navigator.pop(ctx, i),
+          onCancel: () => Navigator.pop(ctx, null),
+          borderColor: Colors.lightBlueAccent, // Kendi kartı için mavi accent
         );
       },
     );
@@ -710,76 +754,15 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
     // Rakibin kartını seç
     oppPick = await showDialog<int>(
       context: context,
+      barrierDismissible: false,
       builder: (ctx) {
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.green.shade900, Colors.green.shade700],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white24, width: 2),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.6), blurRadius: 10, offset: const Offset(2, 4)),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text("$title\nRakibin kartını seçin",
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: List.generate(oppHand.length, (i) {
-                    final card = oppHand[i];
-                    return GestureDetector(
-                      onTap: () => Navigator.pop(ctx, i),
-                      child: Container(
-                        width: 70,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: card.disabled ? Colors.grey.shade400 : Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.red, width: 2),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black26, blurRadius: 5, offset: Offset(2, 2)),
-                          ],
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(card.rank,
-                                  style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      color: (card.suit == Suit.hearts || card.suit == Suit.diamonds)
-                                          ? Colors.red
-                                          : Colors.black)),
-                              Text(card.suitSymbol,
-                                  style: TextStyle(
-                                      fontSize: 22,
-                                      color: (card.suit == Suit.hearts || card.suit == Suit.diamonds)
-                                          ? Colors.red
-                                          : Colors.black)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-              ],
-            ),
-          ),
+        return _buildCardSelectionDialog(
+          title: title,
+          subtitle: 'Adım 2/2: Rakibin elinden bir kart seçin (Sinek 2: Takas)',
+          hand: oppHand,
+          onCardTap: (i) => Navigator.pop(ctx, i),
+          onCancel: () => Navigator.pop(ctx, null),
+          borderColor: Colors.redAccent, // Rakip kartı için kırmızı accent
         );
       },
     );
@@ -791,76 +774,15 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
   Future<int?> _askUserToPickOneCard(List<PlayingCard> hand, String title) async {
     int? pick = await showDialog<int>(
       context: context,
+      barrierDismissible: false,
       builder: (ctx) {
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.green.shade900, Colors.green.shade700],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white24, width: 2),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.6), blurRadius: 10, offset: const Offset(2, 4)),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(title,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: List.generate(hand.length, (i) {
-                    final card = hand[i];
-                    return GestureDetector(
-                      onTap: () => Navigator.pop(ctx, i),
-                      child: Container(
-                        width: 70,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: card.disabled ? Colors.grey.shade400 : Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.blue, width: 2),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black26, blurRadius: 5, offset: Offset(2, 2)),
-                          ],
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(card.rank,
-                                  style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      color: (card.suit == Suit.hearts || card.suit == Suit.diamonds)
-                                          ? Colors.red
-                                          : Colors.black)),
-                              Text(card.suitSymbol,
-                                  style: TextStyle(
-                                      fontSize: 22,
-                                      color: (card.suit == Suit.hearts || card.suit == Suit.diamonds)
-                                          ? Colors.red
-                                          : Colors.black)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-              ],
-            ),
-          ),
+        return _buildCardSelectionDialog(
+          title: title,
+          subtitle: 'Etkisizleştirmek için rakip kartını seçin (Karo 2: Etkisizleştirme)',
+          hand: hand,
+          onCardTap: (i) => Navigator.pop(ctx, i),
+          onCancel: () => Navigator.pop(ctx, null),
+          borderColor: Colors.orangeAccent, // Etkisizleştirme için turuncu accent
         );
       },
     );
@@ -876,85 +798,137 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
   }
 
   // Kart widget (orijinal yapıyı koruyarak)
+  // REVİZYON 3: Geliştirilmiş Kart Görsel Efektleri
   Widget _buildCardWidget(PlayingCard c, bool selected,
       {required VoidCallback onTap, required bool isSpecial, required bool wasSwapped}) {
-    // Sınır rengini ayarla
-    Color borderColor = selected
-        ? Colors.blue
-        : wasSwapped
-            ? Colors.purpleAccent
-            : isSpecial
-                ? Colors.amberAccent
-                : Colors.black26;
+    // Sınır rengini ve kalınlığını ayarla
+    Color baseBorderColor = isSpecial && !c.disabled ? Colors.amberAccent : Colors.black26;
+    double baseBorderWidth = isSpecial && !c.disabled ? 3 : 1;
 
-    // Sınır kalınlığını ayarla
-    double borderWidth = selected
-        ? 2
-        : wasSwapped
-            ? 3
-            : isSpecial
-                ? 3
-                : 1;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 600),
-        curve: Curves.easeInOut,
-        margin: EdgeInsets.only(top: selected ? 0 : 8),
-        transform: Matrix4.translationValues(0, selected ? -14 : 0, 0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: borderColor, width: borderWidth), // Yeni sınırlar
-          boxShadow: const [BoxShadow(blurRadius: 4, color: Colors.black12, offset: Offset(1, 2))],
-        ),
-        width: 60,
-        height: 92,
-        child: Stack(
-          children: [
-            // Kart içeriği
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(c.rank, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 6),
-                  Text(c.suitSymbol,
-                      style: TextStyle(
-                          fontSize: 18,
-                          color: (c.suit == Suit.hearts || c.suit == Suit.diamonds) ? Colors.red : Colors.black)),
-                  const SizedBox(height: 6),
-                  Text('${c.disabled ? 0 : c.value}', style: const TextStyle(fontSize: 12)),
-                ],
-              ),
-            ),
-            // Etkisiz overlay ve animasyon
-            if (c.disabled)
-              TweenAnimationBuilder<double>(
-                tween: Tween(begin: -0.05, end: 0.05),
-                duration: const Duration(milliseconds: 400),
-                curve: Curves.easeInOut,
-                builder: (context, angle, child) {
-                  return Transform.rotate(
-                    angle: angle,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.redAccent, width: 2),
-                      ),
-                      child: CustomPaint(
-                        painter: _DisabledStripePainter(),
-                      ),
-                    ),
-                  );
-                },
-                onEnd: () {}, // Animasyon sürekli ters yön
-              ),
-          ],
-        ),
+    // Swapped için pulsasyon animasyonu
+    return TweenAnimationBuilder<Color?>(
+      tween: ColorTween(
+        // Takas edilmiş kartlar için mor ve beyaz arasında titreşim
+        begin: wasSwapped ? Colors.purpleAccent : baseBorderColor,
+        end: wasSwapped ? Colors.white : baseBorderColor,
       ),
+      duration: wasSwapped ? const Duration(milliseconds: 700) : Duration.zero,
+      curve: Curves.easeInOut,
+      // Tekrarlı animasyon için dışarıda bir Controller ve AnimatedBuilder daha iyi olurdu,
+      // ancak burada basit bir "titreşim" etkisi için TweenAnimationBuilder'ı kullanıyoruz.
+      builder: (context, color, child) {
+        Color finalBorderColor = selected ? Colors.blue : color ?? baseBorderColor;
+        double finalBorderWidth = selected
+            ? 3
+            : wasSwapped
+                ? 4 // Daha kalın ve mor/beyaz arasında titreşen sınır
+                : baseBorderWidth;
+
+        return GestureDetector(
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeInOut,
+            margin: EdgeInsets.only(top: selected ? 0 : 8),
+            transform: Matrix4.translationValues(0, selected ? -14 : 0, 0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: finalBorderColor, width: finalBorderWidth),
+              boxShadow: [
+                const BoxShadow(blurRadius: 4, color: Colors.black12, offset: Offset(1, 2)),
+                // Kupa Papaz (K♥) için Altın Parlaklık efekti (Sadece özel kart ve etkisiz değilse)
+                if (c.isKingOfHearts && !c.disabled)
+                  BoxShadow(
+                    color: Colors.amber.withOpacity(0.8),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                    offset: Offset(0, 0),
+                  ),
+              ],
+            ),
+            width: 60,
+            height: 92,
+            child: Stack(
+              children: [
+                // Kart içeriği
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(c.rank, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 6),
+                      Text(c.suitSymbol,
+                          style: TextStyle(
+                              fontSize: 18,
+                              color: (c.suit == Suit.hearts || c.suit == Suit.diamonds) ? Colors.red : Colors.black)),
+                      const SizedBox(height: 6),
+                      // Etkisiz kart değeri "0" olarak daha belirgin
+                      Text('${c.disabled ? '0' : c.value}',
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w900,
+                              color: c.disabled ? Colors.red.shade800 : Colors.black)),
+                    ],
+                  ),
+                ),
+                // Etkisiz (Disabled) Overlay - Karo 2 (♦2) etkisi
+                if (c.disabled)
+                  // Mevcut sallanma animasyonunu koru ve üzerine X işareti ekle
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: -0.05, end: 0.05),
+                    duration: const Duration(milliseconds: 400),
+                    curve: Curves.easeInOut,
+                    onEnd: () {
+                      // Animasyonu sürekli ters yöne doğru tetiklemek için setState (basit bir loop)
+                      if (mounted) setState(() {});
+                    },
+                    builder: (context, angle, child) {
+                      return Transform.rotate(
+                        angle: angle,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey.withOpacity(0.6), // Daha opak hale getir
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.redAccent, width: 3),
+                          ),
+                          child: Center(
+                              child: Icon(Icons.close_rounded, size: 40, color: Colors.red.shade800)), // Kırmızı X
+                        ),
+                      );
+                    },
+                  ),
+                // Sinek 2 (♣2) - Takas Edilmiş İşareti
+                if (wasSwapped && !c.disabled)
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: const BoxDecoration(
+                        color: Colors.purple,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.swap_horiz, size: 16, color: Colors.white),
+                    ),
+                  ),
+                // Kupa Papaz (K♥) - Çarpan İşareti
+                if (c.isKingOfHearts && !c.disabled)
+                  const Positioned(
+                    bottom: 4,
+                    left: 4,
+                    child: Text('x2',
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.redAccent,
+                            shadows: [Shadow(blurRadius: 4, color: Colors.red, offset: Offset(1, 1))])),
+                  )
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -1260,7 +1234,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                               onPressed: () {
                                 _applyUserReplacement();
                               },
-                              child: const Text('Seçili kartları değiştir'),
+                              child: const Text('Seçili kartları değiştir veya atla'),
                             ),
                           ]),
                     _buildHandRow(user, isTop: false),
@@ -1634,7 +1608,7 @@ class InfoProfile extends StatelessWidget {
   }
 }
 
-// Çapraz çizgili overlay painter
+// Çapraz çizgili overlay painter - ARTIK KULLANILMIYOR
 class _DisabledStripePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
