@@ -1230,13 +1230,56 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                             Text('Kart değişimi: En fazla 3 kart seçebilirsiniz.',
                                 style: TextStyle(color: kWhiteColor, fontSize: 16.sp)),
                             const SizedBox(height: 6),
-                            ElevatedButton(
-                              onPressed: () {
-                                _applyUserReplacement();
-                              },
-                              child: const Text('Seçili kartları değiştir veya atla'),
+                            // REVİZE EDİLMİŞ BUTON TASARIMI
+                            Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  // Butona hafif bir parlaklık ve derinlik katmak için gölge
+                                  BoxShadow(
+                                    color: Colors.amberAccent.withOpacity(0.4),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  _applyUserReplacement();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  // Arkaplan: Koyu Masa Teması
+                                  backgroundColor: kTableNavy,
+                                  // Kenarlık: Altın Sarısı Accent
+                                  side: const BorderSide(color: Colors.amberAccent, width: 3),
+                                  // Köşe yuvarlaklığı
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                                  elevation: 0, // Kendi gölgemizi kullandığımız için default elevation'ı sıfırla
+                                ),
+                                child: Text(
+                                  'SEÇİLİ KARTLARI DEĞİŞTİR / ATLA',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 17.sp,
+                                    fontWeight: FontWeight.bold,
+                                    shadows: [
+                                      // Yazıya hafif parlaklık
+                                      Shadow(
+                                        blurRadius: 4.0,
+                                        color: Colors.yellow.withOpacity(0.7),
+                                        offset: const Offset(0.5, 0.5),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                           ]),
+                    SizedBox(height: 12.h),
                     _buildHandRow(user, isTop: false),
                     Expanded(
                       child: Container(
