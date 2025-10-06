@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_base_app/feature/auth/login/cubit/login_cubit.dart';
+import 'package:flutter_base_app/feature/auth/login/widget/active_user_list_widget.dart';
+import 'package:flutter_base_app/feature/auth/login/widget/exit_game_dialog_widget.dart';
+import 'package:flutter_base_app/feature/auth/login/widget/how_to_play_widget.dart';
+import 'package:flutter_base_app/feature/auth/login/widget/login_widget.dart';
+import 'package:flutter_base_app/feature/auth/login/widget/privacy_policy_widget.dart';
 import 'package:flutter_base_app/product/components/button/image_button.dart';
 import 'package:flutter_base_app/product/components/button/primary_game_button.dart';
 import 'package:flutter_base_app/product/components/container/gold_nav.dart';
 import 'package:flutter_base_app/product/constant/color_constants.dart';
+import 'package:flutter_base_app/product/injector/injector.dart';
+import 'package:flutter_base_app/product/storage/local_get_storage.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
@@ -14,6 +23,8 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
+  var userName = injector.get<LocalStorage>().getString('userName') ?? 'Guest';
+  var userSurname = injector.get<LocalStorage>().getString('userSurname') ?? '';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,7 +66,7 @@ class _LoginViewState extends State<LoginView> {
                         ),
                         child: ClipOval(
                           child: Image.network(
-                            'https://avatars.githubusercontent.com/u/12345678?v=4',
+                            'https://muhammedhosgor.linsabilisim.com/img/asset/muhammedhosgor.jpg',
                             width: 60,
                             height: 60,
                             fit: BoxFit.cover,
@@ -66,10 +77,12 @@ class _LoginViewState extends State<LoginView> {
                   ),
                   SizedBox(width: 10.w),
                   Text(
-                    'Welcome, Player!',
-                    style: TextStyle(color: kWhiteColor, fontSize: 20.sp, fontWeight: FontWeight.bold),
+                    '$userName $userSurname',
+                    textAlign: TextAlign.left,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: kWhiteColor, fontSize: 18.sp, fontWeight: FontWeight.bold),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   SizedBox(width: 10.w),
                   ImageButton(
                     imagePath: 'assets/asset/star.png',
@@ -104,11 +117,37 @@ class _LoginViewState extends State<LoginView> {
               spacing: 20.w,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ImageButton(onTap: () {}, imagePath: 'assets/asset/online.png'),
+                ImageButton(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: true, // Dışarıya tıklayınca kapanabilir
+                        builder: (BuildContext context) {
+                          return BlocProvider.value(
+                            value: LoginCubit(),
+                            child: const ThemedUserListDialog(),
+                          );
+                        },
+                      );
+                    },
+                    imagePath: 'assets/asset/online.png'),
                 ImageButton(onTap: () {}, imagePath: 'assets/asset/mail.png'),
                 ImageButton(onTap: () {}, imagePath: 'assets/asset/frends.png'),
                 ImageButton(onTap: () {}, imagePath: 'assets/asset/star.png'),
-                ImageButton(onTap: () {}, imagePath: 'assets/asset/info.png')
+                ImageButton(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: true, // Dışarıya tıklayınca kapanabilir
+                        builder: (BuildContext context) {
+                          return BlocProvider.value(
+                            value: LoginCubit(),
+                            child: const ThemedHowToPlayDialog(),
+                          );
+                        },
+                      );
+                    },
+                    imagePath: 'assets/asset/info.png')
               ],
             ),
           ),
@@ -181,18 +220,54 @@ class _LoginViewState extends State<LoginView> {
                     buttonColor: Colors.blue,
                     text: 'Guest Login',
                     icon: Icons.person_outline,
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: true, // Dışarıya tıklayınca kapanabilir
+                        builder: (BuildContext context) {
+                          return BlocProvider.value(
+                            value: LoginCubit(),
+                            child: const ThemedLoginDialog(),
+                          );
+                        },
+                      );
+                    },
                   ),
                   SizedBox(height: 10.h),
                   PrimaryGameButton(
                     buttonColor: kSuitRed,
                     text: 'Exit Game',
                     icon: Icons.exit_to_app,
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: true, // Dışarıya tıklayınca kapanabilir
+                        builder: (BuildContext context) {
+                          return BlocProvider.value(
+                            value: LoginCubit(),
+                            child: const ThemedConfirmExitDialog(),
+                          );
+                        },
+                      );
+                    },
                   ),
                   SizedBox(height: 10.h),
                   PrimaryGameButton(
                     buttonColor: Colors.deepPurpleAccent,
                     text: 'Privacy Policy',
                     icon: Icons.privacy_tip,
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: true, // Dışarıya tıklayınca kapanabilir
+                        builder: (BuildContext context) {
+                          return BlocProvider.value(
+                            value: LoginCubit(),
+                            child: const ThemedPrivacyPolicyDialog(),
+                          );
+                        },
+                      );
+                    },
                   ),
                 ],
               ),

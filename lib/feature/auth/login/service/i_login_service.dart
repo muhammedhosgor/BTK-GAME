@@ -4,5 +4,6 @@ import 'package:flutter_base_app/core/network/network_manager/network_manager.da
 abstract class ILoginService {
   ILoginService(this.dio);
   NetworkManager dio;
-  Future<ApiResult?> userLogin(String emailOrPhone, String password);
+  Future<ApiResult?> userLogin(String email, String password);
+  Future<ApiResult?> getUserAll();
 }

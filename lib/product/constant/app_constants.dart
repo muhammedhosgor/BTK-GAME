@@ -1,1 +1,1 @@
-
+String KeyGen = 'A';

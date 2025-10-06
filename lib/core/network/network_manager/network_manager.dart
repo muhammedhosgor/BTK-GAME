@@ -17,7 +17,7 @@ class NetworkManager {
   }
 
   // API URL, sabit değer
-  final String _baseUrl = AppEnvironmentItems.apiKey.value;
+  final String _baseUrl = "https://btkgameapi.linsabilisim.com/"; //AppEnvironmentItems.apiKey.value;
 
   // Dio nesnesi, late olarak tanımlanmış
   late final Dio _dio;
@@ -47,32 +47,23 @@ class NetworkManager {
     _dio.interceptors.add(InternalServerErrorInterceptor());
   }
 
-  Future<Response> post(
-      {String? path,
-      dynamic data,
-      Map<String, dynamic>? queryParameters}) async {
+  Future<Response> post({String? path, dynamic data, Map<String, dynamic>? queryParameters}) async {
     try {
-      return await _dio.post(path!,
-          data: data, queryParameters: queryParameters);
+      return await _dio.post(path!, data: data, queryParameters: queryParameters);
     } on DioException {
       rethrow;
     }
   }
 
-  Future<Response> put(
-      {String? path,
-      dynamic data,
-      Map<String, dynamic>? queryParameters}) async {
+  Future<Response> put({String? path, dynamic data, Map<String, dynamic>? queryParameters}) async {
     try {
-      return await _dio.post(path!,
-          data: data, queryParameters: queryParameters);
+      return await _dio.post(path!, data: data, queryParameters: queryParameters);
     } on DioException {
       rethrow;
     }
   }
 
-  Future<Response> delete(
-      {String? path, Map<String, dynamic>? queryParameters}) async {
+  Future<Response> delete({String? path, Map<String, dynamic>? queryParameters}) async {
     try {
       return await _dio.delete(
         path!,
@@ -83,8 +74,7 @@ class NetworkManager {
     }
   }
 
-  Future<Response> get(
-      {String? path, Map<String, dynamic>? queryParameters}) async {
+  Future<Response> get({String? path, Map<String, dynamic>? queryParameters}) async {
     try {
       return await _dio.get(
         path!,
@@ -104,6 +94,7 @@ class NetworkManager {
           return status != null ? status < 500 : false;
         },
         headers: _headers,
+
         // connectTimeout: 10000,
         //receiveTimeout: 10000,
       );
@@ -111,8 +102,9 @@ class NetworkManager {
     return {
       'Content-Type': 'application/json',
       'Accept': 'application',
-      'Authorization': injector.get<LocalStorage>().getString("token"),
-      'ApiKey': AppEnvironmentItems.apiKey.value,
+
+      // 'Authorization': injector.get<LocalStorage>().getString("token"),
+      //  'ApiKey': AppEnvironmentItems.apiKey.value,
     };
   }
 }
