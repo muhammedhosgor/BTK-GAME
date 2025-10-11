@@ -7,7 +7,8 @@ class UserModel {
   int? point;
   String? createdDate;
   String? platform;
-  bool? status;
+  String? status;
+  bool? isActive;
 
   UserModel(
       {this.id,
@@ -18,7 +19,8 @@ class UserModel {
       this.point,
       this.createdDate,
       this.platform,
-      this.status});
+      this.status,
+      this.isActive});
 
   UserModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -30,6 +32,7 @@ class UserModel {
     createdDate = json['createdDate'];
     platform = json['platform'];
     status = json['status'];
+    isActive = json['isActive'];
   }
 
   Map<String, dynamic> toJson() {
@@ -43,6 +46,7 @@ class UserModel {
     data['createdDate'] = this.createdDate;
     data['platform'] = this.platform;
     data['status'] = this.status;
+    data['isActive'] = this.isActive;
     return data;
   }
 }

@@ -6,4 +6,7 @@ abstract class ILoginService {
   NetworkManager dio;
   Future<ApiResult?> userLogin(String email, String password);
   Future<ApiResult?> getUserAll();
+  Future<ApiResult?> lobby();
+  Future<ApiResult?> joinRoom(int roomId);
+  Future<ApiResult?> createRoom();
 }

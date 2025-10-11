@@ -8,6 +8,7 @@ const Color kBlackColor = Color(0xFF000000);
 
 // Masa Zemini
 const Color kTableGreen = Color(0xFF0B6623);
+const Color kAccentGreen = Color(0xFF00A300);
 const Color kTableNavy = Color(0xFF1B263B);
 
 // Kart Arka Planı

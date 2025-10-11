@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_base_app/feature/auth/login/cubit/login_cubit.dart';
+import 'package:flutter_base_app/feature/auth/login/cubit/login_state.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/active_user_list_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/exit_game_dialog_widget.dart';
+import 'package:flutter_base_app/feature/auth/login/widget/game_room_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/how_to_play_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/login_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/privacy_policy_widget.dart';
@@ -213,13 +215,6 @@ class _LoginViewState extends State<LoginView> {
                     buttonColor: kButtonGreen,
                     text: 'Login',
                     icon: Icons.login,
-                    onTap: () => context.push('/home_view'),
-                  ),
-                  SizedBox(height: 10.h),
-                  PrimaryGameButton(
-                    buttonColor: Colors.blue,
-                    text: 'Guest Login',
-                    icon: Icons.person_outline,
                     onTap: () {
                       showDialog(
                         context: context,
@@ -229,6 +224,44 @@ class _LoginViewState extends State<LoginView> {
                             value: LoginCubit(),
                             child: const ThemedLoginDialog(),
                           );
+                        },
+                      );
+                    },
+                  ),
+                  SizedBox(height: 10.h),
+                  BlocBuilder<LoginCubit, LoginState>(
+                    builder: (context, state) {
+                      return PrimaryGameButton(
+                        buttonColor: Colors.blue,
+                        text: 'Start Game',
+                        icon: Icons.sports_esports,
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            barrierDismissible: true, // Dışarıya tıklayınca kapanabilir
+                            builder: (BuildContext context) {
+                              return BlocProvider.value(
+                                value: LoginCubit(),
+                                child: const GameRoomSelectionDialog(),
+                              );
+                            },
+                          );
+                          // if (state.isLogin == false) {
+                          //   ScaffoldMessenger.of(context).showSnackBar(
+                          //     const SnackBar(
+                          //       content: Text(
+                          //         'Lütfen önce giriş yapınız!',
+                          //         style: TextStyle(color: kWhiteColor, fontWeight: FontWeight.bold),
+                          //       ),
+                          //       backgroundColor: kSuitRed,
+                          //       duration: Duration(seconds: 3),
+                          //     ),
+                          //   );
+                          //   return;
+                          // } else {
+
+                          //   // context.push('/home_view');
+                          // }
                         },
                       );
                     },

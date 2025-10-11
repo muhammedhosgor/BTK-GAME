@@ -24,14 +24,20 @@ class ThemedUserListDialog extends StatelessWidget {
             width: 12,
             height: 12,
             decoration: BoxDecoration(
-                color: user.status == true ? kButtonGreen : kButtonGrey,
+                color: user.status == "Oyunda"
+                    ? kButtonGreen
+                    : user.status == "Bitirdi"
+                        ? kSuitRed
+                        : kSuitGold,
                 shape: BoxShape.circle,
                 boxShadow: [
                   // Harici sabit kullanılıyor
                   BoxShadow(
-                    color: user.status == true
+                    color: user.status == "Oyunda"
                         ? kButtonGreen.withOpacity(0.8)
-                        : kButtonGrey.withOpacity(0.5), // Harici sabit kullanılıyor
+                        : user.status == "Bitirdi"
+                            ? kSuitRed.withOpacity(0.5)
+                            : kSuitGold.withOpacity(0.5), // Harici sabit kullanılıyor
                     blurRadius: 4,
                   )
                 ]),

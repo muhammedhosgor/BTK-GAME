@@ -38,9 +38,8 @@ class ThemedLoginDialog extends StatelessWidget {
               ),
             ],
             // Hafif bir arkaplan deseni ekleyebiliriz
-            image: DecorationImage(
-              image: NetworkImage(
-                  'https://placehold.co/600x400/${kTableNavy.value.toRadixString(16).substring(2, 8)}/${kSuitGold.value.toRadixString(16).substring(2, 8)}?text=LOGIN'),
+            image: const DecorationImage(
+              image: AssetImage('assets/asset/bg.jpg'),
               fit: BoxFit.cover,
               opacity: 0.1,
             ),
@@ -142,7 +141,15 @@ class ThemedLoginDialog extends StatelessWidget {
                   } else if (state.loginState == LoginStates.completed) {
                     context.pop(); // Yükleniyor göstergesini kapat
                     context.pop(); // Giriş dialogunu kapat
-                    context.push('/home_view');
+                    // context.push('/home_view');
+                    context.read<LoginCubit>().changeLoginStatus(true);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.message ?? 'Login Successful!'),
+                        backgroundColor: kAccentGreen,
+                      ),
+                    );
+                    Navigator.of(context).pop(); // Dialogu kapat
                     // Başarılı giriş sonrası yapılacak işlemler
                   } else if (state.loginState == LoginStates.error) {
                     //context.pop(); // Yükleniyor göstergesini kapat
