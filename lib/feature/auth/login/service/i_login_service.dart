@@ -7,6 +7,8 @@ abstract class ILoginService {
   Future<ApiResult?> userLogin(String email, String password);
   Future<ApiResult?> getUserAll();
   Future<ApiResult?> lobby();
-  Future<ApiResult?> joinRoom(int roomId);
+  Future<ApiResult?> joinRoom(int roomId, String name, String surname);
   Future<ApiResult?> createRoom();
+  Future<ApiResult?> leaveRoom(int gameId);
+  Future<ApiResult?> status(int gameId);
 }

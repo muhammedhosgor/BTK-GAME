@@ -85,7 +85,7 @@ class LoginService extends ILoginService {
   }
 
   @override
-  Future<ApiResult?> joinRoom(int roomId) async {
+  Future<ApiResult?> joinRoom(int roomId, String name, String surname) async {
     int? userId = injector.get<LocalStorage>().getInt('userId');
     try {
       final response = await dio.post(
@@ -94,6 +94,8 @@ class LoginService extends ILoginService {
           'KeyGen': KeyGen,
           'gameId': roomId,
           'Player2Id': userId,
+          'name': name,
+          'surname': surname,
         },
       );
 
@@ -114,10 +116,15 @@ class LoginService extends ILoginService {
   @override
   Future<ApiResult?> createRoom() async {
     int? userId = injector.get<LocalStorage>().getInt('userId');
+    String? player1Name = injector.get<LocalStorage>().getString('userName');
+    String? player1Surname = injector.get<LocalStorage>().getString('userSurname');
+
     try {
       final response = await dio.post(path: '/api/Game/Create', queryParameters: {
         'KeyGen': KeyGen,
         'Player1Id': userId,
+        'name': player1Name,
+        'surname': player1Surname,
       }, data: {
         'Player1Id': userId,
         'CreatedDate': DateTime.now().toIso8601String(),
@@ -125,6 +132,58 @@ class LoginService extends ILoginService {
       });
 
       print('Create Room Response : $response');
+
+      if (response.statusCode == HttpStatus.ok) {
+        return ApiResult.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      print('error : $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<ApiResult?> leaveRoom(int gameId) async {
+    int? userId = injector.get<LocalStorage>().getInt('userId');
+    try {
+      final response = await dio.post(
+        path: '/api/Game/Leave',
+        queryParameters: {
+          'KeyGen': KeyGen,
+          'gameId': gameId,
+          'Player1Id': userId,
+        },
+      );
+
+      print('Leave Room Response : $response');
+
+      if (response.statusCode == HttpStatus.ok) {
+        return ApiResult.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      print('error : $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<ApiResult?> status(int gameId) async {
+    try {
+      final response = await dio.get(
+        path: '/api/Game/Status',
+        queryParameters: {
+          'KeyGen': KeyGen,
+          'gameId': gameId,
+        },
+      );
+
+      print('Join Room Response : $response');
 
       if (response.statusCode == HttpStatus.ok) {
         return ApiResult.fromJson(response.data as Map<String, dynamic>);

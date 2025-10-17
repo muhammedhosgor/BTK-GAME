@@ -1,15 +1,16 @@
 // --------------------------------------------------------------------------
 // MARK: - ANA EKRAN WIDGET'I
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_base_app/feature/auth/login/cubit/login_cubit.dart';
 import 'package:flutter_base_app/feature/auth/login/cubit/login_state.dart';
 import 'package:flutter_base_app/feature/auth/login/model/game_model.dart';
-import 'package:flutter_base_app/product/components/container/gold_nav.dart';
 import 'package:flutter_base_app/product/constant/color_constants.dart';
+import 'package:flutter_base_app/product/injector/injector.dart';
+import 'package:flutter_base_app/product/storage/local_get_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
-/// Kullanıcının mevcut lobileri görüp "Bekliyor" durumundaki odaya katıldığı ekran.
 class JoinRoomScreen extends StatefulWidget {
   const JoinRoomScreen({super.key});
 
@@ -18,320 +19,318 @@ class JoinRoomScreen extends StatefulWidget {
 }
 
 class _JoinRoomScreenState extends State<JoinRoomScreen> {
-  String? _joiningGuid; // Hangi odanın şu anda katılma işlemi yaptığını takip eder
+  String? _joiningGuid;
+  Timer? _statusTimer;
+  bool _isDialogVisible = false;
 
   @override
   void initState() {
     super.initState();
-    // Sayfa açıldığında lobi verilerini yükle
     context.read<LoginCubit>().lobby();
+
+    _statusTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+      if (!mounted) return;
+      final cubit = context.read<LoginCubit>();
+      try {
+        await cubit.setGameStatus(1);
+      } catch (e) {
+        print("Status kontrol hatası: $e");
+      }
+    });
   }
 
-  // Oda listesi öğesi oluşturucu
+  @override
+  void dispose() {
+    _statusTimer?.cancel();
+    super.dispose();
+  }
+
+  // 🔹 Revize Edilmiş Oda Listesi Öğesi
   Widget _buildRoomListItem({
     required GameModel room,
     required bool isJoinable,
     required bool isJoining,
     VoidCallback? onTap,
   }) {
-    Color statusColor;
-    // Status alanının null gelme ihtimaline karşı null check eklenmiştir.
-    switch (room.status) {
-      case "Bekliyor":
-        statusColor = kAccentGreen;
-        break;
-      case "Oynanıyor":
-        statusColor = kSuitGold;
-        break;
-      default:
-        statusColor = kSuitRed;
-    }
+    // Kişi Sayısı Kontrolü
+    final isFull = (room.player2Id ?? 0) != 0;
+    final playerCount = isFull ? '2/2' : '1/2';
+    final statusColor = isJoinable ? kAccentGreen : (isFull ? kSuitRed : kSuitGold);
 
-    // player1Id'nin null gelme ihtimali kontrol edilir (Host ID için)
-    final String hostIdText =
-        room.player1Id != null && room.player1Id != 0 ? "Host ID: ${room.player1Id}" : "Host ID: BİLİNMİYOR";
+    // Tema Rengi Seçimi
+    final backgroundColor = isJoinable ? kTableNavy.withOpacity(0.9) : kDarkGrey.withOpacity(0.8);
+    final borderColor = isJoinable ? kSuitGold : Colors.white24;
 
-    return InkWell(
-      onTap: onTap,
-      // Tıklanabilir olmayan odaların rengini daha az belirgin yapmak için Container eklendi
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-        decoration: BoxDecoration(
-          color: isJoinable ? kBlackColor.withOpacity(0.4) : kBlackColor.withOpacity(0.2),
-          border: Border(
-            left: BorderSide(
-              color: isJoinable ? kSuitGold : Colors.transparent,
-              width: 3,
-            ),
+    // Guid gösterimini basitleştirildi
+    String safeGuid = room.guid ?? 'YOK';
+    final guidDisplay = room.guid! + (safeGuid.length > 8 ? safeGuid.substring(0, 8) : safeGuid);
+
+    return Card(
+      elevation: isJoinable ? 12 : 4,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: borderColor, width: isJoinable ? 3 : 1),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: isJoinable ? [BoxShadow(color: kSuitGold.withOpacity(0.3), blurRadius: 10)] : null,
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // Oda Bilgisi
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Oda Kodu: ${room.guid ?? 'YOK'}",
-                  style: const TextStyle(
-                    color: kWhiteColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+          child: Row(
+            children: [
+              // Kişi Sayısı & Durumu
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.1),
+                  border: Border.all(color: statusColor, width: 2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        playerCount,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 16,
+                          color: statusColor,
+                        ),
+                      ),
+                      Text(
+                        isJoinable ? "Bekliyor" : (isFull ? "Dolu" : "Hazır"),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: statusColor,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Text(
-                  hostIdText,
-                  style: TextStyle(
-                    color: kWhiteColor.withOpacity(0.7),
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-
-            // Durum ve Aksiyon
-            Row(
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+              ),
+              const SizedBox(width: 16),
+              // Oda Bilgisi
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      room.status?.toUpperCase() ?? 'BİLİNMİYOR',
-                      style: TextStyle(
-                        color: statusColor,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
+                      guidDisplay,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: kWhiteColor,
                       ),
                     ),
+                    const SizedBox(height: 4),
                     Text(
-                      room.player2Id == 0 ? "1/2 Kişi" : "2/2 Kişi",
-                      style: TextStyle(
-                        color: kSuitGold.withOpacity(0.8),
-                        fontSize: 14,
+                      "Oyun Durumu: ${room.status ?? 'BİLİNMİYOR'}",
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.white70,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(width: 15),
-                // Buton veya Yüklenme Durumu
-                isJoining
-                    ? const SizedBox(
-                        width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: kSuitGold))
-                    : Icon(
-                        isJoinable ? Icons.login_rounded : Icons.lock_rounded,
-                        color: isJoinable ? kAccentGreen : kSuitRed, // Kilitli ikon için kSuitRed kullanıldı
-                        size: 30,
-                      ),
-              ],
-            ),
-          ],
+              ),
+              // Durum Göstergesi/Buton
+              isJoining
+                  ? const CircularProgressIndicator(color: kSuitGold)
+                  : isJoinable
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: kButtonGreen, // Yeşil KATIL butonu
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(color: kButtonGreen.withOpacity(0.5), blurRadius: 5),
+                            ],
+                          ),
+                          child: const Text(
+                            "KATIL",
+                            style: TextStyle(
+                              color: kWhiteColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        )
+                      : Icon(
+                          isFull ? Icons.lock : Icons.check_circle_outline,
+                          color: isFull ? kButtonRed : kButtonGrey, // Doluysa Kırmızı Kilit
+                          size: 30,
+                        ),
+            ],
+          ),
         ),
       ),
     );
   }
 
+  // Odaları listeler
+  Widget _buildRoomList({required List<GameModel> rooms}) {
+    if (rooms.isEmpty) {
+      return const Center(
+        child: Text(
+          "Şu anda aktif oda bulunmamaktadır.",
+          style: TextStyle(color: Colors.white70, fontSize: 16),
+        ),
+      );
+    }
+    return ListView.builder(
+      itemCount: rooms.length,
+      itemBuilder: (context, index) {
+        final room = rooms[index];
+        // Sadece bekleyen ve player2'si boş olan odalara katılınabilir
+        final isJoinable = room.status == "Bekliyor" && (room.player2Id ?? 0) == 0;
+        final isJoining = _joiningGuid == room.guid;
+
+        return _buildRoomListItem(
+          room: room,
+          isJoinable: isJoinable,
+          isJoining: isJoining,
+          onTap: isJoinable
+              ? () async {
+                  String? userName = injector.get<LocalStorage>().getString('userName');
+                  String? userSurname = injector.get<LocalStorage>().getString('userSurname');
+                  setState(() => _joiningGuid = room.guid);
+                  final success =
+                      await context.read<LoginCubit>().joinRoom(room.id!, userName ?? '', userSurname ?? ''); //! (1)
+                  if (!mounted) return;
+                  setState(() => _joiningGuid = null);
+                  if (success) context.push("/home_view", extra: false);
+                }
+              : null,
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Merkezi kartın maksimum boyutunu tanımla.
-    final double cardMaxWidth = 0.9.sw;
-    final double cardMaxHeight = 0.95.sh;
+    final rooms = context.watch<LoginCubit>().state.gameList ?? [];
 
     return Scaffold(
-      backgroundColor: kTableNavy, // Ana arkaplan lacivert
-      body: Center(
-        child: SingleChildScrollView(
-          child: Container(
-            constraints: BoxConstraints(
-              maxWidth: cardMaxWidth,
-              maxHeight: cardMaxHeight,
-            ),
-            padding: const EdgeInsets.all(30),
-            margin: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: kTableNavy.withOpacity(0.95),
-              borderRadius: BorderRadius.circular(25),
-              border: Border.all(color: kSuitGold, width: 4),
-              boxShadow: [
-                BoxShadow(
-                  color: kBlackColor.withOpacity(0.8),
-                  blurRadius: 30,
-                  offset: const Offset(0, 15),
-                ),
-              ],
-              image: DecorationImage(
-                image: const AssetImage('assets/asset/bg.jpg'),
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                  kWhiteColor.withOpacity(0.1),
-                  BlendMode.dstATop,
-                ),
-              ),
-            ),
-            // İçerik boyutunu Card Max Height'e sabitlemek için SizedBox kullanıldı.
-            // Bu, içindeki Column'un ve Expanded'ın düzgün çalışmasını sağlar.
-            child: SizedBox(
-              height: cardMaxHeight - 60, // Padding'ler düşüldü (30*2)
-              child: Column(
-                mainAxisSize: MainAxisSize.max, // Expanded'ın çalışması için max olmalı
-                children: [
-                  // Başlık
-                  const Text(
-                    "MEVCUT OYUN ODALARI",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: kSuitGold,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2,
-                      shadows: [
-                        Shadow(color: kBlackColor, blurRadius: 6, offset: Offset(1, 2)),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  const GoldNavContainer(), // Tematik ayırıcı
-
-                  const SizedBox(height: 20),
-
-                  // Yenile Butonu (Lobi servisini tetikler)
-                  InkWell(
-                    onTap: () => context.read<LoginCubit>().lobby(),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: BlocBuilder<LoginCubit, LoginState>(
-                        buildWhen: (prev, curr) => prev.lobbyState != curr.lobbyState,
-                        builder: (context, state) {
-                          final isFetching = state.lobbyState == LobbyStates.loading;
-                          return Text(
-                            isFetching ? "YÜKLENİYOR..." : "LİSTEYİ YENİLE",
+      backgroundColor: kTableNavy, // Arka planı koyu yap
+      appBar: AppBar(
+        title: const Text("Oda Lobisi", style: TextStyle(color: kWhiteColor, fontWeight: FontWeight.bold)),
+        backgroundColor: kTableNavy,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: kWhiteColor),
+      ),
+      body: BlocConsumer<LoginCubit, LoginState>(
+        listenWhen: (previous, current) =>
+            (previous.gameStatus != current.gameStatus && current.countDownJoinRoom == 5) ||
+            previous.countDownJoinRoom != current.countDownJoinRoom,
+        listener: (listenerContext, state) {
+          switch (state.gameStatus) {
+            case 'Hazir':
+              print('HAZIRIM');
+              // Mevcut dialog açık mı kontrolü eklendi
+              if (!_isDialogVisible) {
+                _isDialogVisible = true;
+                context.read<LoginCubit>().setCountDownJoinRoom();
+                showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (dialogContext) {
+                      return BlocProvider.value(
+                        value: context.read<LoginCubit>(),
+                        child: AlertDialog(
+                          backgroundColor: kTableNavy.withOpacity(0.95),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: const BorderSide(color: kSuitGold, width: 3),
+                          ),
+                          title: const Text(
+                            "Oyun Başlıyor!",
+                            textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: isFetching ? kSuitGold.withOpacity(0.5) : kSuitGold,
-                              fontSize: 16,
-                              decoration: TextDecoration.underline,
-                              decorationColor: kSuitGold,
+                              color: kSuitGold,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 22,
                             ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Oda Listesi
-                  Expanded(
-                    child: BlocBuilder<LoginCubit, LoginState>(
-                      builder: (context, state) {
-                        if (state.lobbyState == LobbyStates.loading &&
-                            (state.gameList == null || state.gameList!.isEmpty)) {
-                          // İlk yüklemede büyük center loading
-                          return const Center(child: CircularProgressIndicator(color: kSuitGold));
-                        } else if (state.lobbyState == LobbyStates.completed ||
-                            state.lobbyState == LobbyStates.loading) {
-                          // Yüklenirken de eski listeyi göstermeye devam et (tamamlanmış veya yükleniyor)
-                          final rooms = state.gameList ?? [];
-
-                          if (rooms.isEmpty) {
-                            return const Center(
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(vertical: 50.0),
-                                child: Text(
-                                  "Şu anda katılabilecek oda bulunmamaktadır.",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(color: kSuitGold, fontSize: 18),
-                                ),
+                          ),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              BlocBuilder<LoginCubit, LoginState>(
+                                builder: (context, state) {
+                                  return Text(
+                                    "${state.countDownJoinRoom}",
+                                    style: const TextStyle(
+                                      color: kAccentGreen,
+                                      fontSize: 40,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  );
+                                },
                               ),
-                            );
-                          }
-
-                          return Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: kSuitGold.withOpacity(0.5), width: 1),
-                              color: kBlackColor.withOpacity(0.2),
-                            ),
-                            child: ListView.separated(
-                              itemCount: rooms.length,
-                              separatorBuilder: (context, index) =>
-                                  const GoldNavContainer(), // Tematik ayırıcı kullanıldı
-                              itemBuilder: (context, index) {
-                                final room = rooms[index];
-                                // Hem status 'Bekliyor' olmalı hem de player2Id 0 olmalı (yani boş yer olmalı)
-                                final isJoinable =
-                                    room.status == "Bekliyor" && (room.player2Id == null || room.player2Id == 0);
-                                final isJoining = _joiningGuid == room.guid;
-
-                                return _buildRoomListItem(
-                                  room: room,
-                                  isJoinable: isJoinable,
-                                  isJoining: isJoining,
-                                  onTap: isJoinable && !isJoining
-                                      ? () async {
-                                          final success = await context.read<LoginCubit>().joinRoom(room.id!);
-
-                                          if (success) {
-                                            Navigator.of(context).pop(); // Başarılı katılım sonrası ekranı kapat
-                                          } else {
-                                            // Hata mesajı için tematik SnackBar
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                  'Odaya katılırken bir hata oluştu.',
-                                                  style: TextStyle(color: kWhiteColor, fontWeight: FontWeight.bold),
-                                                ),
-                                                backgroundColor: kSuitRed,
-                                              ),
-                                            );
-                                          }
-                                        }
-                                      : null,
-                                );
-                              },
-                            ),
-                          );
-                        } else if (state.lobbyState == LobbyStates.error) {
-                          return Center(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 50.0),
-                              child: Text(
-                                state.errorMessage ?? 'Oda listesi yüklenirken beklenmedik bir hata oluştu.',
+                              const SizedBox(height: 10),
+                              const Text(
+                                "Hazırlan, oyun birazdan başlıyor...",
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(color: kSuitRed, fontSize: 18, fontWeight: FontWeight.bold),
+                                style: TextStyle(color: Colors.white70),
                               ),
-                            ),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  // Geri Dön Butonu
-                  InkWell(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        "Geri Dön",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: kSuitGold,
-                          fontSize: 16,
-                          decoration: TextDecoration.underline,
-                          decorationColor: kSuitGold,
+                            ],
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
-                ],
+                      );
+                    }).then((_) => _isDialogVisible = false); // Dialog kapandığında kontrolü sıfırla
+              }
+
+              context.read<LoginCubit>().setGameStatusToStarted();
+              _statusTimer?.cancel(); // Geri sayım başladıktan sonra timer'ı iptal et
+
+              break;
+            case 'Bekliyor':
+              print('BEKLİYORUM');
+
+              break;
+            case 'Ayrildi':
+              print('AYRILDIM');
+              _statusTimer?.cancel(); // Geri sayım başladıktan sonra timer'ı iptal et
+              context.read<LoginCubit>().setGameStatusToStarted();
+
+              break;
+            default:
+          }
+          if (state.countDownJoinRoom == 0) {
+            context.read<LoginCubit>().cancelJoinRoomTimer();
+            // Dialog'u kapat
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            }
+            // JoinRoomScreen'i kapat (bu ekranın kendisini)
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            }
+            context.push("/home_view", extra: false);
+          }
+
+          if (state.gameStatus == 'Hazir') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Oyun Durumu: ${state.gameStatus ?? 'Durum Bilgisi Yok'}',
+                  style: const TextStyle(color: Colors.white),
+                ),
+                backgroundColor: kSuitGold,
               ),
-            ),
-          ),
-        ),
+            );
+          }
+        },
+        builder: (context, state) {
+          return _buildRoomList(rooms: rooms);
+        },
       ),
     );
   }

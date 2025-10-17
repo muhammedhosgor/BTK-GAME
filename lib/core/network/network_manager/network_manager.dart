@@ -3,9 +3,6 @@ import 'package:flutter_base_app/core/network/network_manager/interceptors/auth_
 import 'package:flutter_base_app/core/network/network_manager/interceptors/bad_network_error_interceptor.dart';
 import 'package:flutter_base_app/core/network/network_manager/interceptors/internal_server_error_interceptor.dart';
 import 'package:flutter_base_app/core/network/network_manager/interceptors/unauthorized_interceptor.dart';
-import 'package:flutter_base_app/product/initial/config/app_enviroment.dart';
-import 'package:flutter_base_app/product/injector/injector.dart';
-import 'package:flutter_base_app/product/storage/local_get_storage.dart';
 
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
@@ -17,7 +14,8 @@ class NetworkManager {
   }
 
   // API URL, sabit değer
-  final String _baseUrl = "https://btkgameapi.linsabilisim.com/"; //AppEnvironmentItems.apiKey.value;
+  //final String _baseUrl = "https://btkgameapi.linsabilisim.com/"; //AppEnvironmentItems.apiKey.value;
+  final String _baseUrl = "https://goapi.linsabilisim.com/"; //AppEnvironmentItems.apiKey.value;
 
   // Dio nesnesi, late olarak tanımlanmış
   late final Dio _dio;

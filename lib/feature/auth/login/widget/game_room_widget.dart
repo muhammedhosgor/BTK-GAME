@@ -125,7 +125,7 @@ class GameRoomSelectionDialog extends StatelessWidget {
                 onTap: () {
                   // Odaya katılma işlemi buraya gelecek
                   // Diyalogdan çıkış ve bir sonuç döndürme örneği:
-                  Navigator.of(context).pop();
+                  //   Navigator.of(context).pop();
                   showDialog(
                     context: context,
                     barrierDismissible: true, // Dışarıya tıklayınca kapanabilir

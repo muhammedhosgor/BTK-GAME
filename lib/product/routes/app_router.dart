@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_base_app/feature/auth/login/cubit/login_cubit.dart';
 import 'package:flutter_base_app/feature/auth/splash/view/splash_view.dart';
 import 'package:flutter_base_app/feature/auth/login/view/login_view.dart';
+import 'package:flutter_base_app/feature/home/cubit/home_cubit.dart';
 import 'package:flutter_base_app/feature/home/view/home_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -28,7 +29,12 @@ class AppRoute {
           GoRoute(
             path: 'home_view',
             builder: (BuildContext context, GoRouterState state) {
-              return CardGamePage();
+              return BlocProvider(
+                create: (context) => HomeCubit(),
+                child: CardGamePage(
+                  isPlayer1: state.extra as bool,
+                ),
+              );
             },
           ),
           // GoRoute(

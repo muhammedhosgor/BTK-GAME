@@ -12,21 +12,44 @@ class GameModel {
   int? player2Score;
   String? createdDate;
   bool? isActive;
+  bool? isPlayer1Ready;
+  bool? isPlayer2Ready;
+  bool? isPlayer1Move;
+  bool? isPlayer2Move;
+  bool? turn;
+  String? disabledCards;
+  String? swappedCards;
+  String? player1Name;
+  String? player1Surname;
+  String? player2Name;
+  String? player2Surname;
 
-  GameModel(
-      {this.id,
-      this.guid,
-      this.player1Id,
-      this.player2Id,
-      this.status,
-      this.currentTurnId,
-      this.player1Hand,
-      this.player2Hand,
-      this.playedCards,
-      this.player1Score,
-      this.player2Score,
-      this.createdDate,
-      this.isActive});
+  GameModel({
+    this.id,
+    this.guid,
+    this.player1Id,
+    this.player2Id,
+    this.status,
+    this.currentTurnId,
+    this.player1Hand,
+    this.player2Hand,
+    this.playedCards,
+    this.player1Score,
+    this.player2Score,
+    this.createdDate,
+    this.isActive,
+    this.isPlayer1Ready,
+    this.isPlayer2Ready,
+    this.isPlayer1Move,
+    this.isPlayer2Move,
+    this.turn,
+    this.disabledCards,
+    this.swappedCards,
+    this.player1Name,
+    this.player1Surname,
+    this.player2Name,
+    this.player2Surname,
+  });
 
   GameModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -42,23 +65,16 @@ class GameModel {
     player2Score = json['player2Score'];
     createdDate = json['createdDate'];
     isActive = json['isActive'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['guid'] = this.guid;
-    data['player1Id'] = this.player1Id;
-    data['player2Id'] = this.player2Id;
-    data['status'] = this.status;
-    data['currentTurnId'] = this.currentTurnId;
-    data['player1Hand'] = this.player1Hand;
-    data['player2Hand'] = this.player2Hand;
-    data['playedCards'] = this.playedCards;
-    data['player1Score'] = this.player1Score;
-    data['player2Score'] = this.player2Score;
-    data['createdDate'] = this.createdDate;
-    data['isActive'] = this.isActive;
-    return data;
+    isPlayer1Ready = json['isPlayer1Ready'];
+    isPlayer2Ready = json['isPlayer2Ready'];
+    isPlayer1Move = json['isPlayer1Move'];
+    isPlayer2Move = json['isPlayer2Move'];
+    turn = json['turn'];
+    disabledCards = json['disabledCards'];
+    swappedCards = json['swappedCards'];
+    player1Name = json['player1Name'];
+    player1Surname = json['player1Surname'];
+    player2Name = json['player2Name'];
+    player2Surname = json['player2Surname'];
   }
 }

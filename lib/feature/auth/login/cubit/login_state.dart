@@ -9,12 +9,16 @@ class LoginState extends Equatable {
     required this.lobbyState,
     required this.joinRoomState,
     required this.createRoomState,
+    required this.leaveRoomState,
+    required this.statusState,
     required this.errorMessage,
     required this.message,
     required this.userList,
     required this.isLogin,
     required this.gameList,
-    required String? gameStatus,
+    required this.gameStatus,
+    required this.countDownWaitingRoom,
+    required this.countDownJoinRoom,
   });
   factory LoginState.initial() {
     return LoginState(
@@ -22,6 +26,8 @@ class LoginState extends Equatable {
       getUserState: GetUserStates.initial,
       joinRoomState: JoinRoomStates.initial,
       createRoomState: CreateRoomStates.initial,
+      leaveRoomState: LeaveRoomStates.initial,
+      statusState: StatusStates.initial,
       lobbyState: LobbyStates.initial,
       errorMessage: '',
       message: '',
@@ -29,6 +35,8 @@ class LoginState extends Equatable {
       isLogin: false,
       gameList: [],
       gameStatus: null,
+      countDownWaitingRoom: 5,
+      countDownJoinRoom: 5,
     );
   }
   final LoginStates loginState;
@@ -36,12 +44,16 @@ class LoginState extends Equatable {
   final LobbyStates lobbyState;
   final JoinRoomStates joinRoomState;
   final CreateRoomStates createRoomState;
+  final LeaveRoomStates leaveRoomState;
+  final StatusStates statusState;
   final String errorMessage;
   final String message;
   List<UserModel> userList;
   bool isLogin;
   List<GameModel> gameList;
   String? gameStatus;
+  int countDownWaitingRoom;
+  int countDownJoinRoom;
 
   @override
   List<Object?> get props => [
@@ -50,12 +62,16 @@ class LoginState extends Equatable {
         lobbyState,
         joinRoomState,
         createRoomState,
+        leaveRoomState,
+        statusState,
         errorMessage,
         message,
         userList,
         isLogin,
         gameList,
         gameStatus,
+        countDownWaitingRoom,
+        countDownJoinRoom,
       ];
 
   LoginState copyWith({
@@ -64,12 +80,16 @@ class LoginState extends Equatable {
     LobbyStates? lobbyState,
     JoinRoomStates? joinRoomState,
     CreateRoomStates? createRoomState,
+    LeaveRoomStates? leaveRoomState,
+    StatusStates? statusState,
     String? errorMessage,
     String? message,
     List<UserModel>? userList,
     bool? isLogin,
     List<GameModel>? gameList,
     String? gameStatus,
+    int? countDownWaitingRoom,
+    int? countDownJoinRoom,
   }) {
     return LoginState(
       loginState: loginState ?? this.loginState,
@@ -77,12 +97,16 @@ class LoginState extends Equatable {
       lobbyState: lobbyState ?? this.lobbyState,
       joinRoomState: joinRoomState ?? this.joinRoomState,
       createRoomState: createRoomState ?? this.createRoomState,
+      leaveRoomState: leaveRoomState ?? this.leaveRoomState,
+      statusState: statusState ?? this.statusState,
       errorMessage: errorMessage ?? this.errorMessage,
       message: message ?? this.message,
       userList: userList ?? this.userList,
       isLogin: isLogin ?? this.isLogin,
       gameList: gameList ?? this.gameList,
       gameStatus: gameStatus ?? this.gameStatus,
+      countDownWaitingRoom: countDownWaitingRoom ?? this.countDownWaitingRoom,
+      countDownJoinRoom: countDownJoinRoom ?? this.countDownJoinRoom,
     );
   }
 }
@@ -116,6 +140,20 @@ enum JoinRoomStates {
 }
 
 enum CreateRoomStates {
+  initial,
+  loading,
+  completed,
+  error,
+}
+
+enum LeaveRoomStates {
+  initial,
+  loading,
+  completed,
+  error,
+}
+
+enum StatusStates {
   initial,
   loading,
   completed,

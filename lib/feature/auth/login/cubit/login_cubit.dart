@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_base_app/core/network/network_manager/network_manager.dart';
 import 'package:flutter_base_app/feature/auth/login/cubit/login_state.dart';
@@ -17,7 +19,8 @@ class LoginCubit extends Cubit<LoginState> {
   final ILoginService _loginService = LoginService(NetworkManager.instance);
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-
+  Timer? waitingRoomTimer;
+  Timer? joinRoomTimer;
   init() async {
     await getUserList();
   }
@@ -119,9 +122,9 @@ class LoginCubit extends Cubit<LoginState> {
     }
   }
 
-  Future<bool> joinRoom(int roomId) async {
+  Future<bool> joinRoom(int roomId, String name, String surname) async {
     emit(state.copyWith(joinRoomState: JoinRoomStates.loading, errorMessage: ''));
-    final response = await _loginService.joinRoom(roomId);
+    final response = await _loginService.joinRoom(roomId, name, surname);
 
     if (response == null) {
       emit(
@@ -173,7 +176,94 @@ class LoginCubit extends Cubit<LoginState> {
     }
   }
 
-  void setGameStatus(String status) {
-    emit(state.copyWith(gameStatus: status));
+  Future<void> setGameStatus(int gameId) async {
+    emit(state.copyWith(statusState: StatusStates.loading, errorMessage: ''));
+    final response = await _loginService.status(gameId);
+
+    if (response == null) {
+      emit(
+        state.copyWith(
+          statusState: StatusStates.error,
+          errorMessage: 'Veriler yüklenemedi. Lütfen internet bağlantınızı kontrol ediniz...',
+        ),
+      );
+    } else {
+      if (response.success!) {
+        final dataMap = response.data as Map<String, dynamic>;
+        emit(
+          state.copyWith(
+            statusState: StatusStates.completed,
+            gameStatus: dataMap["status"] as String?,
+          ),
+        );
+        print("Game Status: ${dataMap["status"]}");
+      } else {
+        emit(state.copyWith(
+          statusState: StatusStates.error,
+          errorMessage: response.errorMessage ?? 'Bir Hata Oluştu!',
+        ));
+      }
+    }
+  }
+
+  Future<bool> leaveRoom(int gameId) async {
+    emit(state.copyWith(leaveRoomState: LeaveRoomStates.loading, errorMessage: ''));
+    final response = await _loginService.leaveRoom(gameId);
+
+    if (response == null) {
+      emit(
+        state.copyWith(
+          leaveRoomState: LeaveRoomStates.error,
+          errorMessage: 'Oda oluşturulamadı. Lütfen internet bağlantınızı kontrol ediniz...',
+        ),
+      );
+      return false;
+    } else {
+      if (response.success!) {
+        await lobby(); // Oda oluşturduktan sonra lobi listesini güncelle
+        emit(state.copyWith(leaveRoomState: LeaveRoomStates.completed, message: response.message));
+        return true;
+      } else {
+        emit(state.copyWith(
+          leaveRoomState: LeaveRoomStates.error,
+          errorMessage: response.errorMessage ?? 'Oda oluşturulamadı!',
+        ));
+        return false;
+      }
+    }
+  }
+
+  void setGameStatusToStarted() {
+    emit(state.copyWith(gameStatus: 'OYUN BAŞLADI'));
+  }
+
+  void setCountDownWaitingRoom() {
+    waitingRoomTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (state.countDownWaitingRoom == 0) {
+        timer.cancel();
+      } else {
+        emit(state.copyWith(countDownWaitingRoom: state.countDownWaitingRoom - 1));
+      }
+    });
+  }
+
+  void setCountDownJoinRoom() {
+    joinRoomTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (state.countDownJoinRoom == 0) {
+        timer.cancel();
+      } else {
+        emit(state.copyWith(countDownJoinRoom: state.countDownJoinRoom - 1));
+      }
+    });
+  }
+
+  void cancelJoinRoomTimer() {
+    joinRoomTimer?.cancel();
+    joinRoomTimer = null;
+  }
+
+  void cancelWaitingRoomTimer() {
+    waitingRoomTimer?.cancel();
+    waitingRoomTimer = null;
   }
 }
