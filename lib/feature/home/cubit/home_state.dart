@@ -18,6 +18,16 @@ class HomeState extends Equatable {
     required this.opponentCards,
     required this.sinekVar,
     required this.karoVar,
+    required this.isKupaPapazDialogShown,
+    required this.isSinekDialogShown,
+    required this.isKaroDialogShown,
+    required this.isDialogShownValue,
+    //! Player 2 Dialogs
+    required this.isKupaPapaz2DialogShown,
+    required this.isSinek2DialogShown,
+    required this.isKaro2DialogShown,
+    required this.isDialog2ShownValue,
+    //
   });
 
   factory HomeState.initial() {
@@ -36,6 +46,15 @@ class HomeState extends Equatable {
       opponentCards: [],
       sinekVar: false,
       karoVar: false,
+      isKupaPapazDialogShown: false,
+      isSinekDialogShown: false,
+      isKaroDialogShown: false,
+      isDialogShownValue: false,
+      //! Player 2 Dialogs
+      isKupaPapaz2DialogShown: false,
+      isSinek2DialogShown: false,
+      isKaro2DialogShown: false,
+      isDialog2ShownValue: false,
     );
   }
 
@@ -55,7 +74,15 @@ class HomeState extends Equatable {
   final List<CardModel> opponentCards;
   final bool sinekVar;
   final bool karoVar;
-
+  bool isKupaPapazDialogShown;
+  bool isSinekDialogShown;
+  bool isKaroDialogShown;
+  bool isDialogShownValue;
+  //! Player 2 Dialogs
+  bool isKupaPapaz2DialogShown;
+  bool isSinek2DialogShown;
+  bool isKaro2DialogShown;
+  bool isDialog2ShownValue;
   @override
   List<Object?> get props => [
         homeState,
@@ -72,6 +99,15 @@ class HomeState extends Equatable {
         opponentCards,
         sinekVar,
         karoVar,
+        isKupaPapazDialogShown,
+        isSinekDialogShown,
+        isKaroDialogShown,
+        isDialogShownValue,
+        //! Player 2 Dialogs
+        isKupaPapaz2DialogShown,
+        isSinek2DialogShown,
+        isKaro2DialogShown,
+        isDialog2ShownValue,
       ];
 
   HomeState copyWith({
@@ -89,6 +125,16 @@ class HomeState extends Equatable {
     List<CardModel>? opponentCards,
     bool? sinekVar,
     bool? karoVar,
+    bool? isKupaPapazDialogShown,
+    bool? isSinekDialogShown,
+    bool? isKaroDialogShown,
+    bool? isDialogShownValue,
+    //! Player 2 Dialogs
+    bool? isKupaPapaz2DialogShown,
+    bool? isSinek2DialogShown,
+    bool? isKaro2DialogShown,
+    bool? isDialog2ShownValue,
+    //
   }) {
     return HomeState(
       homeState: homeState ?? this.homeState,
@@ -105,6 +151,15 @@ class HomeState extends Equatable {
       opponentCards: opponentCards ?? this.opponentCards,
       sinekVar: sinekVar ?? this.sinekVar,
       karoVar: karoVar ?? this.karoVar,
+      isKupaPapazDialogShown: isKupaPapazDialogShown ?? this.isKupaPapazDialogShown,
+      isSinekDialogShown: isSinekDialogShown ?? this.isSinekDialogShown,
+      isKaroDialogShown: isKaroDialogShown ?? this.isKaroDialogShown,
+      isDialogShownValue: isDialogShownValue ?? this.isDialogShownValue,
+      //! Player 2 Dialogs
+      isKupaPapaz2DialogShown: isKupaPapaz2DialogShown ?? this.isKupaPapaz2DialogShown,
+      isSinek2DialogShown: isSinek2DialogShown ?? this.isSinek2DialogShown,
+      isKaro2DialogShown: isKaro2DialogShown ?? this.isKaro2DialogShown,
+      isDialog2ShownValue: isDialog2ShownValue ?? this.isDialog2ShownValue,
     );
   }
 }

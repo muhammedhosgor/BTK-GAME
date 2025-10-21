@@ -9,6 +9,8 @@ import 'package:flutter_base_app/product/injector/injector.dart';
 import 'package:flutter_base_app/product/storage/local_get_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 
 class CardGamePage extends StatefulWidget {
   final bool isPlayer1;
@@ -345,6 +347,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
         ),
       ),
       body: Stack(
+        alignment: Alignment.center,
         children: [
           // Arkaplan ve Oyun Alanı
           Container(
@@ -426,7 +429,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                 : '${state.game.player1Name!} ${state.game.player1Surname!} ${state.player1Multiplier > 1 ? '(x${state.player1Multiplier})' : ''}',
                           );
                         } else {
-                          return SizedBox();
+                          return const SizedBox();
                         }
                       },
                     ),
@@ -493,6 +496,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                     context.read<HomeCubit>().sinekle(1, swappingCards.join(','));
                                                     context.read<HomeCubit>().setSinekVar(false);
                                                     swappingCards.clear();
+
                                                     _appendLog(
                                                         'Takas için kart seçildi: ${state.opponentCards[index].fullName}');
                                                   } else if (state.karoVar) {
@@ -536,7 +540,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                       BoxShadow(
                                                           blurRadius: state.opponentCards[index].isSpecial ? 32 : 4,
                                                           color: baseBorderColor,
-                                                          offset: Offset(1, 2)),
+                                                          offset: const Offset(1, 2)),
                                                       // Kupa Papaz (K♥) için Altın Parlaklık efekti (Sadece özel kart ve etkisiz değilse)
                                                     ],
                                                   ),
@@ -754,6 +758,40 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                   previous.game.isPlayer2Move != current.game.isPlayer2Move ||
                                   previous.game.turn != current.game.turn,
                               listener: (context, state) {
+                                if (state.game.turn! && !state.isDialogShownValue) {
+                                  context.read<HomeCubit>().setIsDialogShownValue(true);
+                                  for (var element in (state.cards.map((c) => c.fullName).toList())) {
+                                    switch (element) {
+                                      case 'Kupa-K':
+                                        context.read<HomeCubit>().setIsKupaPapazDialogShown(true);
+                                        break;
+                                      case 'Sinek-2':
+                                        context.read<HomeCubit>().setIsSinekDialogShown(true);
+                                        break;
+                                      case 'Karo-2':
+                                        context.read<HomeCubit>().setIsKaroDialogShown(true);
+                                        break;
+                                      default:
+                                    }
+                                  }
+                                }
+                                if (state.game.turn! && !state.isDialog2ShownValue) {
+                                  context.read<HomeCubit>().setIsDialog2ShownValue(true);
+                                  for (var element in (state.opponentCards.map((c) => c.fullName).toList())) {
+                                    switch (element) {
+                                      case 'Kupa-K':
+                                        context.read<HomeCubit>().setIsKupaPapaz2DialogShown(true);
+                                        break;
+                                      case 'Sinek-2':
+                                        context.read<HomeCubit>().setIsSinek2DialogShown(true);
+                                        break;
+                                      case 'Karo-2':
+                                        context.read<HomeCubit>().setIsKaro2DialogShown(true);
+                                        break;
+                                      default:
+                                    }
+                                  }
+                                }
                                 if (state.game.isPlayer1Move! && state.game.isPlayer2Move! && state.game.turn!) {
                                   // MOVE'LARI FALSE YAP
                                   context.read<HomeCubit>().swapCards(state.game.id!, state.game.player1Id!, false, '');
@@ -770,19 +808,23 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                           case 'Kupa-K':
                                             context.read<HomeCubit>().setPlayerMultipliers(2, 1);
                                             _appendLog('Kupa Papaz (K♥) kartı masaya konuldu! Kart değeri 2x olacak.');
+
                                             break;
                                           case 'Sinek-2':
                                             context.read<HomeCubit>().setSinekVar(true);
                                             // Todo: Delay
+                                            //  context.read<HomeCubit>().setIsActivePlayer1SinekDialogShown();
 
                                             _appendLog('Sinek 2 (♣2) kartı masaya konuldu! Bir kart takas edilecek.');
+
                                             break;
                                           case 'Karo-2':
                                             context.read<HomeCubit>().setKaroVar(true);
                                             // Todo: Delay
-
+                                            // context.read<HomeCubit>().setIsActivePlayer1KaroDialogShown();
                                             _appendLog(
                                                 'Karo 2 (♦2) kartı masaya konuldu! Bir kart etkisiz hale gelecek.');
+
                                             break;
                                           default:
                                         }
@@ -803,17 +845,20 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                           case 'Kupa-K':
                                             context.read<HomeCubit>().setPlayerMultipliers(1, 2);
                                             _appendLog('Kupa Papaz (K♥) kartı masaya konuldu! Kart değeri 2x olacak.');
+
                                             break;
                                           case 'Sinek-2':
                                             context.read<HomeCubit>().setSinekVar(true);
                                             _appendLog('Sinek 2 (♣2) kartı masaya konuldu! Bir kart takas edilecek.');
                                             // Todo: Delay
+
                                             break;
                                           case 'Karo-2':
                                             context.read<HomeCubit>().setKaroVar(true);
                                             // Todo: Delay
                                             _appendLog(
                                                 'Karo 2 (♦2) kartı masaya konuldu! Bir kart etkisiz hale gelecek.');
+
                                             break;
                                           default:
                                         }
@@ -822,6 +867,9 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                     context
                                         .read<HomeCubit>()
                                         .swapCards(state.game.id!, state.game.player2Id!, true, '');
+                                    // context
+                                    //     .read<HomeCubit>()
+                                    //     .resetIsActiveKupaPapazDialogShown(); // DİALOG SAYACINI SIFIRLA
                                   }
                                 }
                                 for (var element in state.opponentCards) {
@@ -1066,7 +1114,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                           BoxShadow(
                                                               blurRadius: state.cards[index].isSpecial ? 32 : 4,
                                                               color: baseBorderColor,
-                                                              offset: Offset(1, 2)),
+                                                              offset: const Offset(1, 2)),
                                                           // Kupa Papaz (K♥) için Altın Parlaklık efekti (Sadece özel kart ve etkisiz değilse)
                                                         ],
                                                       ),
@@ -1159,7 +1207,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                                 decoration: const BoxDecoration(
                                                                   shape: BoxShape.circle,
                                                                 ),
-                                                                child: Placeholder(
+                                                                child: const Placeholder(
                                                                   color: Colors.black26,
                                                                 ),
                                                               ),
@@ -1180,7 +1228,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                                         size: 18, color: Colors.white),
                                                                   ),
                                                                 )
-                                                              : SizedBox.shrink(),
+                                                              : const SizedBox.shrink(),
                                                           // Kupa Papaz (K♥) - Çarpan İşareti
                                                           // if (c.isKingOfHearts && !c.disabled)
                                                           //   const Positioned(
@@ -1322,6 +1370,125 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
             ),
           ),
 
+          //* USER ANIMATIONS
+          Positioned(
+            bottom: 0.1.sh,
+            child: BlocConsumer<HomeCubit, HomeState>(
+              listenWhen: (previous, current) =>
+                  previous.isKupaPapazDialogShown != current.isKupaPapazDialogShown ||
+                  previous.isKaroDialogShown != current.isKaroDialogShown ||
+                  previous.isSinekDialogShown != current.isSinekDialogShown,
+              listener: (context, state) {
+                if (state.isKupaPapazDialogShown) {
+                  Future.delayed(const Duration(seconds: 3), () {}).then((_) {
+                    context.read<HomeCubit>().setIsKupaPapazDialogShown(false);
+
+                    // Dialog gösterimi tamamlandıktan sonra Cubit'i güncelle
+                  });
+                } else if (state.isKaroDialogShown) {
+                  Future.delayed(const Duration(seconds: 3), () {}).then((_) {
+                    context.read<HomeCubit>().setIsKaroDialogShown(false);
+
+                    // Dialog gösterimi tamamlandıktan sonra Cubit'i güncelle
+                  });
+                } else if (state.isSinekDialogShown) {
+                  Future.delayed(const Duration(seconds: 3), () {}).then((_) {
+                    context.read<HomeCubit>().setIsSinekDialogShown(false);
+
+                    // Dialog gösterimi tamamlandıktan sonra Cubit'i güncelle
+                  });
+                }
+              },
+              builder: (context, state) {
+                if (state.isKupaPapazDialogShown) {
+                  return Center(
+                    child: Lottie.asset(
+                      'assets/lottie/2x.json',
+                      width: 0.5.sw,
+                      repeat: true,
+                    ),
+                  );
+                } else if (state.isKaroDialogShown) {
+                  return Center(
+                    child: Lottie.asset(
+                      'assets/lottie/disabled.json',
+                      width: 0.5.sw,
+                      repeat: true,
+                    ),
+                  );
+                } else if (state.isSinekDialogShown) {
+                  return Center(
+                    child: Lottie.asset(
+                      'assets/lottie/swap.json',
+                      width: 0.5.sw,
+                      repeat: true,
+                    ),
+                  );
+                } else
+                  return SizedBox();
+              },
+            ),
+          ),
+          //* OPPONENT ANIMATIONS
+          Positioned(
+            top: 0.1.sh,
+            child: BlocConsumer<HomeCubit, HomeState>(
+              listenWhen: (previous, current) =>
+                  previous.isKupaPapaz2DialogShown != current.isKupaPapaz2DialogShown ||
+                  previous.isKaro2DialogShown != current.isKaro2DialogShown ||
+                  previous.isSinek2DialogShown != current.isSinek2DialogShown,
+              listener: (context, state) {
+                if (state.isKupaPapaz2DialogShown) {
+                  Future.delayed(const Duration(seconds: 3), () {}).then((_) {
+                    context.read<HomeCubit>().setIsKupaPapaz2DialogShown(false);
+
+                    // Dialog gösterimi tamamlandıktan sonra Cubit'i güncelle
+                  });
+                } else if (state.isKaro2DialogShown) {
+                  Future.delayed(const Duration(seconds: 3), () {}).then((_) {
+                    context.read<HomeCubit>().setIsKaro2DialogShown(false);
+
+                    // Dialog gösterimi tamamlandıktan sonra Cubit'i güncelle
+                  });
+                } else if (state.isSinek2DialogShown) {
+                  Future.delayed(const Duration(seconds: 3), () {}).then((_) {
+                    context.read<HomeCubit>().setIsSinek2DialogShown(false);
+
+                    // Dialog gösterimi tamamlandıktan sonra Cubit'i güncelle
+                  });
+                }
+              },
+              builder: (context, state) {
+                if (state.isKupaPapaz2DialogShown) {
+                  return Center(
+                    child: Lottie.asset(
+                      'assets/lottie/2x.json',
+                      width: 0.5.sw,
+                      repeat: true,
+                    ),
+                  );
+                } else if (state.isKaro2DialogShown) {
+                  return Center(
+                    child: Lottie.asset(
+                      'assets/lottie/disabled.json',
+                      width: 0.5.sw,
+                      repeat: true,
+                    ),
+                  );
+                } else if (state.isSinek2DialogShown) {
+                  return Center(
+                    child: Lottie.asset(
+                      'assets/lottie/swap.json',
+                      width: 0.5.sw,
+                      repeat: true,
+                    ),
+                  );
+                } else
+                  return SizedBox();
+              },
+            ),
+          ),
+
           // Yeni: El sonu sonuç overlay'i
           _buildHandResultOverlay(),
 
@@ -1399,24 +1566,6 @@ class InfoProfile extends StatelessWidget {
                               'assets/asset/lock.png',
                               height: 32,
                             ),
-                      // Kupa Papaz x2 İşareti
-                      // if (p.multiplier > 1.0)
-                      //   Padding(
-                      //     padding: const EdgeInsets.only(left: 8.0),
-                      //     child: Text('x${p.multiplier.toInt()}',
-                      //         style: TextStyle(
-                      //           fontSize: 24.sp,
-                      //           fontWeight: FontWeight.w900,
-                      //           color: Colors.redAccent,
-                      //           shadows: [
-                      //             Shadow(
-                      //               blurRadius: 5.0,
-                      //               color: Colors.red.withOpacity(0.8),
-                      //               offset: const Offset(1.0, 1.0),
-                      //             ),
-                      //           ],
-                      //         )),
-                      //   ),
                     ],
                   ),
                   const SizedBox(height: 2),

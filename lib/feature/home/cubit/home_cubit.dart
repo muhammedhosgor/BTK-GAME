@@ -23,6 +23,8 @@ class HomeCubit extends Cubit<HomeState> {
     emit(state.copyWith(getStatusState: GetStatusStates.loading));
   }
 
+  bool isFirstTime = true;
+
   Future<void> getInitialStatusGame() async {
     injector.get<LocalStorage>().getInt('userId'); //?
     final response = await _homeService.status(1);
@@ -66,6 +68,7 @@ class HomeCubit extends Cubit<HomeState> {
             default:
           }
           bool isSpecialCard = element == 'Kupa-K' || element == 'Sinek-2' || element == 'Karo-2';
+
           print('symbol: $symbol');
           print(element);
           print('isSpecialCard: $isSpecialCard');
@@ -500,6 +503,57 @@ class HomeCubit extends Cubit<HomeState> {
   void setKaroVar(bool value) {
     emit(state.copyWith(
       karoVar: value,
+    ));
+  }
+
+  //!Player 2 Dialogs
+
+  void setIsKupaPapazDialogShown(bool value) {
+    emit(state.copyWith(
+      isKupaPapazDialogShown: value,
+    ));
+  }
+
+  void setIsSinekDialogShown(bool value) {
+    emit(state.copyWith(
+      isSinekDialogShown: value,
+    ));
+  }
+
+  void setIsKaroDialogShown(bool value) {
+    emit(state.copyWith(
+      isKaroDialogShown: value,
+    ));
+  }
+
+  void setIsDialogShownValue(bool value) {
+    emit(state.copyWith(
+      isDialogShownValue: value,
+    ));
+  }
+
+  //! Player 2 Dialogs
+  void setIsKupaPapaz2DialogShown(bool value) {
+    emit(state.copyWith(
+      isKupaPapaz2DialogShown: value,
+    ));
+  }
+
+  void setIsSinek2DialogShown(bool value) {
+    emit(state.copyWith(
+      isSinek2DialogShown: value,
+    ));
+  }
+
+  void setIsKaro2DialogShown(bool value) {
+    emit(state.copyWith(
+      isKaro2DialogShown: value,
+    ));
+  }
+
+  void setIsDialog2ShownValue(bool value) {
+    emit(state.copyWith(
+      isDialog2ShownValue: value,
     ));
   }
 }
