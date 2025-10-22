@@ -17,6 +17,7 @@ class HomeCubit extends Cubit<HomeState> {
 
   final IHomeService _homeService = HomeService(NetworkManager.instance);
   Timer? timer;
+
   Future<void> init() async {}
 
   void setStateToLoading() {

@@ -21,6 +21,7 @@ class WaitingRoomScreen extends StatefulWidget {
 
 class _WaitingRoomScreenState extends State<WaitingRoomScreen> {
   Timer? _statusTimer;
+  int? createGameId = 0;
 
   @override
   void initState() {
@@ -32,7 +33,6 @@ class _WaitingRoomScreenState extends State<WaitingRoomScreen> {
       final cubit = context.read<LoginCubit>();
 
       try {
-        int? createGameId = 0;
         LocalStorage localStorage = injector.get<LocalStorage>();
         createGameId = await localStorage.getInt('createGameId');
         await cubit.setGameStatus(createGameId!);
@@ -229,6 +229,10 @@ class _WaitingRoomScreenState extends State<WaitingRoomScreen> {
                   ElevatedButton(
                     onPressed: () {
                       // Odadan ayrılma işlemi (isteğe göre eklenebilir)
+                      context.read<LoginCubit>().leaveRoom(createGameId!).whenComplete(() {
+                        context.pop(2); // Diyalogdan çık
+                        // Bekleme odasından çık
+                      });
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: kSuitRed,

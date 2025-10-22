@@ -61,8 +61,15 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
   // Log scroll controller
   final ScrollController _logController = ScrollController();
   Timer? timer;
+
+  LocalStorage localStorage = injector.get<LocalStorage>();
+
+  int? gameId;
+
   @override
   void initState() {
+    gameId = localStorage.getInt('createGameId') ?? localStorage.getInt('joinGameId');
+
     super.initState();
     context.read<HomeCubit>().setStateToLoading();
 
@@ -237,9 +244,9 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                               return ElevatedButton(
                                 onPressed: () {
                                   if (widget.isPlayer1) {
-                                    context.read<HomeCubit>().setPlayerReady(1, true);
+                                    context.read<HomeCubit>().setPlayerReady(gameId!, true); //! ***
                                   } else {
-                                    context.read<HomeCubit>().setPlayerReady(1, false);
+                                    context.read<HomeCubit>().setPlayerReady(gameId!, false); //! ***
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(
@@ -493,16 +500,17 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                   if (state.sinekVar && swappingCards.length == 1) {
                                                     swappingCards.add(state.opponentCards[index].fullName);
 
-                                                    context.read<HomeCubit>().sinekle(1, swappingCards.join(','));
+                                                    context
+                                                        .read<HomeCubit>()
+                                                        .sinekle(gameId!, swappingCards.join(',')); //! ***
                                                     context.read<HomeCubit>().setSinekVar(false);
                                                     swappingCards.clear();
 
                                                     _appendLog(
                                                         'Takas için kart seçildi: ${state.opponentCards[index].fullName}');
                                                   } else if (state.karoVar) {
-                                                    context
-                                                        .read<HomeCubit>()
-                                                        .disableCards(1, state.opponentCards[index].fullName);
+                                                    context.read<HomeCubit>().disableCards(
+                                                        gameId!, state.opponentCards[index].fullName); //! ***
                                                     context.read<HomeCubit>().setKaroVar(false);
                                                     _appendLog(
                                                         'Etkisiz hale getirilen kart seçildi: ${state.opponentCards[index].fullName}');
@@ -794,8 +802,12 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                 }
                                 if (state.game.isPlayer1Move! && state.game.isPlayer2Move! && state.game.turn!) {
                                   // MOVE'LARI FALSE YAP
-                                  context.read<HomeCubit>().swapCards(state.game.id!, state.game.player1Id!, false, '');
-                                  context.read<HomeCubit>().swapCards(state.game.id!, state.game.player2Id!, false, '');
+                                  context
+                                      .read<HomeCubit>()
+                                      .swapCards(state.game.id!, state.game.player1Id!, false, ''); //! *** ??
+                                  context
+                                      .read<HomeCubit>()
+                                      .swapCards(state.game.id!, state.game.player2Id!, false, ''); //! *** ??
                                 }
                                 print('listener -- player : ${widget.isPlayer1}');
 
@@ -832,7 +844,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                     }
                                     context
                                         .read<HomeCubit>()
-                                        .swapCards(state.game.id!, state.game.player1Id!, true, '');
+                                        .swapCards(state.game.id!, state.game.player1Id!, true, ''); //! *** ??
                                   }
                                 } else if (state.game.isPlayer1Move! &&
                                     !state.game.isPlayer2Move! &&
@@ -889,7 +901,10 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                       int? userId = injector.get<LocalStorage>().getInt('userId');
                                       if (!state.game.turn! &&
                                           !(widget.isPlayer1 ? state.game.isPlayer1Move! : state.game.isPlayer2Move!)) {
-                                        context.read<HomeCubit>().swapCards(1, userId!, true,
+                                        context.read<HomeCubit>().swapCards(
+                                            gameId!, //! ***
+                                            userId!,
+                                            true,
                                             state.selectedCardsToSwap.map((c) => c.fullName).toList().join(','));
                                       }
                                     },
