@@ -28,15 +28,15 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
     super.initState();
     context.read<LoginCubit>().lobby();
 
-    _statusTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
-      if (!mounted) return;
-      final cubit = context.read<LoginCubit>();
-      try {
-        await cubit.setGameStatus(1);
-      } catch (e) {
-        print("Status kontrol hatası: $e");
-      }
-    });
+    // _statusTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+    //   if (!mounted) return;
+    //   final cubit = context.read<LoginCubit>();
+    //   // try {
+    //   //   await cubit.setGameStatus(1);
+    //   // } catch (e) {
+    //   //   print("Status kontrol hatası: $e");
+    //   // }
+    // });
   }
 
   @override
@@ -199,14 +199,31 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
           isJoining: isJoining,
           onTap: isJoinable
               ? () async {
-                  String? userName = injector.get<LocalStorage>().getString('userName');
-                  String? userSurname = injector.get<LocalStorage>().getString('userSurname');
+                  //* Odaya katılma işlemi
+                  LocalStorage localStorage = injector.get<LocalStorage>();
+                  localStorage.remove('createGameId');
+                  String? userName = localStorage.getString('userName');
+                  String? userSurname = localStorage.getString('userSurname');
+                  int joinGameId = room.id ?? 0;
+                  localStorage.saveInt('joinGameId', joinGameId);
+                  print("ODA GAME ID JOIN: $joinGameId");
                   setState(() => _joiningGuid = room.guid);
+
                   final success =
                       await context.read<LoginCubit>().joinRoom(room.id!, userName ?? '', userSurname ?? ''); //! (1)
+                  _statusTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+                    if (!mounted) return;
+                    final cubit = context.read<LoginCubit>();
+                    try {
+                      await cubit.setGameStatus(room.id!);
+                    } catch (e) {
+                      print("Status kontrol hatası: $e");
+                    }
+                  });
                   if (!mounted) return;
                   setState(() => _joiningGuid = null);
-                  if (success) context.push("/home_view", extra: false);
+                  // adad
+                  // if (success) context.push("/home_view", extra: false);
                 }
               : null,
         );

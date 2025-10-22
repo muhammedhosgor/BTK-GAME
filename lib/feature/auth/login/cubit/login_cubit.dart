@@ -164,6 +164,10 @@ class LoginCubit extends Cubit<LoginState> {
     } else {
       if (response.success!) {
         await lobby(); // Oda oluşturduktan sonra lobi listesini güncelle
+        LocalStorage localStorage = injector.get<LocalStorage>();
+        localStorage.remove('createGameId');
+        int createGameId = response.data['id'];
+        localStorage.saveInt('createGameId', createGameId);
         emit(state.copyWith(createRoomState: CreateRoomStates.completed, message: response.message));
         return true;
       } else {

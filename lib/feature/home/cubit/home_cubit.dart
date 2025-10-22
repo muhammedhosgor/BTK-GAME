@@ -27,7 +27,13 @@ class HomeCubit extends Cubit<HomeState> {
 
   Future<void> getInitialStatusGame() async {
     injector.get<LocalStorage>().getInt('userId'); //?
-    final response = await _homeService.status(1);
+    LocalStorage localStorage = injector.get<LocalStorage>();
+
+    int? gameId = localStorage.getInt('createGameId') ?? localStorage.getInt('joinGameId');
+    print("GAME ID HOME CUBIT: $gameId");
+
+    final response = await _homeService.status(gameId!);
+    // final response = await _homeService.status(1);
 
     if (response == null) {
       emit(

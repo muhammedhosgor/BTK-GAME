@@ -7,6 +7,8 @@ import 'package:flutter_base_app/feature/auth/login/cubit/login_cubit.dart';
 import 'package:flutter_base_app/feature/auth/login/cubit/login_state.dart';
 import 'package:flutter_base_app/product/components/container/gold_nav.dart';
 import 'package:flutter_base_app/product/constant/color_constants.dart';
+import 'package:flutter_base_app/product/injector/injector.dart';
+import 'package:flutter_base_app/product/storage/local_get_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -30,7 +32,11 @@ class _WaitingRoomScreenState extends State<WaitingRoomScreen> {
       final cubit = context.read<LoginCubit>();
 
       try {
-        await cubit.setGameStatus(1);
+        int? createGameId = 0;
+        LocalStorage localStorage = injector.get<LocalStorage>();
+        createGameId = await localStorage.getInt('createGameId');
+        await cubit.setGameStatus(createGameId!);
+        print("ODA GAME ID CREATE: $createGameId");
       } catch (e) {
         // ignore: avoid_print
         print("Status kontrol hatası: $e");
