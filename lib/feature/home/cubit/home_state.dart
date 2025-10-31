@@ -11,7 +11,6 @@ class HomeState extends Equatable {
     required this.message,
     required this.game,
     required this.selectedCardsToSwap,
-    required this.swapTurnFinished,
     required this.cards,
     required this.player1Multiplier,
     required this.player2Multiplier,
@@ -27,7 +26,10 @@ class HomeState extends Equatable {
     required this.isSinek2DialogShown,
     required this.isKaro2DialogShown,
     required this.isDialog2ShownValue,
-    //
+    //!
+    required this.isMoveFirstTime,
+    required this.player1WinCount,
+    required this.player2WinCount,
   });
 
   factory HomeState.initial() {
@@ -39,7 +41,6 @@ class HomeState extends Equatable {
       message: '',
       game: GameModel(),
       selectedCardsToSwap: [],
-      swapTurnFinished: false,
       cards: [],
       player1Multiplier: 1,
       player2Multiplier: 1,
@@ -55,6 +56,10 @@ class HomeState extends Equatable {
       isSinek2DialogShown: false,
       isKaro2DialogShown: false,
       isDialog2ShownValue: false,
+      //!
+      isMoveFirstTime: true,
+      player1WinCount: 0,
+      player2WinCount: 0,
     );
   }
 
@@ -65,8 +70,6 @@ class HomeState extends Equatable {
   final String message;
   final List<CardModel> selectedCardsToSwap;
   final List<CardModel> cards;
-
-  final bool swapTurnFinished;
 
   GameModel game;
   final int player1Multiplier;
@@ -83,6 +86,10 @@ class HomeState extends Equatable {
   bool isSinek2DialogShown;
   bool isKaro2DialogShown;
   bool isDialog2ShownValue;
+  //!
+  bool isMoveFirstTime;
+  int player1WinCount;
+  int player2WinCount;
   @override
   List<Object?> get props => [
         homeState,
@@ -92,7 +99,6 @@ class HomeState extends Equatable {
         message,
         game,
         selectedCardsToSwap,
-        swapTurnFinished,
         cards,
         player1Multiplier,
         player2Multiplier,
@@ -108,6 +114,10 @@ class HomeState extends Equatable {
         isSinek2DialogShown,
         isKaro2DialogShown,
         isDialog2ShownValue,
+        //!
+        isMoveFirstTime,
+        player1WinCount,
+        player2WinCount,
       ];
 
   HomeState copyWith({
@@ -118,7 +128,6 @@ class HomeState extends Equatable {
     String? message,
     GameModel? game,
     List<CardModel>? selectedCardsToSwap,
-    bool? swapTurnFinished,
     List<CardModel>? cards,
     int? player1Multiplier,
     int? player2Multiplier,
@@ -134,6 +143,10 @@ class HomeState extends Equatable {
     bool? isSinek2DialogShown,
     bool? isKaro2DialogShown,
     bool? isDialog2ShownValue,
+    //!
+    bool? isMoveFirstTime,
+    int? player1WinCount,
+    int? player2WinCount,
     //
   }) {
     return HomeState(
@@ -144,7 +157,6 @@ class HomeState extends Equatable {
       message: message ?? this.message,
       game: game ?? this.game,
       selectedCardsToSwap: selectedCardsToSwap ?? this.selectedCardsToSwap,
-      swapTurnFinished: swapTurnFinished ?? this.swapTurnFinished,
       cards: cards ?? this.cards,
       player1Multiplier: player1Multiplier ?? this.player1Multiplier,
       player2Multiplier: player2Multiplier ?? this.player2Multiplier,
@@ -160,6 +172,10 @@ class HomeState extends Equatable {
       isSinek2DialogShown: isSinek2DialogShown ?? this.isSinek2DialogShown,
       isKaro2DialogShown: isKaro2DialogShown ?? this.isKaro2DialogShown,
       isDialog2ShownValue: isDialog2ShownValue ?? this.isDialog2ShownValue,
+      //!
+      isMoveFirstTime: isMoveFirstTime ?? this.isMoveFirstTime,
+      player1WinCount: player1WinCount ?? this.player1WinCount,
+      player2WinCount: player2WinCount ?? this.player2WinCount,
     );
   }
 }

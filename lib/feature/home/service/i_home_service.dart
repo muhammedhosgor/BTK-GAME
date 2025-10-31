@@ -9,4 +9,6 @@ abstract class IHomeService {
   Future<ApiResult?> makeMove(int gameId, int playerId, bool move, String cardValue);
   Future<ApiResult?> sinekle(int gameId, String swappedCards);
   Future<ApiResult?> disableCards(int gameId, String disabledCards);
+  Future<ApiResult?> handComplete(int gameId);
+  Future<ApiResult?> startNewRound(int gameId);
 }

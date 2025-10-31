@@ -289,6 +289,7 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   Future<void> swapCards(int gameId, int playerId, bool move, String cardValue) async {
+    print('SWAPLIYORUM $cardValue');
     emit(state.copyWith(makeMoveState: MakeMoveStates.loading));
     final response = await _homeService.makeMove(gameId, playerId, move, cardValue);
 
@@ -562,5 +563,59 @@ class HomeCubit extends Cubit<HomeState> {
     emit(state.copyWith(
       isDialog2ShownValue: value,
     ));
+  }
+
+  Future<void> handComplete(int gameId) async {
+    await _homeService.handComplete(gameId);
+  }
+
+  void setIsMoveFirstTime(bool value) {
+    emit(state.copyWith(isMoveFirstTime: value));
+  }
+
+  void resetHandComplete() {
+    emit(state.copyWith(
+      sinekVar: false,
+      karoVar: false,
+      player1Multiplier: 1,
+      player2Multiplier: 1,
+      isKaroDialogShown: false,
+      isKaro2DialogShown: false,
+      isSinekDialogShown: false,
+      isSinek2DialogShown: false,
+      isKupaPapazDialogShown: false,
+      isKupaPapaz2DialogShown: false,
+      isDialogShownValue: false,
+      isDialog2ShownValue: false,
+      selectedCardsToSwap: [],
+    ));
+  }
+
+  void determineWinner() {
+    int player1Score = 0;
+    int player2Score = 0;
+
+    // SADECE devre dışı olmayan kartları topla ➜ Player 1
+    for (var card in state.cards.where((c) => c.fullName != state.game.disabledCards)) {
+      player1Score += card.value;
+    }
+
+    // SADECE devre dışı olmayan kartları topla ➜ Player 2
+    for (var card in state.opponentCards.where((c) => c.fullName != state.game.disabledCards)) {
+      player2Score += card.value;
+    }
+
+    if (player1Score > player2Score) {
+      emit(state.copyWith(player1WinCount: state.player1WinCount + 1));
+    } else if (player2Score > player1Score) {
+      emit(state.copyWith(player2WinCount: state.player2WinCount + 1));
+    }
+
+    print(
+        'Player 1 Score: $player1Score, Player 2 Score: $player2Score Kazananlar - Player 1: ${state.player1WinCount}, Player 2: ${state.player2WinCount}');
+  }
+
+  Future<void> startNewRound(int gameId) async {
+    await _homeService.startNewRound(gameId);
   }
 }

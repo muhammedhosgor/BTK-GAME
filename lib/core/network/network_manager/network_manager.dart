@@ -15,7 +15,7 @@ class NetworkManager {
 
   // API URL, sabit değer
   //final String _baseUrl = "https://btkgameapi.linsabilisim.com/"; //AppEnvironmentItems.apiKey.value;
-  final String _baseUrl = "https://goapi.linsabilisim.com/"; //AppEnvironmentItems.apiKey.value;
+  final String _baseUrl = "https://btkgameapi.linsabilisim.com/"; //AppEnvironmentItems.apiKey.value;
 
   // Dio nesnesi, late olarak tanımlanmış
   late final Dio _dio;

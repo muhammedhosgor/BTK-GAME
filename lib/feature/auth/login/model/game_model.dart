@@ -30,7 +30,7 @@ class GameModel {
     this.player1Id,
     this.player2Id,
     this.status,
-    this.currentTurnId,
+    this.currentTurnId = 0,
     this.player1Hand,
     this.player2Hand,
     this.playedCards,
@@ -57,7 +57,7 @@ class GameModel {
     player1Id = json['player1Id'];
     player2Id = json['player2Id'];
     status = json['status'];
-    currentTurnId = json['currentTurnId'];
+    currentTurnId = json['currentTurnId'] ?? 0;
     player1Hand = json['player1Hand'];
     player2Hand = json['player2Hand'];
     playedCards = json['playedCards'];

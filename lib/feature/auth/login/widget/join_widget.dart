@@ -9,6 +9,7 @@ import 'package:flutter_base_app/product/constant/color_constants.dart';
 import 'package:flutter_base_app/product/injector/injector.dart';
 import 'package:flutter_base_app/product/storage/local_get_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 class JoinRoomScreen extends StatefulWidget {
@@ -123,20 +124,51 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      guidDisplay,
+                      guidDisplay.substring(0, 8),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                         color: kWhiteColor,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Text(
                       "Oyun Durumu: ${room.status ?? 'BİLİNMİYOR'}",
                       style: const TextStyle(
                         fontSize: 12,
                         color: Colors.white70,
                       ),
+                    ),
+                    SizedBox(
+                      height: 4.h,
+                    ),
+                    Row(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: kWhiteColor, width: 2),
+                          ),
+                          child: ClipOval(
+                            child: Image.network(
+                              'https://muhammedhosgor.linsabilisim.com/img/asset/muhammedhosgor.jpg',
+                              width: 30,
+                              height: 30,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 5.w,
+                        ),
+                        Text(
+                          "${'${room.player1Name} ${room.player1Surname}' ?? 'BİLİNMİYOR'}",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -187,9 +219,12 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
     }
     return ListView.builder(
       itemCount: rooms.length,
+      reverse: false, // scroll yukarıdan başlasın
       itemBuilder: (context, index) {
-        final room = rooms[index];
-        // Sadece bekleyen ve player2'si boş olan odalara katılınabilir
+        // Ters sıra için index'i hesapla
+        final reverseIndex = rooms.length - 1 - index;
+        final room = rooms[reverseIndex];
+
         final isJoinable = room.status == "Bekliyor" && (room.player2Id ?? 0) == 0;
         final isJoining = _joiningGuid == room.guid;
 
@@ -199,7 +234,6 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
           isJoining: isJoining,
           onTap: isJoinable
               ? () async {
-                  //* Odaya katılma işlemi
                   LocalStorage localStorage = injector.get<LocalStorage>();
                   localStorage.remove('createGameId');
                   String? userName = localStorage.getString('userName');
@@ -210,7 +244,8 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                   setState(() => _joiningGuid = room.guid);
 
                   final success =
-                      await context.read<LoginCubit>().joinRoom(room.id!, userName ?? '', userSurname ?? ''); //! (1)
+                      await context.read<LoginCubit>().joinRoom(room.id!, userName ?? '', userSurname ?? '');
+
                   _statusTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
                     if (!mounted) return;
                     final cubit = context.read<LoginCubit>();
@@ -220,9 +255,9 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                       print("Status kontrol hatası: $e");
                     }
                   });
+
                   if (!mounted) return;
                   setState(() => _joiningGuid = null);
-                  // adad
                   // if (success) context.push("/home_view", extra: false);
                 }
               : null,

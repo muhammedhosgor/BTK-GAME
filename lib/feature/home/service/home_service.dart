@@ -139,4 +139,54 @@ class HomeService extends IHomeService {
       return null;
     }
   }
+
+  @override
+  Future<ApiResult?> handComplete(int gameId) async {
+    try {
+      final response = await dio.post(
+        path: '/api/Game/HandComplete',
+        queryParameters: {
+          'KeyGen': KeyGen,
+          'gameId': gameId,
+        },
+      );
+
+      print('HandComplete Response : $response');
+
+      if (response.statusCode == HttpStatus.ok) {
+        return ApiResult.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      print('error : $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<ApiResult?> startNewRound(int gameId) async {
+    try {
+      final response = await dio.post(
+        path: '/api/Game/StartNewRound',
+        queryParameters: {
+          'KeyGen': KeyGen,
+          'gameId': gameId,
+        },
+      );
+
+      print('HandComplete Response : $response');
+
+      if (response.statusCode == HttpStatus.ok) {
+        return ApiResult.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      print('error : $e');
+      return null;
+    }
+  }
 }
