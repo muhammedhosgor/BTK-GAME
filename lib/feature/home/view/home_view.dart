@@ -474,8 +474,8 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                             return Text('Hata: ${state.errorMessage}', style: const TextStyle(color: Colors.red));
                           } else if (state.getStatusState == GetStatusStates.completed) {
                             // Kartları gösterme animasyonu
-                            if (!state.isMoveFirstTime) {
-                              //    if ((state.game.isPlayer1Move! && state.game.isPlayer2Move!) || state.game.turn!) {
+                            // if (!state.isMoveFirstTime) {
+                            if ((state.game.isPlayer1Move! && state.game.isPlayer2Move!) || state.game.turn!) {
                               return SizedBox(
                                   height: 110,
                                   width: 1.sw,
@@ -809,42 +809,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                   );
                                 } else {
                                   //! Oyunun devam ettiği kısım
-                                  if (state.game.isPlayer1Move! && state.game.isPlayer2Move! && state.game.turn!) {
-                                    if (state.sinekVar) {
-                                      await Future.delayed(const Duration(seconds: 10), () async {
-                                        if (state.karoVar) {
-                                          await Future.delayed(const Duration(seconds: 10), () async {
-                                            //! ben yazdım
-                                            await showDialog(
-                                                context: context,
-                                                builder: (dialogContext) {
-                                                  return AlertDialog(
-                                                    backgroundColor: Colors.black87,
-                                                    title: const Text(
-                                                      'Bilgi',
-                                                      style: TextStyle(color: Colors.white),
-                                                    ),
-                                                    content: const Text(
-                                                      'Sinek 2 ve Karo 2 kartlarının etkileri uygulandı.',
-                                                      style: TextStyle(color: Colors.white70),
-                                                    ),
-                                                    actions: [
-                                                      TextButton(
-                                                        onPressed: () async {
-                                                          Navigator.of(dialogContext).pop();
-                                                        },
-                                                        child: const Text(
-                                                          'Tamam',
-                                                          style: TextStyle(color: Colors.amberAccent),
-                                                        ),
-                                                      )
-                                                    ],
-                                                  );
-                                                });
-                                          });
-                                        }
-                                      });
-                                    }
+                                  if (!state.game.isPlayer1Move! && !state.game.isPlayer2Move! && state.game.turn!) {
                                     await showDialog(
                                       context: context,
                                       builder: (dialogContext) {
@@ -862,6 +827,8 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                             TextButton(
                                               onPressed: () async {
                                                 Navigator.of(dialogContext).pop();
+                                                context.read<HomeCubit>().setIsMoveFirstTime(false);
+
                                                 context.read<HomeCubit>().resetHandComplete();
                                                 if (!widget.isPlayer1) {
                                                   await context.read<HomeCubit>().handComplete(state.game.id!);

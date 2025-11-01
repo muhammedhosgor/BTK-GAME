@@ -30,6 +30,7 @@ class HomeState extends Equatable {
     required this.isMoveFirstTime,
     required this.player1WinCount,
     required this.player2WinCount,
+    required this.isSpecialEffectPlaying,
   });
 
   factory HomeState.initial() {
@@ -60,6 +61,7 @@ class HomeState extends Equatable {
       isMoveFirstTime: true,
       player1WinCount: 0,
       player2WinCount: 0,
+      isSpecialEffectPlaying: false,
     );
   }
 
@@ -90,6 +92,8 @@ class HomeState extends Equatable {
   bool isMoveFirstTime;
   int player1WinCount;
   int player2WinCount;
+  //
+  final bool isSpecialEffectPlaying;
   @override
   List<Object?> get props => [
         homeState,
@@ -118,6 +122,7 @@ class HomeState extends Equatable {
         isMoveFirstTime,
         player1WinCount,
         player2WinCount,
+        isSpecialEffectPlaying,
       ];
 
   HomeState copyWith({
@@ -147,6 +152,7 @@ class HomeState extends Equatable {
     bool? isMoveFirstTime,
     int? player1WinCount,
     int? player2WinCount,
+    bool? isSpecialEffectPlaying,
     //
   }) {
     return HomeState(
@@ -176,6 +182,7 @@ class HomeState extends Equatable {
       isMoveFirstTime: isMoveFirstTime ?? this.isMoveFirstTime,
       player1WinCount: player1WinCount ?? this.player1WinCount,
       player2WinCount: player2WinCount ?? this.player2WinCount,
+      isSpecialEffectPlaying: isSpecialEffectPlaying ?? this.isSpecialEffectPlaying,
     );
   }
 }

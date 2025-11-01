@@ -618,4 +618,8 @@ class HomeCubit extends Cubit<HomeState> {
   Future<void> startNewRound(int gameId) async {
     await _homeService.startNewRound(gameId);
   }
+
+  void setIsSpecialEffectPlaying(bool value) {
+    emit(state.copyWith(isSpecialEffectPlaying: value));
+  }
 }
