@@ -418,7 +418,11 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                 // todo: timer ekleyecen yer burası
                                 Chip(
                                   backgroundColor: botReady ? Colors.green[400] : Colors.grey[600],
-                                  label: Text('Rakip: ${botReady ? "" : "BeHazırkliyor"}'),
+                                  label: BlocBuilder<HomeCubit, HomeState>(
+                                    builder: (context, state) {
+                                      return Text('Rakip: ${botReady ? "" : "Bekliyor ${state.seconds}"}');
+                                    },
+                                  ),
                                 ),
                                 const SizedBox(width: 8),
                                 // Buradaki 'Hazırım' butonu artık _buildReadyOverlay'e taşındı.
@@ -770,7 +774,6 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                           children: [
                             BlocListener<HomeCubit, HomeState>(
                               listenWhen: (previous, current) =>
-                                  previous.isMoveFirstTime != current.isMoveFirstTime ||
                                   previous.game.turn != current.game.turn ||
                                   previous.game.isPlayer1Move != current.game.isPlayer1Move ||
                                   previous.game.isPlayer2Move != current.game.isPlayer2Move,
@@ -809,7 +812,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                   );
                                 } else {
                                   //! Oyunun devam ettiği kısım
-                                  if (!state.game.isPlayer1Move! && !state.game.isPlayer2Move! && state.game.turn!) {
+                                  if (state.game.isPlayer1Move! && state.game.isPlayer2Move! && state.game.turn!) {
                                     await showDialog(
                                       context: context,
                                       builder: (dialogContext) {
@@ -827,7 +830,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                             TextButton(
                                               onPressed: () async {
                                                 Navigator.of(dialogContext).pop();
-                                                context.read<HomeCubit>().setIsMoveFirstTime(false);
+                                                context.read<HomeCubit>().setIsMoveFirstTime(true);
 
                                                 context.read<HomeCubit>().resetHandComplete();
                                                 if (!widget.isPlayer1) {
@@ -857,6 +860,8 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                         print('listener MOVE ---- player 1');
 
                                         for (var element in (state.cards)) {
+                                          context.read<HomeCubit>().setAnimationTimer(30);
+
                                           if (element.isSpecial) {
                                             switch (element.fullName) {
                                               case 'Kupa-K':
@@ -867,7 +872,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                 break;
                                               case 'Sinek-2':
                                                 context.read<HomeCubit>().setSinekVar(true);
-                                                await Future.delayed(const Duration(seconds: 30));
+                                                await Future.delayed(Duration(seconds: state.seconds!));
 
                                                 _appendLog(
                                                     'Sinek 2 (♣2) kartı masaya konuldu! Bir kart takas edilecek.');
@@ -875,7 +880,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                 break;
                                               case 'Karo-2':
                                                 context.read<HomeCubit>().setKaroVar(true);
-                                                await Future.delayed(const Duration(seconds: 30));
+                                                await Future.delayed(Duration(seconds: state.seconds!));
                                                 _appendLog(
                                                     'Karo 2 (♦2) kartı masaya konuldu! Bir kart etkisiz hale gelecek.');
 
@@ -911,11 +916,11 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                 context.read<HomeCubit>().setSinekVar(true);
                                                 _appendLog(
                                                     'Sinek 2 (♣2) kartı masaya konuldu! Bir kart takas edilecek.');
-                                                await Future.delayed(const Duration(seconds: 30));
+                                                await Future.delayed(Duration(seconds: state.seconds!));
                                                 break;
                                               case 'Karo-2':
                                                 context.read<HomeCubit>().setKaroVar(true);
-                                                await Future.delayed(const Duration(seconds: 30));
+                                                await Future.delayed(Duration(seconds: state.seconds!));
                                                 _appendLog(
                                                     'Karo 2 (♦2) kartı masaya konuldu! Bir kart etkisiz hale gelecek.');
 

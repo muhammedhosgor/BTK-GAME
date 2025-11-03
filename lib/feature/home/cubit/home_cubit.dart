@@ -489,10 +489,12 @@ class HomeCubit extends Cubit<HomeState> {
 
   Future<void> disableCards(int gameId, String disabledCards) async {
     await _homeService.disableCards(gameId, disabledCards);
+    emit(state.copyWith(seconds: 3));
   }
 
   Future<void> sinekle(int gameId, String swappedCards) async {
     await _homeService.sinekle(gameId, swappedCards);
+    emit(state.copyWith(seconds: 3));
   }
 
   void setPlayerMultipliers(int player1Multiplier, int player2Multiplier) {
@@ -621,5 +623,9 @@ class HomeCubit extends Cubit<HomeState> {
 
   void setIsSpecialEffectPlaying(bool value) {
     emit(state.copyWith(isSpecialEffectPlaying: value));
+  }
+
+  void setAnimationTimer(int sec) {
+    emit(state.copyWith(seconds: sec));
   }
 }

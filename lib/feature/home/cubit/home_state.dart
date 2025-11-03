@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_base_app/feature/auth/login/model/game_model.dart';
 import 'package:flutter_base_app/feature/home/model/card_model.dart';
@@ -31,6 +33,7 @@ class HomeState extends Equatable {
     required this.player1WinCount,
     required this.player2WinCount,
     required this.isSpecialEffectPlaying,
+    required this.seconds,
   });
 
   factory HomeState.initial() {
@@ -62,6 +65,7 @@ class HomeState extends Equatable {
       player1WinCount: 0,
       player2WinCount: 0,
       isSpecialEffectPlaying: false,
+      seconds: 30,
     );
   }
 
@@ -94,6 +98,7 @@ class HomeState extends Equatable {
   int player2WinCount;
   //
   final bool isSpecialEffectPlaying;
+  int? seconds;
   @override
   List<Object?> get props => [
         homeState,
@@ -123,6 +128,7 @@ class HomeState extends Equatable {
         player1WinCount,
         player2WinCount,
         isSpecialEffectPlaying,
+        seconds,
       ];
 
   HomeState copyWith({
@@ -153,6 +159,7 @@ class HomeState extends Equatable {
     int? player1WinCount,
     int? player2WinCount,
     bool? isSpecialEffectPlaying,
+    int? seconds,
     //
   }) {
     return HomeState(
@@ -183,6 +190,7 @@ class HomeState extends Equatable {
       player1WinCount: player1WinCount ?? this.player1WinCount,
       player2WinCount: player2WinCount ?? this.player2WinCount,
       isSpecialEffectPlaying: isSpecialEffectPlaying ?? this.isSpecialEffectPlaying,
+      seconds: seconds ?? this.seconds,
     );
   }
 }
