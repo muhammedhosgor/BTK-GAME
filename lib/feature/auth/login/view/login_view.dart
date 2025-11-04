@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_base_app/feature/auth/login/cubit/login_cubit.dart';
 import 'package:flutter_base_app/feature/auth/login/cubit/login_state.dart';
+import 'package:flutter_base_app/feature/auth/login/model/user_model.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/active_user_list_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/exit_game_dialog_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/game_room_widget.dart';
@@ -82,6 +83,30 @@ class _LoginViewState extends State<LoginView> {
                                   fit: BoxFit.cover,
                                 ),
                               ),
+                      ),
+                      SizedBox(height: 5.h),
+                      Text.rich(
+                        //? bak buraya
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: '   Point: ',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            TextSpan(
+                              text: userModel.point.toString(),
+                              style: TextStyle(
+                                color: Colors.green,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
