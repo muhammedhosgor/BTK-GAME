@@ -149,7 +149,9 @@ class ThemedLoginDialog extends StatelessWidget {
                         backgroundColor: kAccentGreen,
                       ),
                     );
-                    Navigator.of(context).pop(); // Dialogu kapat
+                    //Navigator.of(context).pop(); // Dialogu kapat
+                    context.pushReplacement('/login_view');
+
                     // Başarılı giriş sonrası yapılacak işlemler
                   } else if (state.loginState == LoginStates.error) {
                     //context.pop(); // Yükleniyor göstergesini kapat

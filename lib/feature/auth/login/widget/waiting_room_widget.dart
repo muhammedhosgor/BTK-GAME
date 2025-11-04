@@ -10,7 +10,9 @@ import 'package:flutter_base_app/product/constant/color_constants.dart';
 import 'package:flutter_base_app/product/injector/injector.dart';
 import 'package:flutter_base_app/product/storage/local_get_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 
 class WaitingRoomScreen extends StatefulWidget {
   const WaitingRoomScreen({super.key});
@@ -115,29 +117,39 @@ class _WaitingRoomScreenState extends State<WaitingRoomScreen> {
                           print('HAZIRIM');
                           //  _showCountdownDialog();
                           context.read<LoginCubit>().setCountDownWaitingRoom();
+
                           showDialog(
-                              context: context,
-                              builder: (dialogContext) {
-                                return BlocProvider.value(
-                                  value: context.read<LoginCubit>(),
-                                  child: AlertDialog(
-                                    backgroundColor: kTableNavy.withOpacity(0.95),
-                                    shape: RoundedRectangleBorder(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (dialogContext) {
+                              return BlocProvider.value(
+                                value: context.read<LoginCubit>(),
+                                child: Dialog(
+                                  insetPadding: EdgeInsets.zero, // tam ekran
+                                  backgroundColor: Colors.transparent,
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: kTableNavy.withOpacity(0.95),
                                       borderRadius: BorderRadius.circular(20),
-                                      side: const BorderSide(color: kSuitGold, width: 3),
+                                      border: Border.all(color: const Color.fromARGB(255, 9, 24, 53), width: 3),
                                     ),
-                                    title: const Text(
-                                      "Oyun Başlıyor!",
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: kSuitGold,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 22,
-                                      ),
-                                    ),
-                                    content: Column(
-                                      mainAxisSize: MainAxisSize.min,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
+                                        Lottie.asset('assets/lottie/splash.json'),
+                                        SizedBox(height: 20.h),
+                                        const Text(
+                                          "Oyun Başlıyor!",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: kSuitGold,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 22,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 20),
                                         BlocBuilder<LoginCubit, LoginState>(
                                           builder: (context, state) {
                                             return Text(
@@ -159,8 +171,10 @@ class _WaitingRoomScreenState extends State<WaitingRoomScreen> {
                                       ],
                                     ),
                                   ),
-                                );
-                              });
+                                ),
+                              );
+                            },
+                          );
 
                           context.read<LoginCubit>().setGameStatusToStarted();
                           _statusTimer?.cancel(); // Geri sayım başladıktan sonra timer'ı iptal et

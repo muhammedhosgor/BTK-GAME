@@ -11,6 +11,7 @@ import 'package:flutter_base_app/product/storage/local_get_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 
 class JoinRoomScreen extends StatefulWidget {
   const JoinRoomScreen({super.key});
@@ -151,7 +152,7 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                           ),
                           child: ClipOval(
                             child: Image.network(
-                              'https://muhammedhosgor.linsabilisim.com/img/asset/muhammedhosgor.jpg',
+                              'https://btkgameapi.linsabilisim.com/${room.player1Image}',
                               width: 30,
                               height: 30,
                               fit: BoxFit.cover,
@@ -238,13 +239,15 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                   localStorage.remove('createGameId');
                   String? userName = localStorage.getString('userName');
                   String? userSurname = localStorage.getString('userSurname');
+                  String? image = localStorage.getString('image');
                   int joinGameId = room.id ?? 0;
                   localStorage.saveInt('joinGameId', joinGameId);
                   print("ODA GAME ID JOIN: $joinGameId");
                   setState(() => _joiningGuid = room.guid);
 
-                  final success =
-                      await context.read<LoginCubit>().joinRoom(room.id!, userName ?? '', userSurname ?? '');
+                  final success = await context
+                      .read<LoginCubit>()
+                      .joinRoom(room.id!, userName ?? '', userSurname ?? '', image ?? '');
 
                   _statusTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
                     if (!mounted) return;
@@ -291,52 +294,64 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                 _isDialogVisible = true;
                 context.read<LoginCubit>().setCountDownJoinRoom();
                 showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (dialogContext) {
-                      return BlocProvider.value(
-                        value: context.read<LoginCubit>(),
-                        child: AlertDialog(
-                          backgroundColor: kTableNavy.withOpacity(0.95),
-                          shape: RoundedRectangleBorder(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (dialogContext) {
+                    return BlocProvider.value(
+                      value: context.read<LoginCubit>(),
+                      child: Dialog(
+                        insetPadding: EdgeInsets.zero, // 🔥 ekran kenar boşluklarını sıfırla
+                        backgroundColor: Colors.transparent, // dış çerçeve transparan
+                        child: Container(
+                          width: double.infinity,
+                          height: double.infinity,
+                          decoration: BoxDecoration(
+                            color: kTableNavy.withOpacity(0.95),
                             borderRadius: BorderRadius.circular(20),
-                            side: const BorderSide(color: kSuitGold, width: 3),
+                            border: Border.all(color: const Color.fromARGB(255, 9, 24, 53), width: 3),
                           ),
-                          title: const Text(
-                            "Oyun Başlıyor!",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: kSuitGold,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 22,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Lottie.asset('assets/lottie/splash.json'),
+                                SizedBox(height: 20.h),
+                                const Text(
+                                  "Oyun Başlıyor!",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: kSuitGold,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 22,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                BlocBuilder<LoginCubit, LoginState>(
+                                  builder: (context, state) {
+                                    return Text(
+                                      "${state.countDownJoinRoom}",
+                                      style: const TextStyle(
+                                        color: kAccentGreen,
+                                        fontSize: 40,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(height: 10),
+                                const Text(
+                                  "Hazırlan, oyun birazdan başlıyor...",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.white70),
+                                ),
+                              ],
                             ),
                           ),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              BlocBuilder<LoginCubit, LoginState>(
-                                builder: (context, state) {
-                                  return Text(
-                                    "${state.countDownJoinRoom}",
-                                    style: const TextStyle(
-                                      color: kAccentGreen,
-                                      fontSize: 40,
-                                      fontWeight: FontWeight.w900,
-                                    ),
-                                  );
-                                },
-                              ),
-                              const SizedBox(height: 10),
-                              const Text(
-                                "Hazırlan, oyun birazdan başlıyor...",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(color: Colors.white70),
-                              ),
-                            ],
-                          ),
                         ),
-                      );
-                    }).then((_) => _isDialogVisible = false); // Dialog kapandığında kontrolü sıfırla
+                      ),
+                    );
+                  },
+                ).then((_) => _isDialogVisible = false);
               }
 
               context.read<LoginCubit>().setGameStatusToStarted();

@@ -44,6 +44,7 @@ class LoginCubit extends Cubit<LoginState> {
         injector.get<LocalStorage>().saveInt('userId', userModel.id ?? 0);
         injector.get<LocalStorage>().saveString('userName', userModel.name ?? '');
         injector.get<LocalStorage>().saveString('userSurname', userModel.surname ?? '');
+        injector.get<LocalStorage>().saveString('image', userModel.image ?? '');
         changeLoginStatus(true);
         emit(
           state.copyWith(
@@ -122,9 +123,9 @@ class LoginCubit extends Cubit<LoginState> {
     }
   }
 
-  Future<bool> joinRoom(int roomId, String name, String surname) async {
+  Future<bool> joinRoom(int roomId, String name, String surname, String player2Image) async {
     emit(state.copyWith(joinRoomState: JoinRoomStates.loading, errorMessage: ''));
-    final response = await _loginService.joinRoom(roomId, name, surname);
+    final response = await _loginService.joinRoom(roomId, name, surname, player2Image);
 
     if (response == null) {
       emit(

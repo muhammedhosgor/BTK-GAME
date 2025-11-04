@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_base_app/product/storage/local_get_storage.dart';
 import 'package:get_it/get_it.dart';
 
@@ -12,6 +13,7 @@ final injector = GetIt.instance;
 Future<void> initializeDependencies() async {
   //! Local Storage
   injector.registerSingleton<LocalStorage>(LocalStorage());
+  WidgetsFlutterBinding.ensureInitialized(); // 🔹 Bu şart
 
 //   //! Routes App Page
 //   injector.registerSingleton<AppPages>(AppPages());

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_base_app/feature/auth/login/cubit/login_cubit.dart';
+import 'package:flutter_base_app/feature/auth/register/cubit/register_cubit.dart';
+import 'package:flutter_base_app/feature/auth/register/view/register_view.dart';
 import 'package:flutter_base_app/feature/auth/splash/view/splash_view.dart';
 import 'package:flutter_base_app/feature/auth/login/view/login_view.dart';
 import 'package:flutter_base_app/feature/home/cubit/home_cubit.dart';
@@ -23,6 +25,15 @@ class AppRoute {
               return BlocProvider(
                 create: (context) => LoginCubit(),
                 child: const LoginView(),
+              );
+            },
+          ),
+          GoRoute(
+            path: 'register_view',
+            builder: (BuildContext context, GoRouterState state) {
+              return BlocProvider(
+                create: (context) => RegisterCubit(),
+                child: const RegisterView(),
               );
             },
           ),

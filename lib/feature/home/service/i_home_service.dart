@@ -11,4 +11,5 @@ abstract class IHomeService {
   Future<ApiResult?> disableCards(int gameId, String disabledCards);
   Future<ApiResult?> handComplete(int gameId);
   Future<ApiResult?> startNewRound(int gameId);
+  Future<ApiResult?> finish(int gameId, bool isPlayer1, int playerId, int point);
 }

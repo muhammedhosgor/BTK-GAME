@@ -9,6 +9,7 @@ class HomeState extends Equatable {
     required this.homeState,
     required this.getStatusState,
     required this.makeMoveState,
+    required this.finishState,
     required this.errorMessage,
     required this.message,
     required this.game,
@@ -40,6 +41,7 @@ class HomeState extends Equatable {
     return HomeState(
       homeState: HomeStates.initial,
       makeMoveState: MakeMoveStates.initial,
+      finishState: FinishStates.initial,
       getStatusState: GetStatusStates.initial,
       errorMessage: '',
       message: '',
@@ -65,13 +67,14 @@ class HomeState extends Equatable {
       player1WinCount: 0,
       player2WinCount: 0,
       isSpecialEffectPlaying: false,
-      seconds: 30,
+      seconds: 15,
     );
   }
 
   final HomeStates homeState;
   final GetStatusStates getStatusState;
   final MakeMoveStates makeMoveState;
+  final FinishStates finishState;
   final String errorMessage;
   final String message;
   final List<CardModel> selectedCardsToSwap;
@@ -98,12 +101,13 @@ class HomeState extends Equatable {
   int player2WinCount;
   //
   final bool isSpecialEffectPlaying;
-  int? seconds;
+  int seconds;
   @override
   List<Object?> get props => [
         homeState,
         getStatusState,
         makeMoveState,
+        finishState,
         errorMessage,
         message,
         game,
@@ -135,6 +139,7 @@ class HomeState extends Equatable {
     HomeStates? homeState,
     GetStatusStates? getStatusState,
     MakeMoveStates? makeMoveState,
+    FinishStates? finishState,
     String? errorMessage,
     String? message,
     GameModel? game,
@@ -166,6 +171,7 @@ class HomeState extends Equatable {
       homeState: homeState ?? this.homeState,
       getStatusState: getStatusState ?? this.getStatusState,
       makeMoveState: makeMoveState ?? this.makeMoveState,
+      finishState: finishState ?? this.finishState,
       errorMessage: errorMessage ?? this.errorMessage,
       message: message ?? this.message,
       game: game ?? this.game,
@@ -210,6 +216,13 @@ enum GetStatusStates {
 }
 
 enum MakeMoveStates {
+  initial,
+  loading,
+  completed,
+  error,
+}
+
+enum FinishStates {
   initial,
   loading,
   completed,

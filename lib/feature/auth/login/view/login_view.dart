@@ -7,6 +7,7 @@ import 'package:flutter_base_app/feature/auth/login/widget/game_room_widget.dart
 import 'package:flutter_base_app/feature/auth/login/widget/how_to_play_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/login_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/privacy_policy_widget.dart';
+import 'package:flutter_base_app/feature/auth/register/view/register_view.dart';
 import 'package:flutter_base_app/product/components/button/image_button.dart';
 import 'package:flutter_base_app/product/components/button/primary_game_button.dart';
 import 'package:flutter_base_app/product/components/container/gold_nav.dart';
@@ -27,6 +28,8 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   var userName = injector.get<LocalStorage>().getString('userName') ?? 'Guest';
   var userSurname = injector.get<LocalStorage>().getString('userSurname') ?? '';
+  var image = injector.get<LocalStorage>().getString('image') ?? '';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,14 +69,19 @@ class _LoginViewState extends State<LoginView> {
                           shape: BoxShape.circle,
                           border: Border.all(color: kWhiteColor, width: 2),
                         ),
-                        child: ClipOval(
-                          child: Image.network(
-                            'https://muhammedhosgor.linsabilisim.com/img/asset/muhammedhosgor.jpg',
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
+                        child: image.isEmpty
+                            ? const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Icon(Icons.people, color: kWhiteColor, size: 50),
+                              )
+                            : ClipOval(
+                                child: Image.network(
+                                  'https://btkgameapi.linsabilisim.com/$image',
+                                  width: 60,
+                                  height: 60,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
                       ),
                     ],
                   ),
@@ -300,6 +308,17 @@ class _LoginViewState extends State<LoginView> {
                           );
                         },
                       );
+                    },
+                  ),
+                  SizedBox(height: 5.h),
+                  const Divider(color: Colors.amber, thickness: 2.2, indent: 10, endIndent: 10),
+                  SizedBox(height: 5.h),
+                  PrimaryGameButton(
+                    buttonColor: Colors.deepOrange,
+                    text: 'Sing Up',
+                    icon: Icons.app_registration_rounded,
+                    onTap: () {
+                      context.pushReplacement('/register_view');
                     },
                   ),
                 ],

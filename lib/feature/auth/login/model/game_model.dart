@@ -23,6 +23,8 @@ class GameModel {
   String? player1Surname;
   String? player2Name;
   String? player2Surname;
+  String? player1Image;
+  String? player2Image;
 
   GameModel({
     this.id,
@@ -49,6 +51,8 @@ class GameModel {
     this.player1Surname,
     this.player2Name,
     this.player2Surname,
+    this.player1Image,
+    this.player2Image,
   });
 
   GameModel.fromJson(Map<String, dynamic> json) {
@@ -76,5 +80,7 @@ class GameModel {
     player1Surname = json['player1Surname'];
     player2Name = json['player2Name'];
     player2Surname = json['player2Surname'];
+    player1Image = json['player1Image'];
+    player2Image = json['player2Image'];
   }
 }

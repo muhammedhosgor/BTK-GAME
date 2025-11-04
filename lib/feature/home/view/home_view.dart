@@ -416,13 +416,13 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                             Row(
                               children: [
                                 // todo: timer ekleyecen yer burası
-                                Chip(
-                                  backgroundColor: botReady ? Colors.green[400] : Colors.grey[600],
-                                  label: BlocBuilder<HomeCubit, HomeState>(
-                                    builder: (context, state) {
-                                      return Text('Rakip: ${botReady ? "" : "Bekliyor ${state.seconds}"}');
-                                    },
-                                  ),
+                                BlocBuilder<HomeCubit, HomeState>(
+                                  builder: (context, state) {
+                                    return Chip(
+                                      backgroundColor: state.seconds != 15 ? kSuitGold : Colors.grey[600],
+                                      label: Text('Süre: ${state.isSpecialEffectPlaying ? state.seconds : ''}'),
+                                    );
+                                  },
                                 ),
                                 const SizedBox(width: 8),
                                 // Buradaki 'Hazırım' butonu artık _buildReadyOverlay'e taşındı.
@@ -530,6 +530,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                       context
                                                           .read<HomeCubit>()
                                                           .sinekle(gameId!, swappingCards.join(',')); //! ***
+
                                                       context.read<HomeCubit>().setSinekVar(false);
                                                       swappingCards.clear();
 
@@ -537,7 +538,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                           'Takas için kart seçildi: ${state.opponentCards[index].fullName}');
                                                     } else if (state.karoVar) {
                                                       context.read<HomeCubit>().disableCards(
-                                                          gameId!, state.opponentCards[index].fullName); //! ***
+                                                          gameId!, state.opponentCards[index].fullName); //!
                                                       context.read<HomeCubit>().setKaroVar(false);
                                                       _appendLog(
                                                           'Etkisiz hale getirilen kart seçildi: ${state.opponentCards[index].fullName}');
@@ -799,7 +800,20 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                             onPressed: () async {
                                               Navigator.of(dialogContext).pop(); //! Eli kazananı belirleme
                                               // Todo: Buraya yönlendiriliyorsunuz yazan bir animasyon ekleyip login sayfasına gönder.
-                                              context.pushReplacement('/login_view');
+                                              print("Player1Wincount: ${state.player1WinCount}");
+                                              print("Player2Wincount: ${state.player2WinCount}");
+
+                                              await context
+                                                  .read<HomeCubit>()
+                                                  .finish(
+                                                    state.game.id!,
+                                                    widget.isPlayer1,
+                                                    widget.isPlayer1 ? state.game.player2Id! : state.game.player1Id!,
+                                                    widget.isPlayer1 ? state.player1WinCount : state.player2WinCount,
+                                                  )
+                                                  .whenComplete(() {
+                                                context.pushReplacement('/login_view');
+                                              });
                                             },
                                             child: const Text(
                                               'Tamam',
@@ -860,8 +874,6 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                         print('listener MOVE ---- player 1');
 
                                         for (var element in (state.cards)) {
-                                          context.read<HomeCubit>().setAnimationTimer(30);
-
                                           if (element.isSpecial) {
                                             switch (element.fullName) {
                                               case 'Kupa-K':
@@ -870,21 +882,29 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                     'Kupa Papaz (K♥) kartı masaya konuldu! Kart değeri 2x olacak.');
 
                                                 break;
+                                              case 'Karo-2':
+                                                context.read<HomeCubit>().setKaroVar(true);
+                                                context.read<HomeCubit>().startTimer();
+                                                await Future.delayed(Duration(seconds: 15));
+                                                context.read<HomeCubit>().stopTimer();
+
+                                                _appendLog(
+                                                    'Karo 2 (♦2) kartı masaya konuldu! Bir kart etkisiz hale gelecek.');
+
+                                                break;
+
                                               case 'Sinek-2':
                                                 context.read<HomeCubit>().setSinekVar(true);
-                                                await Future.delayed(Duration(seconds: state.seconds!));
+                                                context.read<HomeCubit>().startTimer();
+
+                                                await Future.delayed(Duration(seconds: 15));
+                                                context.read<HomeCubit>().stopTimer();
 
                                                 _appendLog(
                                                     'Sinek 2 (♣2) kartı masaya konuldu! Bir kart takas edilecek.');
 
                                                 break;
-                                              case 'Karo-2':
-                                                context.read<HomeCubit>().setKaroVar(true);
-                                                await Future.delayed(Duration(seconds: state.seconds!));
-                                                _appendLog(
-                                                    'Karo 2 (♦2) kartı masaya konuldu! Bir kart etkisiz hale gelecek.');
 
-                                                break;
                                               default:
                                             }
                                           }
@@ -893,6 +913,37 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                             .read<HomeCubit>()
                                             .swapCards(state.game.id!, state.game.player1Id!, true, '');
                                       }
+                                    } else {
+                                      for (var element in (state.opponentCards)) {
+                                        if (element.isSpecial) {
+                                          switch (element.fullName) {
+                                            case 'Kupa-K':
+                                              _appendLog(
+                                                  'Kupa Papaz (K♥) kartı masaya konuldu! Kart değeri 2x olacak.');
+
+                                              break;
+                                            case 'Karo-2':
+                                              context.read<HomeCubit>().startTimer();
+                                              await Future.delayed(Duration(seconds: 15));
+                                              context.read<HomeCubit>().stopTimer();
+
+                                              _appendLog(
+                                                  'Karo 2 (♦2) kartı masaya konuldu! Bir kart etkisiz hale gelecek.');
+
+                                              break;
+                                            case 'Sinek-2':
+                                              context.read<HomeCubit>().startTimer();
+                                              await Future.delayed(Duration(seconds: 15));
+                                              context.read<HomeCubit>().stopTimer();
+
+                                              _appendLog('Sinek 2 (♣2) kartı masaya konuldu! Bir kart takas edilecek.');
+
+                                              break;
+
+                                            default:
+                                          }
+                                        }
+                                      }
                                     }
                                   } else if (state.game.isPlayer1Move! &&
                                       !state.game.isPlayer2Move! &&
@@ -900,9 +951,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                     if (!widget.isPlayer1) {
                                       if (state.isMoveFirstTime) {
                                         context.read<HomeCubit>().setIsMoveFirstTime(false);
-
                                         print('listener MOVE ---- player 2');
-
                                         for (var element in (state.cards)) {
                                           if (element.isSpecial) {
                                             switch (element.fullName) {
@@ -910,21 +959,30 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                 context.read<HomeCubit>().setPlayerMultipliers(1, 2);
                                                 _appendLog(
                                                     'Kupa Papaz (K♥) kartı masaya konuldu! Kart değeri 2x olacak.');
-
-                                                break;
-                                              case 'Sinek-2':
-                                                context.read<HomeCubit>().setSinekVar(true);
-                                                _appendLog(
-                                                    'Sinek 2 (♣2) kartı masaya konuldu! Bir kart takas edilecek.');
-                                                await Future.delayed(Duration(seconds: state.seconds!));
                                                 break;
                                               case 'Karo-2':
                                                 context.read<HomeCubit>().setKaroVar(true);
-                                                await Future.delayed(Duration(seconds: state.seconds!));
+                                                context.read<HomeCubit>().startTimer();
+
+                                                await Future.delayed(Duration(seconds: state.seconds));
+                                                context.read<HomeCubit>().stopTimer();
+                                                print('SÜRE SONU GELDİ');
+
                                                 _appendLog(
                                                     'Karo 2 (♦2) kartı masaya konuldu! Bir kart etkisiz hale gelecek.');
-
                                                 break;
+                                              case 'Sinek-2':
+                                                context.read<HomeCubit>().setSinekVar(true);
+                                                context.read<HomeCubit>().startTimer();
+
+                                                await Future.delayed(Duration(seconds: state.seconds));
+                                                context.read<HomeCubit>().stopTimer();
+                                                print('SÜRE SONU GELDİ');
+
+                                                _appendLog(
+                                                    'Sinek 2 (♣2) kartı masaya konuldu! Bir kart takas edilecek.');
+                                                break;
+
                                               default:
                                             }
                                           }
@@ -935,6 +993,37 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                         // context
                                         //     .read<HomeCubit>()
                                         //     .resetIsActiveKupaPapazDialogShown(); // DİALOG SAYACINI SIFIRLA
+                                      }
+                                    } else {
+                                      for (var element in (state.opponentCards)) {
+                                        if (element.isSpecial) {
+                                          switch (element.fullName) {
+                                            case 'Kupa-K':
+                                              _appendLog(
+                                                  'Kupa Papaz (K♥) kartı masaya konuldu! Kart değeri 2x olacak.');
+
+                                              break;
+                                            case 'Karo-2':
+                                              context.read<HomeCubit>().startTimer();
+                                              await Future.delayed(Duration(seconds: state.seconds));
+                                              context.read<HomeCubit>().stopTimer();
+
+                                              _appendLog(
+                                                  'Karo 2 (♦2) kartı masaya konuldu! Bir kart etkisiz hale gelecek.');
+
+                                              break;
+                                            case 'Sinek-2':
+                                              context.read<HomeCubit>().startTimer();
+                                              await Future.delayed(Duration(seconds: state.seconds));
+                                              context.read<HomeCubit>().stopTimer();
+
+                                              _appendLog('Sinek 2 (♣2) kartı masaya konuldu! Bir kart takas edilecek.');
+
+                                              break;
+
+                                            default:
+                                          }
+                                        }
                                       }
                                     }
                                   }
@@ -981,12 +1070,17 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                         case 'Kupa-K':
                                           context.read<HomeCubit>().setIsKupaPapazDialogShown(true);
                                           break;
-                                        case 'Sinek-2':
-                                          context.read<HomeCubit>().setIsSinekDialogShown(true);
-                                          break;
                                         case 'Karo-2':
                                           context.read<HomeCubit>().setIsKaroDialogShown(true);
+                                          await Future.delayed(Duration(seconds: state.seconds));
+
                                           break;
+                                        case 'Sinek-2':
+                                          context.read<HomeCubit>().setIsSinekDialogShown(true);
+                                          await Future.delayed(Duration(seconds: state.seconds));
+
+                                          break;
+
                                         default:
                                       }
                                     }
@@ -998,12 +1092,17 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                         case 'Kupa-K':
                                           context.read<HomeCubit>().setIsKupaPapaz2DialogShown(true);
                                           break;
-                                        case 'Sinek-2':
-                                          context.read<HomeCubit>().setIsSinek2DialogShown(true);
-                                          break;
                                         case 'Karo-2':
                                           context.read<HomeCubit>().setIsKaro2DialogShown(true);
+                                          await Future.delayed(Duration(seconds: state.seconds));
+
                                           break;
+                                        case 'Sinek-2':
+                                          context.read<HomeCubit>().setIsSinek2DialogShown(true);
+                                          await Future.delayed(Duration(seconds: state.seconds));
+
+                                          break;
+
                                         default:
                                       }
                                     }
@@ -1132,10 +1231,14 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                 ]
                                               : [],
                                     ),
-                                    child: Container(
+                                    child: SizedBox(
                                       height: 110,
                                       width: 1.sw,
                                       child: ListView.builder(
+                                        // padding: EdgeInsets.symmetric(
+                                        //   horizontal:
+                                        //       (1.sw - (state.cards.length * 60 + (state.cards.length - 1) * 24)) / 2,
+                                        // ),
                                         itemCount: state.cards.length,
                                         scrollDirection: Axis.horizontal,
                                         itemBuilder: (context, index) {
@@ -1512,13 +1615,11 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                   if (state.isKupaPapazDialogShown) {
                     Future.delayed(const Duration(seconds: 3), () {}).then((_) {
                       context.read<HomeCubit>().setIsKupaPapazDialogShown(false);
-
                       // Dialog gösterimi tamamlandıktan sonra Cubit'i güncelle
                     });
                   } else if (state.isKaroDialogShown) {
                     Future.delayed(const Duration(seconds: 3), () {}).then((_) {
                       context.read<HomeCubit>().setIsKaroDialogShown(false);
-
                       // Dialog gösterimi tamamlandıktan sonra Cubit'i güncelle
                     });
                   } else if (state.isSinekDialogShown) {

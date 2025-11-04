@@ -85,7 +85,7 @@ class LoginService extends ILoginService {
   }
 
   @override
-  Future<ApiResult?> joinRoom(int roomId, String name, String surname) async {
+  Future<ApiResult?> joinRoom(int roomId, String name, String surname, String player2Image) async {
     int? userId = injector.get<LocalStorage>().getInt('userId');
     try {
       final response = await dio.post(
@@ -94,6 +94,7 @@ class LoginService extends ILoginService {
           'KeyGen': KeyGen,
           'gameId': roomId,
           'Player2Id': userId,
+          'player2Image': player2Image,
           'name': name,
           'surname': surname,
         },
@@ -118,6 +119,7 @@ class LoginService extends ILoginService {
     int? userId = injector.get<LocalStorage>().getInt('userId');
     String? player1Name = injector.get<LocalStorage>().getString('userName');
     String? player1Surname = injector.get<LocalStorage>().getString('userSurname');
+    String? image = injector.get<LocalStorage>().getString('image');
 
     try {
       final response = await dio.post(path: '/api/Game/Create', queryParameters: {
@@ -125,6 +127,7 @@ class LoginService extends ILoginService {
         'Player1Id': userId,
         'name': player1Name,
         'surname': player1Surname,
+        'player1Image': image,
       }, data: {
         'Player1Id': userId,
         'CreatedDate': DateTime.now().toIso8601String(),

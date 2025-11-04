@@ -625,7 +625,39 @@ class HomeCubit extends Cubit<HomeState> {
     emit(state.copyWith(isSpecialEffectPlaying: value));
   }
 
-  void setAnimationTimer(int sec) {
-    emit(state.copyWith(seconds: sec));
+  Timer? timerPer;
+
+  void startTimer() {
+    emit(state.copyWith(seconds: 15, isSpecialEffectPlaying: true));
+    timerPer = Timer.periodic(const Duration(seconds: 1), (v) {
+      if (state.seconds > 0) {
+        emit(state.copyWith(seconds: state.seconds - 1));
+      }
+    });
+  }
+
+  void stopTimer() {
+    timerPer!.cancel();
+    emit(state.copyWith(isSpecialEffectPlaying: false));
+  }
+
+  Future<void> finish(int gameId, bool isPlayer1, int playerId, int point) async {
+    emit(state.copyWith(finishState: FinishStates.loading, errorMessage: ''));
+    //)
+    final response = await _homeService.finish(gameId, isPlayer1, playerId, point);
+
+    if (response != null) {
+      if (response.success == true) {
+        emit(state.copyWith(
+          finishState: FinishStates.completed,
+          message: response.data.toString(),
+        ));
+      } else {
+        emit(state.copyWith(
+          finishState: FinishStates.error,
+          errorMessage: response.message ?? 'Error',
+        ));
+      }
+    }
   }
 }
