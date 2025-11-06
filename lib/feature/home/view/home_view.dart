@@ -719,8 +719,8 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
 
                                       // 🔹 Animasyon seçimi
                                       final String lottiePath = thisPlayerWon
-                                          ? 'assets/lottie/win.json' // 🏆 Kazanan animasyonu
-                                          : 'assets/lottie/2x.json'; // 😔 Kaybeden animasyonu
+                                          ? 'assets/file/win.png' // 🏆 Kazanan animasyonu
+                                          : 'assets/file/defeat.png'; // 😔 Kaybeden animasyonu
 
                                       // 🔹 Metin seçimi
                                       final String resultText = thisPlayerWon ? 'Kazandın!' : 'Kaybettin!';
@@ -733,12 +733,19 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
                                               // 🟢 Lottie animasyonu
-                                              SizedBox(
-                                                height: 250,
-                                                width: 250,
-                                                child: Lottie.asset(
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  border: Border.all(
+                                                      color: thisPlayerWon
+                                                          ? Colors.greenAccent.withOpacity(0.27)
+                                                          : Colors.redAccent.withOpacity(0.27),
+                                                      width: 2),
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                child: Image.asset(
                                                   lottiePath,
-                                                  repeat: false,
+                                                  height: 250,
+                                                  width: 250,
                                                   fit: BoxFit.contain,
                                                 ),
                                               ),
@@ -819,16 +826,8 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                             child: Column(
                                               mainAxisAlignment: MainAxisAlignment.center,
                                               children: [
-                                                // 🔹 Lottie animasyonu (bilgilendirme)
-                                                SizedBox(
-                                                  height: 220,
-                                                  width: 220,
-                                                  child: Lottie.asset(
-                                                    'assets/lottie/info.json', // 📂 örnek: "info.json" veya "processing.json"
-                                                    repeat: true,
-                                                    fit: BoxFit.contain,
-                                                  ),
-                                                ),
+                                                Image.asset('assets/file/info.png',
+                                                    height: 250, width: 250, fit: BoxFit.contain),
                                                 const SizedBox(height: 20),
                                                 // 🔹 Başlık
                                                 const Text(
@@ -842,11 +841,11 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                 const SizedBox(height: 10),
                                                 // 🔹 İçerik metni
                                                 Text(
-                                                  '${state.game.currentTurnId! + 1} tamamlandı. Kartlar açıldı ve puanlar hesaplandı.',
+                                                  '${state.game.currentTurnId! + 1} tamamlandı.\nKartlar açıldı ve puanlar hesaplandı.',
                                                   textAlign: TextAlign.center,
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                     color: Colors.white70,
-                                                    fontSize: 18,
+                                                    fontSize: 18.sp,
                                                     height: 1.4,
                                                   ),
                                                 ),
