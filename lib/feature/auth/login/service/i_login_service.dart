@@ -11,4 +11,5 @@ abstract class ILoginService {
   Future<ApiResult?> createRoom();
   Future<ApiResult?> leaveRoom(int gameId);
   Future<ApiResult?> status(int gameId);
+  Future<ApiResult?> getUserPoint(int userId);
 }

@@ -21,8 +21,13 @@ class LoginCubit extends Cubit<LoginState> {
   TextEditingController passwordController = TextEditingController();
   Timer? waitingRoomTimer;
   Timer? joinRoomTimer;
+  int? userId = injector<LocalStorage>().getInt('userId');
+
   init() async {
     await getUserList();
+    if (userId != null) {
+      getUserPoint(userId!);
+    }
   }
 
   Future<void> userLogin(String email, String password) async {
@@ -272,5 +277,35 @@ class LoginCubit extends Cubit<LoginState> {
   void cancelWaitingRoomTimer() {
     waitingRoomTimer?.cancel();
     waitingRoomTimer = null;
+  }
+
+  Future<void> getUserPoint(int userId) async {
+    emit(state.copyWith(pointState: PointStates.loading, errorMessage: ''));
+    final response = await _loginService.getUserPoint(userId);
+
+    if (response == null) {
+      emit(
+        state.copyWith(
+          pointState: PointStates.error,
+          errorMessage: 'Veriler yüklenemedi. Lütfen internet bağlantınızı kontrol ediniz...',
+        ),
+      );
+    } else {
+      if (response.success!) {
+        final dataMap = response.data as Map<String, dynamic>;
+        emit(
+          state.copyWith(
+            pointState: PointStates.completed,
+            userPoint: dataMap["point"] as int?,
+          ),
+        );
+        print("User Point: ${dataMap["point"]}");
+      } else {
+        emit(state.copyWith(
+          pointState: PointStates.error,
+          errorMessage: response.errorMessage ?? 'Bir Hata Oluştu!',
+        ));
+      }
+    }
   }
 }

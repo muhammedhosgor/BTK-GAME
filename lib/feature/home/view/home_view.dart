@@ -63,7 +63,6 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
   LocalStorage localStorage = injector.get<LocalStorage>();
 
   int? gameId;
-
   @override
   void initState() {
     gameId = localStorage.getInt('createGameId') ?? localStorage.getInt('joinGameId');
@@ -72,11 +71,18 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
     context.read<HomeCubit>().setStateToLoading();
 
     timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+      if (!mounted) return; // ✅ widget hâlâ ekrandaysa devam et
       context.read<HomeCubit>().getInitialStatusGame();
     });
     // initialize keys
     userCardKeys = List.generate(5, (_) => GlobalKey());
     oppCardKeys = List.generate(5, (_) => GlobalKey());
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel(); // ✅ ekran kapanınca iptal et
+    super.dispose();
   }
 
   // Yardımcı: given index, uygun GlobalKey döndürür

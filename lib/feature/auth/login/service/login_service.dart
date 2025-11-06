@@ -199,4 +199,29 @@ class LoginService extends ILoginService {
       return null;
     }
   }
+
+  @override
+  Future<ApiResult?> getUserPoint(int userId) async {
+    try {
+      final response = await dio.get(
+        path: '/api/User/GetUserPoint',
+        queryParameters: {
+          'KeyGen': KeyGen,
+          'userId': userId,
+        },
+      );
+
+      print('Join Room Response : $response');
+
+      if (response.statusCode == HttpStatus.ok) {
+        return ApiResult.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      print('error : $e');
+      return null;
+    }
+  }
 }

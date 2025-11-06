@@ -28,8 +28,15 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView> {
   var userName = injector.get<LocalStorage>().getString('userName') ?? 'Guest';
+  int? userId = injector.get<LocalStorage>().getInt('userId');
   var userSurname = injector.get<LocalStorage>().getString('userSurname') ?? '';
   var image = injector.get<LocalStorage>().getString('image') ?? '';
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    context.read<LoginCubit>().getUserPoint(userId!);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -152,28 +159,37 @@ class _LoginViewState extends State<LoginView> {
               spacing: 20.w,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text.rich(
-                  //? bak buraya
-                  TextSpan(
-                    children: [
+                Icon(
+                  Icons.military_tech,
+                  color: kSuitGold,
+                  size: 40.sp,
+                ),
+                BlocBuilder<LoginCubit, LoginState>(
+                  builder: (context, state) {
+                    return Text.rich(
+                      //? bak buraya
                       TextSpan(
-                        text: '   Point: ',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        children: [
+                          TextSpan(
+                            text: 'Your Point ',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 24.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          TextSpan(
+                            text: state.userPoint != 0 ? state.userPoint.toString() : '0',
+                            style: const TextStyle(
+                              color: kSuitGold,
+                              fontSize: 30,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
                       ),
-                      TextSpan(
-                        text: userModel.point != null ? userModel.point.toString() : '0',
-                        style: const TextStyle(
-                          color: kSuitGold,
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
                 SizedBox(width: 10.w),
               ],
