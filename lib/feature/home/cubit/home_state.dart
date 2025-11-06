@@ -35,6 +35,8 @@ class HomeState extends Equatable {
     required this.player2WinCount,
     required this.isSpecialEffectPlaying,
     required this.seconds,
+    required this.player1Score,
+    required this.player2Score,
   });
 
   factory HomeState.initial() {
@@ -68,6 +70,8 @@ class HomeState extends Equatable {
       player2WinCount: 0,
       isSpecialEffectPlaying: false,
       seconds: 15,
+      player1Score: 0,
+      player2Score: 0,
     );
   }
 
@@ -102,6 +106,9 @@ class HomeState extends Equatable {
   //
   final bool isSpecialEffectPlaying;
   int seconds;
+  int player1Score;
+  int player2Score;
+
   @override
   List<Object?> get props => [
         homeState,
@@ -133,6 +140,8 @@ class HomeState extends Equatable {
         player2WinCount,
         isSpecialEffectPlaying,
         seconds,
+        player1Score,
+        player2Score,
       ];
 
   HomeState copyWith({
@@ -165,39 +174,42 @@ class HomeState extends Equatable {
     int? player2WinCount,
     bool? isSpecialEffectPlaying,
     int? seconds,
+    int? player1Score,
+    int? player2Score,
     //
   }) {
     return HomeState(
-      homeState: homeState ?? this.homeState,
-      getStatusState: getStatusState ?? this.getStatusState,
-      makeMoveState: makeMoveState ?? this.makeMoveState,
-      finishState: finishState ?? this.finishState,
-      errorMessage: errorMessage ?? this.errorMessage,
-      message: message ?? this.message,
-      game: game ?? this.game,
-      selectedCardsToSwap: selectedCardsToSwap ?? this.selectedCardsToSwap,
-      cards: cards ?? this.cards,
-      player1Multiplier: player1Multiplier ?? this.player1Multiplier,
-      player2Multiplier: player2Multiplier ?? this.player2Multiplier,
-      opponentCards: opponentCards ?? this.opponentCards,
-      sinekVar: sinekVar ?? this.sinekVar,
-      karoVar: karoVar ?? this.karoVar,
-      isKupaPapazDialogShown: isKupaPapazDialogShown ?? this.isKupaPapazDialogShown,
-      isSinekDialogShown: isSinekDialogShown ?? this.isSinekDialogShown,
-      isKaroDialogShown: isKaroDialogShown ?? this.isKaroDialogShown,
-      isDialogShownValue: isDialogShownValue ?? this.isDialogShownValue,
-      //! Player 2 Dialogs
-      isKupaPapaz2DialogShown: isKupaPapaz2DialogShown ?? this.isKupaPapaz2DialogShown,
-      isSinek2DialogShown: isSinek2DialogShown ?? this.isSinek2DialogShown,
-      isKaro2DialogShown: isKaro2DialogShown ?? this.isKaro2DialogShown,
-      isDialog2ShownValue: isDialog2ShownValue ?? this.isDialog2ShownValue,
-      //!
-      isMoveFirstTime: isMoveFirstTime ?? this.isMoveFirstTime,
-      player1WinCount: player1WinCount ?? this.player1WinCount,
-      player2WinCount: player2WinCount ?? this.player2WinCount,
-      isSpecialEffectPlaying: isSpecialEffectPlaying ?? this.isSpecialEffectPlaying,
-      seconds: seconds ?? this.seconds,
-    );
+        homeState: homeState ?? this.homeState,
+        getStatusState: getStatusState ?? this.getStatusState,
+        makeMoveState: makeMoveState ?? this.makeMoveState,
+        finishState: finishState ?? this.finishState,
+        errorMessage: errorMessage ?? this.errorMessage,
+        message: message ?? this.message,
+        game: game ?? this.game,
+        selectedCardsToSwap: selectedCardsToSwap ?? this.selectedCardsToSwap,
+        cards: cards ?? this.cards,
+        player1Multiplier: player1Multiplier ?? this.player1Multiplier,
+        player2Multiplier: player2Multiplier ?? this.player2Multiplier,
+        opponentCards: opponentCards ?? this.opponentCards,
+        sinekVar: sinekVar ?? this.sinekVar,
+        karoVar: karoVar ?? this.karoVar,
+        isKupaPapazDialogShown: isKupaPapazDialogShown ?? this.isKupaPapazDialogShown,
+        isSinekDialogShown: isSinekDialogShown ?? this.isSinekDialogShown,
+        isKaroDialogShown: isKaroDialogShown ?? this.isKaroDialogShown,
+        isDialogShownValue: isDialogShownValue ?? this.isDialogShownValue,
+        //! Player 2 Dialogs
+        isKupaPapaz2DialogShown: isKupaPapaz2DialogShown ?? this.isKupaPapaz2DialogShown,
+        isSinek2DialogShown: isSinek2DialogShown ?? this.isSinek2DialogShown,
+        isKaro2DialogShown: isKaro2DialogShown ?? this.isKaro2DialogShown,
+        isDialog2ShownValue: isDialog2ShownValue ?? this.isDialog2ShownValue,
+        //!
+        isMoveFirstTime: isMoveFirstTime ?? this.isMoveFirstTime,
+        player1WinCount: player1WinCount ?? this.player1WinCount,
+        player2WinCount: player2WinCount ?? this.player2WinCount,
+        isSpecialEffectPlaying: isSpecialEffectPlaying ?? this.isSpecialEffectPlaying,
+        seconds: seconds ?? this.seconds,
+        player1Score: player1Score ?? this.player1Score,
+        player2Score: player2Score ?? this.player2Score);
   }
 }
 

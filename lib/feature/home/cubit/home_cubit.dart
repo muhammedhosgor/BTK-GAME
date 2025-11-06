@@ -489,12 +489,10 @@ class HomeCubit extends Cubit<HomeState> {
 
   Future<void> disableCards(int gameId, String disabledCards) async {
     await _homeService.disableCards(gameId, disabledCards);
-    emit(state.copyWith(seconds: 3));
   }
 
   Future<void> sinekle(int gameId, String swappedCards) async {
     await _homeService.sinekle(gameId, swappedCards);
-    emit(state.copyWith(seconds: 3));
   }
 
   void setPlayerMultipliers(int player1Multiplier, int player2Multiplier) {
@@ -593,28 +591,71 @@ class HomeCubit extends Cubit<HomeState> {
     ));
   }
 
-  void determineWinner() {
+  void determineWinner(bool isPlayer1) {
     int player1Score = 0;
     int player2Score = 0;
 
-    // SADECE devre dışı olmayan kartları topla ➜ Player 1
-    for (var card in state.cards.where((c) => c.fullName != state.game.disabledCards)) {
-      player1Score += card.value;
+    // 🧮 Player 1 Skoru Hesapla
+    if (isPlayer1) {
+      for (var card in state.cards) {
+        // Eğer kart devre dışı değilse, değerini ekle
+        if (card.fullName != state.game.disabledCards) {
+          player1Score += card.value;
+        }
+        // Eğer kart devre dışıysa (örneğin özel kart tarafından iptal edildiyse)
+        else {
+          // Devre dışı kartın değeri kadar eksilt (puan düş)
+          player1Score -= card.value;
+        }
+        print("Player 1 cards: ${card.fullName}");
+      }
+
+      // 🧮 Player 2 Skoru Hesapla
+      for (var card in state.opponentCards) {
+        if (card.fullName != state.game.disabledCards) {
+          player2Score += card.value;
+        } else {
+          player2Score -= card.value;
+        }
+        print("Player 2 cards: ${card.fullName}");
+      }
+    } else {
+      for (var card in state.cards) {
+        // Eğer kart devre dışı değilse, değerini ekle
+        if (card.fullName != state.game.disabledCards) {
+          player2Score += card.value;
+        }
+        // Eğer kart devre dışıysa (örneğin özel kart tarafından iptal edildiyse)
+        else {
+          // Devre dışı kartın değeri kadar eksilt (puan düş)
+          player2Score -= card.value;
+        }
+        print("Player 2 cards: ${card.fullName}");
+      }
+
+      // 🧮 Player 2 Skoru Hesapla
+      for (var card in state.opponentCards) {
+        if (card.fullName != state.game.disabledCards) {
+          player1Score += card.value;
+        } else {
+          player1Score -= card.value;
+        }
+        print("Player 1 cards: ${card.fullName}");
+      }
     }
 
-    // SADECE devre dışı olmayan kartları topla ➜ Player 2
-    for (var card in state.opponentCards.where((c) => c.fullName != state.game.disabledCards)) {
-      player2Score += card.value;
-    }
-
+    emit(state.copyWith(
+        player1Score: state.player1Score + player1Score, player2Score: state.player2Score + player2Score));
     if (player1Score > player2Score) {
       emit(state.copyWith(player1WinCount: state.player1WinCount + 1));
-    } else if (player2Score > player1Score) {
+      print("wincount player 1: ${state.player1WinCount}}");
+    } else {
       emit(state.copyWith(player2WinCount: state.player2WinCount + 1));
+      print("wincount player 2: ${state.player1WinCount}}");
     }
 
-    print(
-        'Player 1 Score: $player1Score, Player 2 Score: $player2Score Kazananlar - Player 1: ${state.player1WinCount}, Player 2: ${state.player2WinCount}');
+    // 🔍 Konsola log bas (debug amaçlı)
+    print('🎯 Player 1 Score: $player1Score | Player 2 Score: $player2Score');
   }
 
   Future<void> startNewRound(int gameId) async {
@@ -638,7 +679,7 @@ class HomeCubit extends Cubit<HomeState> {
 
   void stopTimer() {
     timerPer!.cancel();
-    emit(state.copyWith(isSpecialEffectPlaying: false));
+    emit(state.copyWith(isSpecialEffectPlaying: false, seconds: 15));
   }
 
   Future<void> finish(int gameId, bool isPlayer1, int playerId, int point) async {

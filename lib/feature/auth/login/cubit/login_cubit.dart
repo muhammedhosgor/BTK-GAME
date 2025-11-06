@@ -44,6 +44,8 @@ class LoginCubit extends Cubit<LoginState> {
         injector.get<LocalStorage>().saveInt('userId', userModel.id ?? 0);
         injector.get<LocalStorage>().saveString('userName', userModel.name ?? '');
         injector.get<LocalStorage>().saveString('userSurname', userModel.surname ?? '');
+        injector.get<LocalStorage>().saveString('email', userModel.email ?? '');
+        injector.get<LocalStorage>().saveString('password', userModel.password ?? '');
         injector.get<LocalStorage>().saveString('image', userModel.image ?? '');
         changeLoginStatus(true);
         emit(

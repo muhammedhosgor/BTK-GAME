@@ -98,65 +98,6 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
     });
   }
 
-  // Yeni: El sonu sonuç overlay'i
-  Widget _buildHandResultOverlay() {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 500),
-      transitionBuilder: (Widget child, Animation<double> animation) {
-        return ScaleTransition(scale: animation, child: child);
-      },
-      child: showHandResultOverlay
-          ? Container(
-              color: Colors.black.withOpacity(0.5),
-              alignment: Alignment.center,
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.green.shade800,
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: Colors.white, width: 3),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.8),
-                      blurRadius: 15,
-                      spreadRadius: 5,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      handResultText,
-                      style: TextStyle(
-                        fontSize: 24.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.yellowAccent,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    //* SONRAKİ ELE GEÇ BUTONU (ŞİMDİLİK DEVRE DIŞI)
-                    // ElevatedButton(
-                    //   onPressed: _continueToNextHand,
-                    //   style: ElevatedButton.styleFrom(
-                    //     backgroundColor: Colors.white,
-                    //     padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                    //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    //   ),
-                    //   child: Text(
-                    //     'DEVAM',
-                    //     style: TextStyle(fontSize: 18.sp, color: Colors.green.shade900, fontWeight: FontWeight.bold),
-                    //   ),
-                    // ),
-                  ],
-                ),
-              ),
-            )
-          : const SizedBox.shrink(),
-    );
-  }
-
   // Yeni: El başlangıcı hazır olma overlay'i
   Widget _buildReadyOverlay() {
     return AnimatedSwitcher(
@@ -337,26 +278,6 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
       },
       child: Scaffold(
         backgroundColor: kTableGreen,
-        drawer: Drawer(
-          elevation: 16,
-          child: SafeArea(
-            child: Column(
-              children: [
-                const ListTile(title: Text('Oyun Logları')),
-                const Divider(),
-                Expanded(
-                  child: SingleChildScrollView(
-                    reverse: true,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(log, style: const TextStyle(fontFamily: 'monospace')),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
         body: Stack(
           alignment: Alignment.center,
           children: [
@@ -444,6 +365,9 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                           if (state.getStatusState == GetStatusStates.completed) {
                             // Her iki oyuncu da hamle yaptıysa, el sonucu göster
                             return InfoProfile(
+                              content: widget.isPlayer1
+                                  ? 'El ${state.game.currentTurnId! + 1} / ${3}  • Skor: Rakip ${state.player2WinCount} - Siz ${state.player1WinCount}'
+                                  : 'El ${state.game.currentTurnId! + 1} / ${3}  • Skor: Rakip ${state.player1WinCount} - Siz ${state.player2WinCount}',
                               point: // 0
 
                                   (state.game.isPlayer1Move! && state.game.isPlayer2Move!) || state.game.turn!
@@ -524,9 +448,14 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                               builder: (context, color, child) {
                                                 return GestureDetector(
                                                   onTap: () {
-                                                    if (state.sinekVar && swappingCards.length == 1) {
+                                                    if (state.karoVar) {
+                                                      context.read<HomeCubit>().disableCards(
+                                                          gameId!, state.opponentCards[index].fullName); //!
+                                                      context.read<HomeCubit>().setKaroVar(false);
+                                                      _appendLog(
+                                                          'Etkisiz hale getirilen kart seçildi: ${state.opponentCards[index].fullName}');
+                                                    } else if (state.sinekVar && swappingCards.length == 1) {
                                                       swappingCards.add(state.opponentCards[index].fullName);
-
                                                       context
                                                           .read<HomeCubit>()
                                                           .sinekle(gameId!, swappingCards.join(',')); //! ***
@@ -536,12 +465,6 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
 
                                                       _appendLog(
                                                           'Takas için kart seçildi: ${state.opponentCards[index].fullName}');
-                                                    } else if (state.karoVar) {
-                                                      context.read<HomeCubit>().disableCards(
-                                                          gameId!, state.opponentCards[index].fullName); //!
-                                                      context.read<HomeCubit>().setKaroVar(false);
-                                                      _appendLog(
-                                                          'Etkisiz hale getirilen kart seçildi: ${state.opponentCards[index].fullName}');
                                                     }
                                                   },
                                                   child: AnimatedContainer(
@@ -617,36 +540,6 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                             ],
                                                           ),
                                                         ),
-                                                        // Etkisiz (Disabled) Overlay - Karo 2 (♦2) etkisi
-                                                        // if (c.disabled)
-                                                        //   // Mevcut sallanma animasyonunu koru ve üzerine X işareti ekle
-                                                        //   TweenAnimationBuilder<double>(
-                                                        //     tween: Tween(begin: -0.05, end: 0.05),
-                                                        //     duration: const Duration(milliseconds: 400),
-                                                        //     curve: Curves.easeInOut,
-                                                        //     onEnd: () {
-                                                        //       // Animasyonu sürekli ters yöne doğru tetiklemek için setState (basit bir loop)
-                                                        //       if (mounted) setState(() {});
-                                                        //     },
-                                                        //     builder: (context, angle, child) {
-                                                        //       return Transform.rotate(
-                                                        //         angle: angle,
-                                                        //         child: Container(
-                                                        //           decoration: BoxDecoration(
-                                                        //             color: Colors.grey
-                                                        //                 .withOpacity(0.6), // Daha opak hale getir
-                                                        //             borderRadius: BorderRadius.circular(8),
-                                                        //             border: Border.all(color: Colors.redAccent, width: 3),
-                                                        //           ),
-                                                        //           child: Center(
-                                                        //               child: Icon(Icons.close_rounded,
-                                                        //                   size: 40,
-                                                        //                   color: Colors.red.shade800)), // Kırmızı X
-                                                        //         ),
-                                                        //       );
-                                                        //     },
-                                                        //   ),
-                                                        // Sinek 2 (♣2) - Takas Edilmiş İşareti
                                                         if (state.game.swappedCards!
                                                             .split(',')
                                                             .contains(state.opponentCards[index].fullName))
@@ -696,23 +589,6 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                                 ),
                                                               )
                                                             : const SizedBox.shrink(),
-                                                        // Kupa Papaz (K♥) - Çarpan İşareti
-                                                        // if (c.isKingOfHearts && !c.disabled)
-                                                        //   const Positioned(
-                                                        //     bottom: 4,
-                                                        //     left: 4,
-                                                        //     child: Text('x2',
-                                                        //         style: TextStyle(
-                                                        //             fontSize: 16,
-                                                        //             fontWeight: FontWeight.w900,
-                                                        //             color: Colors.redAccent,
-                                                        //             shadows: [
-                                                        //               Shadow(
-                                                        //                   blurRadius: 4,
-                                                        //                   color: Colors.red,
-                                                        //                   offset: Offset(1, 1))
-                                                        //             ])),
-                                                        //   )
                                                       ],
                                                     ),
                                                   ),
@@ -778,49 +654,155 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                   previous.game.turn != current.game.turn ||
                                   previous.game.isPlayer1Move != current.game.isPlayer1Move ||
                                   previous.game.isPlayer2Move != current.game.isPlayer2Move,
-                              listener: (context, state) async {
+                              listener: (contextl, state) async {
                                 print('listener -- player : ${widget.isPlayer1}');
                                 if (state.game.currentTurnId! > 2) {
                                   //* VERİ TABANINDA SAYAC 0 DAN BAŞLADIĞI İÇİN 2
+                                  // showDialog(
+                                  //   barrierDismissible: false,
+                                  //   context: context,
+                                  //   builder: (dialogContext) {
+                                  //     return AlertDialog(
+                                  //       backgroundColor: Colors.black87,
+                                  //       title: const Text(
+                                  //         'El tamamlandı',
+                                  //         style: TextStyle(color: Colors.white),
+                                  //       ),
+                                  //       content: Text(
+                                  //         'Kazanan oyuncu ${state.player1WinCount > state.player2WinCount ? 'Kazanan 1. Oyuncu' : 'Kazanan 2. Oyuncu'} ',
+                                  //         style: const TextStyle(color: Colors.white70),
+                                  //       ),
+                                  //       actions: [
+                                  //         TextButton(
+                                  //           onPressed: () async {
+                                  //             Navigator.of(dialogContext).pop(); //! Eli kazananı belirleme
+                                  //             // Todo: Buraya yönlendiriliyorsunuz yazan bir animasyon ekleyip login sayfasına gönder.
+
+                                  //             // context.pushReplacement('/login_view');
+                                  //             print("win: ${state.player1WinCount}}");
+                                  //             print("win 2 : ${state.player2WinCount}}");
+
+                                  //             context
+                                  //                 .read<HomeCubit>()
+                                  //                 .finish(
+                                  //                   state.game.id!,
+                                  //                   widget.isPlayer1,
+                                  //                   widget.isPlayer1 ? state.game.player1Id! : state.game.player2Id!,
+                                  //                   widget.isPlayer1 ? state.player1Score : state.player2Score,
+                                  //                 )
+                                  //                 .whenComplete(() {
+                                  //               context.pushReplacement('/login_view');
+                                  //             });
+                                  //           },
+                                  //           child: const Text(
+                                  //             'Tamam',
+                                  //             style: TextStyle(color: Colors.amberAccent),
+                                  //           ),
+                                  //         )
+                                  //       ],
+                                  //     );
+                                  //   },
+                                  // );
+
                                   showDialog(
+                                    barrierDismissible: false,
                                     context: context,
                                     builder: (dialogContext) {
-                                      return AlertDialog(
-                                        backgroundColor: Colors.black87,
-                                        title: const Text(
-                                          'El tamamlandı',
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                        content: Text(
-                                          'Kazanan oyuncu ${state.player1WinCount > state.player2WinCount ? 'Kazanan 1. Oyuncu' : 'Kazanan 2. Oyuncu'} ',
-                                          style: const TextStyle(color: Colors.white70),
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () async {
-                                              Navigator.of(dialogContext).pop(); //! Eli kazananı belirleme
-                                              // Todo: Buraya yönlendiriliyorsunuz yazan bir animasyon ekleyip login sayfasına gönder.
-                                              print("Player1Wincount: ${state.player1WinCount}");
-                                              print("Player2Wincount: ${state.player2WinCount}");
+                                      final bool player1Won = state.player1WinCount > state.player2WinCount;
 
-                                              await context
-                                                  .read<HomeCubit>()
-                                                  .finish(
-                                                    state.game.id!,
-                                                    widget.isPlayer1,
-                                                    widget.isPlayer1 ? state.game.player2Id! : state.game.player1Id!,
-                                                    widget.isPlayer1 ? state.player1WinCount : state.player2WinCount,
-                                                  )
-                                                  .whenComplete(() {
-                                                context.pushReplacement('/login_view');
-                                              });
-                                            },
-                                            child: const Text(
-                                              'Tamam',
-                                              style: TextStyle(color: Colors.amberAccent),
-                                            ),
-                                          )
-                                        ],
+                                      // 🔹 Bu cihaz 1. oyuncu mu?
+                                      final bool isPlayer1 = widget.isPlayer1;
+
+                                      // 🔹 Bu cihaza göre kazandı mı kaybetti mi?
+                                      final bool thisPlayerWon =
+                                          (isPlayer1 && player1Won) || (!isPlayer1 && !player1Won);
+
+                                      // 🔹 Animasyon seçimi
+                                      final String lottiePath = thisPlayerWon
+                                          ? 'assets/lottie/win.json' // 🏆 Kazanan animasyonu
+                                          : 'assets/lottie/2x.json'; // 😔 Kaybeden animasyonu
+
+                                      // 🔹 Metin seçimi
+                                      final String resultText = thisPlayerWon ? 'Kazandın!' : 'Kaybettin!';
+                                      final String winnerText = player1Won ? 'Kazanan 1. Oyuncu' : 'Kazanan 2. Oyuncu';
+
+                                      return Scaffold(
+                                        backgroundColor: Colors.black87,
+                                        body: Center(
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              // 🟢 Lottie animasyonu
+                                              SizedBox(
+                                                height: 250,
+                                                width: 250,
+                                                child: Lottie.asset(
+                                                  lottiePath,
+                                                  repeat: false,
+                                                  fit: BoxFit.contain,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 20),
+                                              // 🏁 Başlık
+                                              const Text(
+                                                'El tamamlandı',
+                                                style: TextStyle(
+                                                    color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                                              ),
+                                              const SizedBox(height: 10),
+                                              // 🧩 Oyuncu sonucu
+                                              Text(
+                                                resultText,
+                                                style: TextStyle(
+                                                  color: thisPlayerWon ? Colors.greenAccent : Colors.redAccent,
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 10),
+                                              // 🏆 Kazanan oyuncu bilgisi
+                                              Text(
+                                                'Kazanan oyuncu: $winnerText',
+                                                style: const TextStyle(color: Colors.white70, fontSize: 18),
+                                              ),
+                                              const SizedBox(height: 40),
+                                              // 🔘 Buton
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.amberAccent,
+                                                  foregroundColor: Colors.black,
+                                                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                                                  shape:
+                                                      RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                                                ),
+                                                onPressed: () async {
+                                                  Navigator.of(dialogContext).pop();
+
+                                                  print("win: ${state.player1WinCount}");
+                                                  print("win 2 : ${state.player2WinCount}");
+
+                                                  await context
+                                                      .read<HomeCubit>()
+                                                      .finish(
+                                                        state.game.id!,
+                                                        widget.isPlayer1,
+                                                        widget.isPlayer1
+                                                            ? state.game.player1Id!
+                                                            : state.game.player2Id!,
+                                                        widget.isPlayer1 ? state.player1Score : state.player2Score,
+                                                      )
+                                                      .whenComplete(() {
+                                                    context.pushReplacement('/login_view');
+                                                  });
+                                                },
+                                                child: const Text(
+                                                  'Tamam',
+                                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       );
                                     },
                                   );
@@ -828,43 +810,119 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                   //! Oyunun devam ettiği kısım
                                   if (state.game.isPlayer1Move! && state.game.isPlayer2Move! && state.game.turn!) {
                                     await showDialog(
+                                      barrierDismissible: false,
                                       context: context,
                                       builder: (dialogContext) {
-                                        return AlertDialog(
+                                        return Scaffold(
                                           backgroundColor: Colors.black87,
-                                          title: const Text(
-                                            'Bilgi',
-                                            style: TextStyle(color: Colors.white),
-                                          ),
-                                          content: Text(
-                                            '${state.game.currentTurnId! + 1} tamamlandı. Kartlar açıldı ve puanlar hesaplandı.',
-                                            style: const TextStyle(color: Colors.white70),
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () async {
-                                                Navigator.of(dialogContext).pop();
-                                                context.read<HomeCubit>().setIsMoveFirstTime(true);
+                                          body: Center(
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                // 🔹 Lottie animasyonu (bilgilendirme)
+                                                SizedBox(
+                                                  height: 220,
+                                                  width: 220,
+                                                  child: Lottie.asset(
+                                                    'assets/lottie/info.json', // 📂 örnek: "info.json" veya "processing.json"
+                                                    repeat: true,
+                                                    fit: BoxFit.contain,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 20),
+                                                // 🔹 Başlık
+                                                const Text(
+                                                  'Bilgi',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 26,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 10),
+                                                // 🔹 İçerik metni
+                                                Text(
+                                                  '${state.game.currentTurnId! + 1} tamamlandı. Kartlar açıldı ve puanlar hesaplandı.',
+                                                  textAlign: TextAlign.center,
+                                                  style: const TextStyle(
+                                                    color: Colors.white70,
+                                                    fontSize: 18,
+                                                    height: 1.4,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 40),
+                                                // 🔹 Tamam Butonu
+                                                ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: Colors.amberAccent,
+                                                    foregroundColor: Colors.black,
+                                                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(30),
+                                                    ),
+                                                  ),
+                                                  onPressed: () async {
+                                                    Navigator.of(dialogContext).pop();
+                                                    context.read<HomeCubit>().setIsMoveFirstTime(true);
 
-                                                context.read<HomeCubit>().resetHandComplete();
-                                                if (!widget.isPlayer1) {
-                                                  await context.read<HomeCubit>().handComplete(state.game.id!);
-                                                }
+                                                    context.read<HomeCubit>().resetHandComplete();
+                                                    if (!widget.isPlayer1) {
+                                                      await context.read<HomeCubit>().handComplete(state.game.id!);
+                                                    }
 
-                                                context.read<HomeCubit>().determineWinner();
-                                                //! Resetleme işlemleri burada yapılacak Yeni El başlangıcı
-                                                // context.read<HomeCubit>().resetHandComplete();
-                                                //! Eli kazananı belirleme
-                                              },
-                                              child: const Text(
-                                                'Tamam',
-                                                style: TextStyle(color: Colors.amberAccent),
-                                              ),
-                                            )
-                                          ],
+                                                    context.read<HomeCubit>().determineWinner(widget.isPlayer1);
+                                                    //! Resetleme işlemleri burada yapılacak Yeni El başlangıcı
+                                                  },
+                                                  child: const Text(
+                                                    'Tamam',
+                                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         );
                                       },
                                     );
+                                    // await showDialog(
+                                    //   barrierDismissible: false,
+                                    //   context: context,
+                                    //   builder: (dialogContext) {
+                                    //     return AlertDialog(
+                                    //       backgroundColor: Colors.black87,
+                                    //       title: const Text(
+                                    //         'Bilgi',
+                                    //         style: TextStyle(color: Colors.white),
+                                    //       ),
+                                    //       content: Text(
+                                    //         '${state.game.currentTurnId! + 1} tamamlandı. Kartlar açıldı ve puanlar hesaplandı.',
+                                    //         style: const TextStyle(color: Colors.white70),
+                                    //       ),
+                                    //       actions: [
+                                    //         TextButton(
+                                    //           onPressed: () async {
+                                    //             Navigator.of(dialogContext).pop();
+                                    //             context.read<HomeCubit>().setIsMoveFirstTime(true);
+
+                                    //             context.read<HomeCubit>().resetHandComplete();
+                                    //             if (!widget.isPlayer1) {
+                                    //               await context.read<HomeCubit>().handComplete(state.game.id!);
+                                    //             }
+
+                                    //             context.read<HomeCubit>().determineWinner(widget.isPlayer1);
+                                    //             //! Resetleme işlemleri burada yapılacak Yeni El başlangıcı
+                                    //             // context.read<HomeCubit>().resetHandComplete();
+                                    //             //! Eli kazananı belirleme
+                                    //           },
+                                    //           child: const Text(
+                                    //             'Tamam',
+                                    //             style: TextStyle(color: Colors.amberAccent),
+                                    //           ),
+                                    //         )
+                                    //       ],
+                                    //     );
+                                    //   },
+                                    // );
                                   }
 
                                   if (!state.game.isPlayer1Move! && !state.game.isPlayer2Move! && state.game.turn!) {
@@ -885,7 +943,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                               case 'Karo-2':
                                                 context.read<HomeCubit>().setKaroVar(true);
                                                 context.read<HomeCubit>().startTimer();
-                                                await Future.delayed(Duration(seconds: 15));
+                                                await Future.delayed(const Duration(seconds: 15));
                                                 context.read<HomeCubit>().stopTimer();
 
                                                 _appendLog(
@@ -897,7 +955,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                 context.read<HomeCubit>().setSinekVar(true);
                                                 context.read<HomeCubit>().startTimer();
 
-                                                await Future.delayed(Duration(seconds: 15));
+                                                await Future.delayed(const Duration(seconds: 15));
                                                 context.read<HomeCubit>().stopTimer();
 
                                                 _appendLog(
@@ -924,7 +982,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                               break;
                                             case 'Karo-2':
                                               context.read<HomeCubit>().startTimer();
-                                              await Future.delayed(Duration(seconds: 15));
+                                              await Future.delayed(const Duration(seconds: 15));
                                               context.read<HomeCubit>().stopTimer();
 
                                               _appendLog(
@@ -933,7 +991,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                               break;
                                             case 'Sinek-2':
                                               context.read<HomeCubit>().startTimer();
-                                              await Future.delayed(Duration(seconds: 15));
+                                              await Future.delayed(const Duration(seconds: 15));
                                               context.read<HomeCubit>().stopTimer();
 
                                               _appendLog('Sinek 2 (♣2) kartı masaya konuldu! Bir kart takas edilecek.');
@@ -1235,10 +1293,10 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                       height: 110,
                                       width: 1.sw,
                                       child: ListView.builder(
-                                        // padding: EdgeInsets.symmetric(
-                                        //   horizontal:
-                                        //       (1.sw - (state.cards.length * 60 + (state.cards.length - 1) * 24)) / 2,
-                                        // ),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal:
+                                              (1.sw - (state.cards.length * 60 + (state.cards.length - 1) * 24)) / 2,
+                                        ),
                                         itemCount: state.cards.length,
                                         scrollDirection: Axis.horizontal,
                                         itemBuilder: (context, index) {
@@ -1274,13 +1332,6 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                   // Tekrarlı animasyon için dışarıda bir Controller ve AnimatedBuilder daha iyi olurdu,
                                                   // ancak burada basit bir "titreşim" etkisi için TweenAnimationBuilder'ı kullanıyoruz.
                                                   builder: (context, color, child) {
-                                                    // Color finalBorderColor = selected ? Colors.blue : color ?? baseBorderColor;
-                                                    // double finalBorderWidth = selected
-                                                    //     ? 3
-                                                    //     : wasSwapped
-                                                    //         ? 4 // Daha kalın ve mor/beyaz arasında titreşen sınır
-                                                    //         : baseBorderWidth;
-
                                                     return GestureDetector(
                                                       onTap: () {
                                                         if (state.sinekVar) {
@@ -1390,36 +1441,6 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                                 ],
                                                               ),
                                                             ),
-                                                            // Etkisiz (Disabled) Overlay - Karo 2 (♦2) etkisi
-                                                            // if (c.disabled)
-                                                            //   // Mevcut sallanma animasyonunu koru ve üzerine X işareti ekle
-                                                            //   TweenAnimationBuilder<double>(
-                                                            //     tween: Tween(begin: -0.05, end: 0.05),
-                                                            //     duration: const Duration(milliseconds: 400),
-                                                            //     curve: Curves.easeInOut,
-                                                            //     onEnd: () {
-                                                            //       // Animasyonu sürekli ters yöne doğru tetiklemek için setState (basit bir loop)
-                                                            //       if (mounted) setState(() {});
-                                                            //     },
-                                                            //     builder: (context, angle, child) {
-                                                            //       return Transform.rotate(
-                                                            //         angle: angle,
-                                                            //         child: Container(
-                                                            //           decoration: BoxDecoration(
-                                                            //             color: Colors.grey
-                                                            //                 .withOpacity(0.6), // Daha opak hale getir
-                                                            //             borderRadius: BorderRadius.circular(8),
-                                                            //             border: Border.all(color: Colors.redAccent, width: 3),
-                                                            //           ),
-                                                            //           child: Center(
-                                                            //               child: Icon(Icons.close_rounded,
-                                                            //                   size: 40,
-                                                            //                   color: Colors.red.shade800)), // Kırmızı X
-                                                            //         ),
-                                                            //       );
-                                                            //     },
-                                                            //   ),
-                                                            // Sinek 2 (♣2) - Takas Edilmiş İşareti
                                                             if (state.game.swappedCards!
                                                                 .split(',')
                                                                 .contains(state.cards[index].fullName))
@@ -1468,23 +1489,6 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                                     ),
                                                                   )
                                                                 : const SizedBox.shrink(),
-                                                            // Kupa Papaz (K♥) - Çarpan İşareti
-                                                            // if (c.isKingOfHearts && !c.disabled)
-                                                            //   const Positioned(
-                                                            //     bottom: 4,
-                                                            //     left: 4,
-                                                            //     child: Text('x2',
-                                                            //         style: TextStyle(
-                                                            //             fontSize: 16,
-                                                            //             fontWeight: FontWeight.w900,
-                                                            //             color: Colors.redAccent,
-                                                            //             shadows: [
-                                                            //               Shadow(
-                                                            //                   blurRadius: 4,
-                                                            //                   color: Colors.red,
-                                                            //                   offset: Offset(1, 1))
-                                                            //             ])),
-                                                            //   )
                                                           ],
                                                         ),
                                                       ),
@@ -1565,13 +1569,6 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                           ),
                         ),
                       ),
-                      // Yorum Satırı: Eller Aç ve Özel Kartları Uygula butonu kaldırıldı ve otomatikleştirildi.
-                      // if (!selectionPhase && !showHandResultOverlay && !showReadyOverlay) ...[
-                      //   const SizedBox(height: 8),
-                      //   ElevatedButton(
-                      //       onPressed: _revealAndResolve, child: const Text('Eller Aç ve Özel Kartları Uygula')),
-                      //   SizedBox(height: 30.h),
-                      // ],
                       SizedBox(height: 30.h), // Butonun kapladığı alanı koru
                       BlocBuilder<HomeCubit, HomeState>(
                         builder: (context, state) {
@@ -1585,6 +1582,9 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                       .reduce((a, b) => a + b)) *
                                   (widget.isPlayer1 ? state.player1Multiplier : state.player2Multiplier),
                               userWins: state.player1WinCount,
+                              content: widget.isPlayer1
+                                  ? 'El ${state.game.currentTurnId! + 1} / ${3}  • Skor: Rakip ${state.player2WinCount} - Siz ${state.player1WinCount}'
+                                  : 'El ${state.game.currentTurnId! + 1} / ${3}  • Skor: Rakip ${state.player1WinCount} - Siz ${state.player2WinCount}',
                               oppWins: state.player2WinCount,
                               name: widget.isPlayer1
                                   ? '${state.game.player1Name!} ${state.game.player1Surname!} ${state.player1Multiplier > 1 ? '(x${state.player1Multiplier})' : ''}'
@@ -1592,7 +1592,12 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                             );
                           } else {
                             return InfoProfile(
-                                point: 0, userWins: state.player1WinCount, oppWins: state.player2WinCount);
+                                point: 0,
+                                content: widget.isPlayer1
+                                    ? 'El ${state.game.currentTurnId! + 1} / ${3}  • Skor: Rakip ${state.player2WinCount} - Siz ${state.player1WinCount}'
+                                    : 'El ${state.game.currentTurnId! + 1} / ${3}  • Skor: Rakip ${state.player1WinCount} - Siz ${state.player2WinCount}',
+                                userWins: state.player1WinCount,
+                                oppWins: state.player2WinCount);
                           }
                         },
                       ),
@@ -1639,18 +1644,18 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                         repeat: true,
                       ),
                     );
-                  } else if (state.isKaroDialogShown) {
-                    return Center(
-                      child: Lottie.asset(
-                        'assets/lottie/disabled.json',
-                        width: 0.5.sw,
-                        repeat: true,
-                      ),
-                    );
                   } else if (state.isSinekDialogShown) {
                     return Center(
                       child: Lottie.asset(
                         'assets/lottie/swap.json',
+                        width: 0.5.sw,
+                        repeat: true,
+                      ),
+                    );
+                  } else if (state.isKaroDialogShown) {
+                    return Center(
+                      child: Lottie.asset(
+                        'assets/lottie/disabled.json',
                         width: 0.5.sw,
                         repeat: true,
                       ),
@@ -1698,18 +1703,18 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                         repeat: true,
                       ),
                     );
-                  } else if (state.isKaro2DialogShown) {
-                    return Center(
-                      child: Lottie.asset(
-                        'assets/lottie/disabled.json',
-                        width: 0.5.sw,
-                        repeat: true,
-                      ),
-                    );
                   } else if (state.isSinek2DialogShown) {
                     return Center(
                       child: Lottie.asset(
                         'assets/lottie/swap.json',
+                        width: 0.5.sw,
+                        repeat: true,
+                      ),
+                    );
+                  } else if (state.isKaro2DialogShown) {
+                    return Center(
+                      child: Lottie.asset(
+                        'assets/lottie/disabled.json',
                         width: 0.5.sw,
                         repeat: true,
                       ),
@@ -1719,9 +1724,6 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                 },
               ),
             ),
-
-            // Yeni: El sonu sonuç overlay'i
-            _buildHandResultOverlay(),
 
             // Yeni: El başlangıcı hazır olma overlay'i
             _buildReadyOverlay(),
@@ -1742,11 +1744,13 @@ class InfoProfile extends StatelessWidget {
     this.userWins = 0,
     this.oppWins = 0,
     this.name = '',
+    required this.content,
   });
   int? point;
   int userWins;
   int oppWins;
   String name;
+  String content;
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -1798,9 +1802,10 @@ class InfoProfile extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   BlocBuilder<HomeCubit, HomeState>(
+                    //! Gel bi
                     builder: (context, state) {
-                      return Text('El ${state.game.currentTurnId! + 1} / ${3}  • Skor: Siz $userWins - Rakip $oppWins',
-                          style: TextStyle(fontSize: 12.sp, color: Colors.white70));
+                      //'El ${state.game.currentTurnId! + 1} / ${3}  • Skor: Siz $userWins - Rakip $oppWins',
+                      return Text(content.toString(), style: TextStyle(fontSize: 12.sp, color: Colors.white70));
                     },
                   ),
                 ],

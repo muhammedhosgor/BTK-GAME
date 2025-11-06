@@ -56,85 +56,85 @@ class _LoginViewState extends State<LoginView> {
       child: Column(
         children: [
           Container(
-              width: 1.sw,
-              height: 100.h,
-              color: kTableNavy,
-              child: Row(
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: kWhiteColor, width: 2),
-                        ),
-                        child: image.isEmpty
-                            ? const Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Icon(Icons.people, color: kWhiteColor, size: 50),
-                              )
-                            : ClipOval(
-                                child: Image.network(
-                                  'https://btkgameapi.linsabilisim.com/$image',
-                                  width: 60,
-                                  height: 60,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
+            width: 1.sw,
+            height: 100.h,
+            color: kTableNavy,
+            child: Row(
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: kWhiteColor, width: 2),
                       ),
-                      SizedBox(height: 5.h),
-                      Text.rich(
-                        //? bak buraya
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text: '   Point: ',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                      child: image.isEmpty
+                          ? const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Icon(Icons.people, color: kWhiteColor, size: 50),
+                            )
+                          : ClipOval(
+                              child: Image.network(
+                                'https://btkgameapi.linsabilisim.com/$image',
+                                width: 60,
+                                height: 60,
+                                fit: BoxFit.cover,
                               ),
                             ),
-                            TextSpan(
-                              text: userModel.point.toString(),
-                              style: TextStyle(
-                                color: Colors.green,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(width: 10.w),
-                  Text(
-                    '$userName $userSurname',
-                    textAlign: TextAlign.left,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: kWhiteColor, fontSize: 18.sp, fontWeight: FontWeight.bold),
-                  ),
-                  const Spacer(),
-                  SizedBox(width: 10.w),
-                  ImageButton(
-                    imagePath: 'assets/asset/star.png',
-                    onTap: () {},
-                  ),
-                  SizedBox(width: 10.w),
-                  ImageButton(
-                    imagePath: 'assets/asset/settings.png',
-                    onTap: () {},
-                  ),
-                  SizedBox(width: 10.w),
-                ],
-              )),
+                    ),
+                    SizedBox(height: 5.h),
+                  ],
+                ),
+                SizedBox(width: 10.w),
+                Text(
+                  '$userName $userSurname',
+                  textAlign: TextAlign.left,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: kWhiteColor, fontSize: 18.sp, fontWeight: FontWeight.bold),
+                ),
+                const Spacer(),
+                SizedBox(width: 10.w),
+                ImageButton(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: true, // Dışarıya tıklayınca kapanabilir
+                        builder: (BuildContext context) {
+                          return BlocProvider.value(
+                            value: LoginCubit(),
+                            child: const ThemedUserListDialog(),
+                          );
+                        },
+                      );
+                    },
+                    imagePath: 'assets/asset/online.png'),
+                ImageButton(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: true, // Dışarıya tıklayınca kapanabilir
+                        builder: (BuildContext context) {
+                          return BlocProvider.value(
+                            value: LoginCubit(),
+                            child: const ThemedHowToPlayDialog(),
+                          );
+                        },
+                      );
+                    },
+                    imagePath: 'assets/asset/info.png'),
+                ImageButton(
+                  imagePath: 'assets/asset/settings.png',
+                  onTap: () {},
+                ),
+              ],
+            ),
+          ),
           const GoldNavContainer(),
           SizedBox(height: 10.h),
           Container(
-            width: 0.95.sw,
+            width: 0.9.sw,
             height: 100.h,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10.r),
@@ -152,37 +152,30 @@ class _LoginViewState extends State<LoginView> {
               spacing: 20.w,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ImageButton(
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        barrierDismissible: true, // Dışarıya tıklayınca kapanabilir
-                        builder: (BuildContext context) {
-                          return BlocProvider.value(
-                            value: LoginCubit(),
-                            child: const ThemedUserListDialog(),
-                          );
-                        },
-                      );
-                    },
-                    imagePath: 'assets/asset/online.png'),
-                ImageButton(onTap: () {}, imagePath: 'assets/asset/mail.png'),
-                ImageButton(onTap: () {}, imagePath: 'assets/asset/frends.png'),
-                ImageButton(onTap: () {}, imagePath: 'assets/asset/star.png'),
-                ImageButton(
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        barrierDismissible: true, // Dışarıya tıklayınca kapanabilir
-                        builder: (BuildContext context) {
-                          return BlocProvider.value(
-                            value: LoginCubit(),
-                            child: const ThemedHowToPlayDialog(),
-                          );
-                        },
-                      );
-                    },
-                    imagePath: 'assets/asset/info.png')
+                Text.rich(
+                  //? bak buraya
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '   Point: ',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      TextSpan(
+                        text: userModel.point != null ? userModel.point.toString() : '0',
+                        style: const TextStyle(
+                          color: kSuitGold,
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 10.w),
               ],
             ),
           ),
