@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_base_app/feature/auth/login/cubit/login_cubit.dart';
 import 'package:flutter_base_app/feature/auth/login/cubit/login_state.dart';
-import 'package:flutter_base_app/feature/auth/login/model/user_model.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/active_user_list_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/exit_game_dialog_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/game_room_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/how_to_play_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/login_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/privacy_policy_widget.dart';
-import 'package:flutter_base_app/feature/auth/register/view/register_view.dart';
 import 'package:flutter_base_app/product/components/button/image_button.dart';
 import 'package:flutter_base_app/product/components/button/primary_game_button.dart';
 import 'package:flutter_base_app/product/components/container/gold_nav.dart';
@@ -18,6 +16,7 @@ import 'package:flutter_base_app/product/storage/local_get_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -31,9 +30,9 @@ class _LoginViewState extends State<LoginView> {
   int? userId = injector.get<LocalStorage>().getInt('userId');
   var userSurname = injector.get<LocalStorage>().getString('userSurname') ?? '';
   var image = injector.get<LocalStorage>().getString('image') ?? '';
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     context.read<LoginCubit>().getUserPoint(userId!);
   }
@@ -41,46 +40,41 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Container(
-      width: 1.sw,
-      height: 1.sh,
-      // color: kTableGreen,
-      decoration: BoxDecoration(
-        image: const DecorationImage(
-          image: AssetImage('assets/asset/bg.jpg'),
-          fit: BoxFit.cover,
-          opacity: 0.9,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: kBlackColor.withOpacity(0.5),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3), // changes position of shadow
+      body: Container(
+        width: 1.sw,
+        height: 1.sh,
+        decoration: BoxDecoration(
+          image: const DecorationImage(
+            image: AssetImage('assets/asset/bg.jpg'),
+            fit: BoxFit.cover,
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 1.sw,
-            height: 100.h,
-            color: kTableNavy,
-            child: Row(
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+          gradient: LinearGradient(
+            colors: [Colors.black.withOpacity(0.8), kTableNavy.withOpacity(0.8)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // === ÜST KISIM: Oyun Başlığı + Profil Bilgisi ===
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                child: Row(
                   children: [
+                    // Profil resmi
                     Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: kWhiteColor, width: 2),
+                        border: Border.all(color: kSuitGold, width: 2),
+                        boxShadow: [
+                          BoxShadow(color: kSuitGold.withOpacity(0.6), blurRadius: 8),
+                        ],
                       ),
                       child: image.isEmpty
                           ? const Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Icon(Icons.people, color: kWhiteColor, size: 50),
+                              child: Icon(Icons.person, color: Colors.white, size: 50),
                             )
                           : ClipOval(
                               child: Image.network(
@@ -91,288 +85,210 @@ class _LoginViewState extends State<LoginView> {
                               ),
                             ),
                     ),
-                    SizedBox(height: 5.h),
-                  ],
-                ),
-                SizedBox(width: 10.w),
-                Text(
-                  '$userName $userSurname',
-                  textAlign: TextAlign.left,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: kWhiteColor, fontSize: 18.sp, fontWeight: FontWeight.bold),
-                ),
-                const Spacer(),
-                SizedBox(width: 10.w),
-                ImageButton(
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        barrierDismissible: true, // Dışarıya tıklayınca kapanabilir
-                        builder: (BuildContext context) {
-                          return BlocProvider.value(
-                            value: LoginCubit(),
-                            child: const ThemedUserListDialog(),
-                          );
-                        },
-                      );
-                    },
-                    imagePath: 'assets/asset/online.png'),
-                ImageButton(
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        barrierDismissible: true, // Dışarıya tıklayınca kapanabilir
-                        builder: (BuildContext context) {
-                          return BlocProvider.value(
-                            value: LoginCubit(),
-                            child: const ThemedHowToPlayDialog(),
-                          );
-                        },
-                      );
-                    },
-                    imagePath: 'assets/asset/info.png'),
-                ImageButton(
-                  imagePath: 'assets/asset/settings.png',
-                  onTap: () {},
-                ),
-              ],
-            ),
-          ),
-          const GoldNavContainer(),
-          SizedBox(height: 10.h),
-          Container(
-            width: 0.9.sw,
-            height: 100.h,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10.r),
-              border: Border.all(color: kButtonGrey, width: 2),
-              boxShadow: [
-                BoxShadow(
-                  color: kBlackColor.withOpacity(0.5),
-                  spreadRadius: 2,
-                  blurRadius: 5,
-                  offset: const Offset(0, 3), // changes position of shadow
-                ),
-              ],
-            ),
-            child: Row(
-              spacing: 20.w,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.military_tech,
-                  color: kSuitGold,
-                  size: 40.sp,
-                ),
-                BlocBuilder<LoginCubit, LoginState>(
-                  builder: (context, state) {
-                    return Text.rich(
-                      //? bak buraya
-                      TextSpan(
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          TextSpan(
-                            text: 'Your Point ',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24.sp,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          TextSpan(
-                            text: state.userPoint != 0 ? state.userPoint.toString() : '0',
-                            style: const TextStyle(
-                              color: kSuitGold,
-                              fontSize: 30,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                          Text('$userName $userSurname',
+                              style: TextStyle(
+                                color: kWhiteColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18.sp,
+                                shadows: [Shadow(color: Colors.black.withOpacity(0.8), blurRadius: 4)],
+                              )),
+                          Text('Welcome back!',
+                              style: TextStyle(color: Colors.grey[300], fontSize: 14.sp, fontWeight: FontWeight.w400)),
                         ],
                       ),
-                    );
-                  },
-                ),
-                SizedBox(width: 10.w),
-              ],
-            ),
-          ),
-          SizedBox(height: 20.h),
-          Container(
-            width: 0.85.sw,
-            height: 0.55.sh,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(color: kWhiteColor.withOpacity(0.8), width: 2),
-              gradient: LinearGradient(
-                colors: [
-                  Colors.black.withOpacity(0.6),
-                  Colors.black.withOpacity(0.3),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              image: const DecorationImage(
-                image: AssetImage('assets/asset/bg.jpg'),
-                fit: BoxFit.cover,
-                opacity: 0.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: kBlackColor.withOpacity(0.7),
-                  spreadRadius: 4,
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Play Now!",
-                    style: TextStyle(
-                      color: kWhiteColor,
-                      fontSize: 28.sp,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.5,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withOpacity(0.7),
-                          blurRadius: 6,
-                          offset: const Offset(2, 3),
+                    ),
+                    // Mini ikonlar (bilgi - aktif kullanıcı - ayarlar)
+                    Row(
+                      children: [
+                        ImageButton(
+                          imagePath: 'assets/asset/online.png',
+                          onTap: () => showDialog(
+                            context: context,
+                            builder: (_) => BlocProvider.value(
+                              value: LoginCubit(),
+                              child: const ThemedUserListDialog(),
+                            ),
+                          ),
                         ),
-                        Shadow(
-                          color: kSuitGold.withOpacity(0.5),
-                          blurRadius: 8,
-                          offset: const Offset(0, 0),
+                        ImageButton(
+                          imagePath: 'assets/asset/info.png',
+                          onTap: () => showDialog(
+                            context: context,
+                            builder: (_) => BlocProvider.value(
+                              value: LoginCubit(),
+                              child: const ThemedHowToPlayDialog(),
+                            ),
+                          ),
+                        ),
+                        ImageButton(
+                          imagePath: 'assets/asset/store.png',
+                          onTap: () {},
                         ),
                       ],
                     ),
+                  ],
+                ),
+              ),
+
+              // === Oyun Başlığı ===
+              Padding(
+                padding: EdgeInsets.only(top: 10.h),
+                child: Text(
+                  'BTK CARD GAME',
+                  style: TextStyle(
+                    fontSize: 32.sp,
+                    fontWeight: FontWeight.bold,
+                    color: kSuitGold,
+                    letterSpacing: 2,
+                    shadows: [
+                      Shadow(color: Colors.black.withOpacity(0.8), blurRadius: 8),
+                      Shadow(color: kSuitGold.withOpacity(0.7), blurRadius: 12),
+                    ],
                   ),
-                  SizedBox(height: 20.h),
-                  const GoldNavContainer(),
-                  SizedBox(height: 15.h),
-                  PrimaryGameButton(
-                    buttonColor: kButtonGreen,
-                    text: 'Login',
-                    icon: Icons.login,
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        barrierDismissible: true, // Dışarıya tıklayınca kapanabilir
-                        builder: (BuildContext context) {
-                          return BlocProvider.value(
+                ),
+              ),
+
+              SizedBox(height: 20.h),
+
+              // === Puan Alanı (Ortada büyük coin göstergesi) ===
+              BlocBuilder<LoginCubit, LoginState>(
+                builder: (context, state) {
+                  return Container(
+                    width: 0.45.sw,
+                    height: 0.45.sw,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withOpacity(0.7),
+                      boxShadow: [
+                        BoxShadow(color: kSuitGold.withOpacity(0.4), blurRadius: 20, spreadRadius: 2),
+                      ],
+                      border: Border.all(color: Colors.amberAccent, width: 3),
+                    ),
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(FontAwesomeIcons.coins, color: kSuitGold, size: 45.sp),
+                        SizedBox(height: 5.h),
+                        Text(
+                          state.userPoint != 0 ? state.userPoint.toString() : '0',
+                          style: TextStyle(
+                            color: kWhiteColor,
+                            fontSize: 34.sp,
+                            fontWeight: FontWeight.bold,
+                            shadows: [
+                              Shadow(color: kSuitGold.withOpacity(0.7), blurRadius: 10),
+                            ],
+                          ),
+                        ),
+                        Text(
+                          'Your Points',
+                          style: TextStyle(color: Colors.grey[300], fontSize: 16.sp, fontWeight: FontWeight.w500),
+                        )
+                      ],
+                    ),
+                  );
+                },
+              ),
+
+              SizedBox(height: 30.h),
+
+              // === Ana Menü Butonları ===
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 40.w),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      PrimaryGameButton(
+                        buttonColor: kButtonGreen,
+                        text: 'Login',
+                        icon: FontAwesomeIcons.rightToBracket,
+                        onTap: () => showDialog(
+                          context: context,
+                          builder: (_) => BlocProvider.value(
                             value: LoginCubit(),
                             child: const ThemedLoginDialog(),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  SizedBox(height: 10.h),
-                  BlocBuilder<LoginCubit, LoginState>(
-                    builder: (context, state) {
-                      return PrimaryGameButton(
-                        buttonColor: Colors.blue,
-                        text: 'Start Game',
-                        icon: Icons.sports_esports,
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            barrierDismissible: true, // Dışarıya tıklayınca kapanabilir
-                            builder: (BuildContext context) {
-                              return BlocProvider.value(
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 15.h),
+                      BlocBuilder<LoginCubit, LoginState>(
+                        builder: (context, state) {
+                          return PrimaryGameButton(
+                            buttonColor: Colors.blueAccent,
+                            text: 'Start Game',
+                            icon: FontAwesomeIcons.play,
+                            onTap: () => showDialog(
+                              context: context,
+                              builder: (_) => BlocProvider.value(
                                 value: LoginCubit(),
                                 child: const GameRoomSelectionDialog(),
-                              );
-                            },
-                          );
-                          // if (state.isLogin == false) {
-                          //   ScaffoldMessenger.of(context).showSnackBar(
-                          //     const SnackBar(
-                          //       content: Text(
-                          //         'Lütfen önce giriş yapınız!',
-                          //         style: TextStyle(color: kWhiteColor, fontWeight: FontWeight.bold),
-                          //       ),
-                          //       backgroundColor: kSuitRed,
-                          //       duration: Duration(seconds: 3),
-                          //     ),
-                          //   );
-                          //   return;
-                          // } else {
-
-                          //   // context.push('/home_view');
-                          // }
-                        },
-                      );
-                    },
-                  ),
-                  SizedBox(height: 10.h),
-                  PrimaryGameButton(
-                    buttonColor: kSuitRed,
-                    text: 'Exit Game',
-                    icon: Icons.exit_to_app,
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        barrierDismissible: true, // Dışarıya tıklayınca kapanabilir
-                        builder: (BuildContext context) {
-                          return BlocProvider.value(
-                            value: LoginCubit(),
-                            child: const ThemedConfirmExitDialog(),
+                              ),
+                            ),
                           );
                         },
-                      );
-                    },
-                  ),
-                  SizedBox(height: 10.h),
-                  PrimaryGameButton(
-                    buttonColor: Colors.deepPurpleAccent,
-                    text: 'Privacy Policy',
-                    icon: Icons.privacy_tip,
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        barrierDismissible: true, // Dışarıya tıklayınca kapanabilir
-                        builder: (BuildContext context) {
-                          return BlocProvider.value(
+                      ),
+                      SizedBox(height: 15.h),
+                      PrimaryGameButton(
+                        buttonColor: Colors.deepPurpleAccent,
+                        text: 'Privacy Policy',
+                        icon: FontAwesomeIcons.shieldHalved,
+                        onTap: () => showDialog(
+                          context: context,
+                          builder: (_) => BlocProvider.value(
                             value: LoginCubit(),
                             child: const ThemedPrivacyPolicyDialog(),
-                          );
-                        },
-                      );
-                    },
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 15.h),
+                      PrimaryGameButton(
+                        buttonColor: kSuitRed,
+                        text: 'Exit Game',
+                        icon: FontAwesomeIcons.doorOpen,
+                        onTap: () => showDialog(
+                          context: context,
+                          builder: (_) => BlocProvider.value(
+                            value: LoginCubit(),
+                            child: const ThemedConfirmExitDialog(),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 15.h),
+                      PrimaryGameButton(
+                        buttonColor: Colors.deepOrange,
+                        text: 'Sign Up',
+                        icon: FontAwesomeIcons.userPlus,
+                        onTap: () => context.pushReplacement('/register_view'),
+                      ),
+                      SizedBox(height: 15.h)
+                    ],
                   ),
-                  SizedBox(height: 5.h),
-                  const Divider(color: Colors.amber, thickness: 2.2, indent: 10, endIndent: 10),
-                  SizedBox(height: 5.h),
-                  PrimaryGameButton(
-                    buttonColor: Colors.deepOrange,
-                    text: 'Sing Up',
-                    icon: Icons.app_registration_rounded,
-                    onTap: () {
-                      context.pushReplacement('/register_view');
-                    },
-                  ),
+                ),
+              ),
+
+              // === Alt Bilgi ===
+              Column(
+                children: [
+                  const GoldNavContainer(),
+                  SizedBox(height: 8.h),
+                  Text('Version 1.0.0',
+                      style: TextStyle(color: kWhiteColor, fontWeight: FontWeight.bold, fontSize: 13.sp)),
+                  Text('© 2025 YourGameCompany',
+                      style: TextStyle(color: kWhiteColor, fontWeight: FontWeight.bold, fontSize: 13.sp)),
+                  SizedBox(height: 10.h),
                 ],
               ),
-            ),
+            ],
           ),
-          const Spacer(),
-          Text(
-            'Version 1.0.0',
-            style: TextStyle(color: kWhiteColor, fontWeight: FontWeight.bold, fontSize: 14.sp),
-          ),
-          SizedBox(height: 10.h),
-          Text(
-            '© 2025 YourGameCompany',
-            style: TextStyle(color: kWhiteColor, fontWeight: FontWeight.bold, fontSize: 14.sp),
-          ),
-          SizedBox(height: 20.h),
-          const GoldNavContainer(),
-        ],
+        ),
       ),
-    ));
+    );
   }
 }

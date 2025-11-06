@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_base_app/feature/auth/login/model/user_model.dart';
 import 'package:flutter_base_app/feature/auth/register/cubit/register_cubit.dart';
@@ -26,389 +25,289 @@ class _RegisterViewState extends State<RegisterView> {
       body: Container(
         width: 1.sw,
         height: 1.sh,
-        // color: kTableGreen,
         decoration: BoxDecoration(
           image: const DecorationImage(
             image: AssetImage('assets/asset/bg.jpg'),
             fit: BoxFit.cover,
             opacity: 0.9,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: kBlackColor.withOpacity(0.5),
-              spreadRadius: 2,
-              blurRadius: 5,
-              offset: const Offset(0, 3), // changes position of shadow
-            ),
-          ],
+          gradient: LinearGradient(
+            colors: [
+              Colors.black.withOpacity(0.85),
+              Colors.blueGrey.shade900.withOpacity(0.8),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
         ),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 40.h,
-            ),
-            Text(
-              "Register View",
-              style: TextStyle(
-                color: kWhiteColor,
-                fontSize: 28.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(
-              height: 10.h,
-            ),
-            const GoldNavContainer(),
-            SizedBox(
-              height: 20.h,
-            ),
-            CircleAvatar(
-              radius: 30,
-              backgroundColor: kTableNavy.withOpacity(0.85),
-              child: BackButton(color: kWhiteColor, onPressed: () => context.pushReplacement('/login_view')),
-            ),
-            SizedBox(
-              height: 20.h,
-            ),
-            Container(
-              width: 0.85.sw,
-              height: 0.66.sh,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20.r),
-                border: Border.all(color: kWhiteColor.withOpacity(0.8), width: 2),
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.black.withOpacity(0.6),
-                    Colors.black.withOpacity(0.3),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                image: const DecorationImage(
-                  image: AssetImage('assets/asset/bg.jpg'),
-                  fit: BoxFit.cover,
-                  opacity: 0.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: kBlackColor.withOpacity(0.7),
-                    spreadRadius: 4,
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              children: [
+                SizedBox(height: 20.h),
+                Text(
+                  "Create Your Player",
+                  style: TextStyle(
+                    color: kSuitGold,
+                    fontSize: 30.sp,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2,
+                    shadows: [
+                      Shadow(color: Colors.black.withOpacity(0.9), blurRadius: 8),
+                      Shadow(color: kSuitGold.withOpacity(0.8), blurRadius: 12),
+                    ],
                   ),
-                ],
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: 40.h,
+                ),
+                SizedBox(height: 5.h),
+                const GoldNavContainer(),
+                SizedBox(height: 20.h),
+
+                // Geri Butonu
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: CircleAvatar(
+                      radius: 28,
+                      backgroundColor: kTableNavy.withOpacity(0.8),
+                      child: BackButton(color: kWhiteColor, onPressed: () => context.pushReplacement('/login_view')),
                     ),
-                    BlocBuilder<RegisterCubit, RegisterState>(
-                      builder: (context, state) {
-                        return GestureDetector(
-                          onTap: () => showDialog(
-                            context: context,
-                            builder: (dialogContext) {
-                              return BlocProvider.value(
-                                value: context.read<RegisterCubit>(),
-                                child: AlertDialog(
-                                  backgroundColor: kTableNavy.withOpacity(0.85),
-                                  title: Text(
-                                    "Image",
-                                    style: TextStyle(color: kWhiteColor, fontSize: 20.sp, fontWeight: FontWeight.bold),
-                                  ),
-                                  content: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      ListTile(
-                                        leading: const Icon(Icons.camera_alt, color: kWhiteColor, size: 30),
-                                        title: Text(
-                                          "Camera",
-                                          style: TextStyle(
-                                              color: kWhiteColor, fontSize: 24.sp, fontWeight: FontWeight.bold),
-                                        ),
-                                        onTap: () async {
-                                          // 📷 Kameradan fotoğraf çek
-                                          File? cameraImage = await pickImage(fromCamera: true);
-                                          if (cameraImage != null) {
-                                            context.read<RegisterCubit>().setImage(cameraImage);
-                                            Navigator.pop(context);
-                                          }
-                                        },
+                  ),
+                ),
+
+                SizedBox(height: 20.h),
+
+                // FORM ALANI
+                Container(
+                  width: 0.9.sw,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(25.r),
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.black.withOpacity(0.75),
+                        Colors.blueGrey.shade800.withOpacity(0.65),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    border: Border.all(color: kSuitGold.withOpacity(0.8), width: 2),
+                    boxShadow: [
+                      BoxShadow(color: kSuitGold.withOpacity(0.4), blurRadius: 12, spreadRadius: 2),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 25.h),
+                    child: Column(
+                      children: [
+                        // Profil Fotoğrafı
+                        BlocBuilder<RegisterCubit, RegisterState>(
+                          builder: (context, state) {
+                            return GestureDetector(
+                              onTap: () => showDialog(
+                                context: context,
+                                builder: (dialogContext) {
+                                  return BlocProvider.value(
+                                    value: context.read<RegisterCubit>(),
+                                    child: AlertDialog(
+                                      backgroundColor: kTableNavy.withOpacity(0.85),
+                                      title: Text(
+                                        "Select Image",
+                                        style:
+                                            TextStyle(color: kSuitGold, fontWeight: FontWeight.bold, fontSize: 20.sp),
                                       ),
-                                      ListTile(
-                                        leading: const Icon(Icons.camera_alt, color: kWhiteColor, size: 30),
-                                        title: Text(
-                                          "Gallery",
-                                          style: TextStyle(
-                                              color: kWhiteColor, fontSize: 24.sp, fontWeight: FontWeight.bold),
-                                        ),
-                                        onTap: () async {
-                                          // 🖼️ Galeriden seç
-                                          File? galleryImage = await pickImage(fromCamera: false);
-                                          if (galleryImage != null) {
-                                            context.read<RegisterCubit>().setImage(galleryImage);
-                                            Navigator.pop(context);
-                                          }
-                                        },
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          ListTile(
+                                            leading: const Icon(Icons.camera_alt, color: kWhiteColor),
+                                            title:
+                                                Text("Camera", style: TextStyle(color: kWhiteColor, fontSize: 18.sp)),
+                                            onTap: () async {
+                                              File? cameraImage = await pickImage(fromCamera: true);
+                                              if (cameraImage != null) {
+                                                context.read<RegisterCubit>().setImage(cameraImage);
+                                                Navigator.pop(context);
+                                              }
+                                            },
+                                          ),
+                                          ListTile(
+                                            leading: const Icon(Icons.photo_library, color: kWhiteColor),
+                                            title:
+                                                Text("Gallery", style: TextStyle(color: kWhiteColor, fontSize: 18.sp)),
+                                            onTap: () async {
+                                              File? galleryImage = await pickImage(fromCamera: false);
+                                              if (galleryImage != null) {
+                                                context.read<RegisterCubit>().setImage(galleryImage);
+                                                Navigator.pop(context);
+                                              }
+                                            },
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: kSuitGold, width: 2),
+                                  boxShadow: [
+                                    BoxShadow(color: kSuitGold.withOpacity(0.5), blurRadius: 10),
+                                  ],
                                 ),
+                                child: state.imageFile != null
+                                    ? ClipOval(
+                                        child: Image.file(
+                                          state.imageFile!,
+                                          width: 120,
+                                          height: 120,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
+                                    : const CircleAvatar(
+                                        radius: 55,
+                                        backgroundColor: kTableGreen,
+                                        child: Icon(Icons.people_alt_sharp, color: kWhiteColor, size: 50),
+                                      ),
+                              ),
+                            );
+                          },
+                        ),
+
+                        SizedBox(height: 25.h),
+
+                        // AD - SOYAD - MAIL - ŞİFRE ALANLARI
+                        _buildTextField(
+                          context,
+                          controller: context.read<RegisterCubit>().nameController,
+                          hintText: 'Name',
+                          icon: Icons.person_outline,
+                        ),
+                        SizedBox(height: 15.h),
+                        _buildTextField(
+                          context,
+                          controller: context.read<RegisterCubit>().surnameController,
+                          hintText: 'Surname',
+                          icon: Icons.person,
+                        ),
+                        SizedBox(height: 15.h),
+                        _buildTextField(
+                          context,
+                          controller: context.read<RegisterCubit>().emailController,
+                          hintText: 'E-mail',
+                          icon: Icons.email_outlined,
+                        ),
+                        SizedBox(height: 15.h),
+
+                        BlocBuilder<RegisterCubit, RegisterState>(
+                          builder: (context, state) {
+                            return _buildTextField(
+                              context,
+                              controller: context.read<RegisterCubit>().passwordController,
+                              hintText: 'Password',
+                              icon: Icons.lock_outline,
+                              obscureText: state.obscureText,
+                              suffix: IconButton(
+                                icon: Icon(
+                                  state.obscureText ? Icons.visibility : Icons.visibility_off,
+                                  color: kSuitGold,
+                                ),
+                                onPressed: () => context.read<RegisterCubit>().changeObscureText(),
+                              ),
+                            );
+                          },
+                        ),
+                        SizedBox(height: 25.h),
+
+                        // KAYIT BUTONU
+                        BlocListener<RegisterCubit, RegisterState>(
+                          listenWhen: (prev, curr) => prev.registerState != curr.registerState,
+                          listener: (context, state) {
+                            if (state.registerState == RegisterStates.completed) {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(content: Text(state.message ?? "Registration successful")));
+                              Future.microtask(() => context.pushReplacement('/login_view'));
+                            } else if (state.registerState == RegisterStates.error) {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.errorMessage)));
+                            }
+                          },
+                          child: BlocBuilder<RegisterCubit, RegisterState>(
+                            builder: (context, state) {
+                              if (state.registerState == RegisterStates.loading) {
+                                return const CircularProgressIndicator(color: kSuitGold);
+                              }
+                              return PrimaryGameButton(
+                                buttonColor: Colors.deepOrange,
+                                text: 'Create Account',
+                                icon: Icons.save,
+                                onTap: () {
+                                  context.read<RegisterCubit>().insertUser(
+                                        UserModel(
+                                          id: 0,
+                                          name: context.read<RegisterCubit>().nameController.text,
+                                          surname: context.read<RegisterCubit>().surnameController.text,
+                                          email: context.read<RegisterCubit>().emailController.text,
+                                          password: context.read<RegisterCubit>().passwordController.text,
+                                        ),
+                                        state.imageFile,
+                                      );
+                                },
                               );
                             },
                           ),
-                          child: state.imageFile != null
-                              ? ClipOval(
-                                  child: Image.file(
-                                    state.imageFile!,
-                                    width: 150,
-                                    height: 150,
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
-                              : const CircleAvatar(
-                                  radius: 50,
-                                  backgroundColor: kTableGreen,
-                                  child: Icon(
-                                    Icons.people_alt_sharp,
-                                    color: kWhiteColor,
-                                    size: 50,
-                                  ),
-                                ),
-                        );
-                      },
+                        ),
+                      ],
                     ),
-                    SizedBox(
-                      height: 20.h,
-                    ),
-                    TextFormField(
-                      controller: context.read<RegisterCubit>().nameController,
-                      style: const TextStyle(
-                        color: kWhiteColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      cursorColor: kSuitGold,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: kTableNavy.withOpacity(0.85), // koyu arka plan
-                        hintText: 'Name',
-                        hintStyle: TextStyle(
-                          color: kLightGrey.withOpacity(0.7),
-                          fontSize: 15,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: kSuitGold, width: 1.5),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: kAccentGreen, width: 2.2),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: kButtonRed, width: 1.5),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: kButtonRed, width: 2.2),
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.person_outline,
-                          color: kSuitGold,
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 20.h,
-                    ),
-                    TextFormField(
-                      controller: context.read<RegisterCubit>().surnameController,
-                      style: const TextStyle(
-                        color: kWhiteColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      cursorColor: kSuitGold,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: kTableNavy.withOpacity(0.85), // koyu arka plan
-                        hintText: 'Surname',
-                        hintStyle: TextStyle(
-                          color: kLightGrey.withOpacity(0.7),
-                          fontSize: 15,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: kSuitGold, width: 1.5),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: kAccentGreen, width: 2.2),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: kButtonRed, width: 1.5),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: kButtonRed, width: 2.2),
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.person_outline,
-                          color: kSuitGold,
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 20.h,
-                    ),
-                    TextFormField(
-                      controller: context.read<RegisterCubit>().emailController,
-                      style: const TextStyle(
-                        color: kWhiteColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      cursorColor: kSuitGold,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: kTableNavy.withOpacity(0.85), // koyu arka plan
-                        hintText: 'E-mail',
-                        hintStyle: TextStyle(
-                          color: kLightGrey.withOpacity(0.7),
-                          fontSize: 15,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: kSuitGold, width: 1.5),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: kAccentGreen, width: 2.2),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: kButtonRed, width: 1.5),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: kButtonRed, width: 2.2),
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.email,
-                          color: kSuitGold,
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 20.h,
-                    ),
-                    BlocBuilder<RegisterCubit, RegisterState>(
-                      builder: (context, state) {
-                        return TextFormField(
-                          controller: context.read<RegisterCubit>().passwordController,
-                          obscureText: state.obscureText,
-                          style: const TextStyle(
-                            color: kWhiteColor,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          cursorColor: kSuitGold,
-                          decoration: InputDecoration(
-                            suffixIcon: IconButton(
-                                onPressed: () {
-                                  context.read<RegisterCubit>().changeObscureText();
-                                },
-                                icon: Icon(state.obscureText ? Icons.remove_red_eye : Icons.remove_red_eye_outlined)),
-                            filled: true,
-                            fillColor: kTableNavy.withOpacity(0.85), // koyu arka plan
-                            hintText: 'Password',
-                            hintStyle: TextStyle(
-                              color: kLightGrey.withOpacity(0.7),
-                              fontSize: 15,
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: kSuitGold, width: 1.5),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: kAccentGreen, width: 2.2),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: kButtonRed, width: 1.5),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: kButtonRed, width: 2.2),
-                            ),
-                            prefixIcon: const Icon(
-                              Icons.password,
-                              color: kSuitGold,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    SizedBox(
-                      height: 30.h,
-                    ),
-                    BlocListener<RegisterCubit, RegisterState>(
-                      listenWhen: (previous, current) => previous.registerState != current.registerState,
-                      listener: (context, state) {
-                        if (state.registerState == RegisterStates.completed) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(state.message ?? "Kayıt başarılı")),
-                          );
-
-                          // 🕑 Navigasyonu biraz geciktir (build tamamlandıktan sonra)
-                          Future.microtask(() => context.pushReplacement('/login_view'));
-                        } else if (state.registerState == RegisterStates.error) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(state.errorMessage)),
-                          );
-                        }
-                      },
-                      child: BlocBuilder<RegisterCubit, RegisterState>(
-                        builder: (context, state) {
-                          if (state.registerState == RegisterStates.loading) {
-                            return const CircularProgressIndicator(color: kSuitGold);
-                          }
-
-                          return PrimaryGameButton(
-                            buttonColor: Colors.deepOrange,
-                            text: 'Save',
-                            icon: Icons.save,
-                            onTap: () {
-                              context.read<RegisterCubit>().insertUser(
-                                    UserModel(
-                                      id: 0,
-                                      name: context.read<RegisterCubit>().nameController.text,
-                                      surname: context.read<RegisterCubit>().surnameController.text,
-                                      email: context.read<RegisterCubit>().emailController.text,
-                                      password: context.read<RegisterCubit>().passwordController.text,
-                                    ),
-                                    state.imageFile,
-                                  );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+
+                SizedBox(height: 25.h),
+                Text("Already have an account?",
+                    style: TextStyle(color: kWhiteColor.withOpacity(0.8), fontSize: 15.sp)),
+                TextButton(
+                  onPressed: () => context.pushReplacement('/login_view'),
+                  child: Text("Go to Login",
+                      style: TextStyle(color: kSuitGold, fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                ),
+                SizedBox(height: 30.h),
+              ],
             ),
-          ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(
+    BuildContext context, {
+    required TextEditingController controller,
+    required String hintText,
+    required IconData icon,
+    bool obscureText = false,
+    Widget? suffix,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      style: const TextStyle(color: kWhiteColor, fontSize: 16, fontWeight: FontWeight.w500),
+      cursorColor: kSuitGold,
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: kTableNavy.withOpacity(0.85),
+        hintText: hintText,
+        hintStyle: TextStyle(color: kLightGrey.withOpacity(0.7), fontSize: 15),
+        prefixIcon: Icon(icon, color: kSuitGold),
+        suffixIcon: suffix,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: kSuitGold, width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: kAccentGreen, width: 2),
         ),
       ),
     );

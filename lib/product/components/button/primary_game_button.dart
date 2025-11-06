@@ -34,7 +34,7 @@ class PrimaryGameButton extends StatelessWidget {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(15.r),
-          border: Border.all(color: kSuitGold, width: 2),
+          border: Border.all(color: kWhiteColor.withOpacity(0.6), width: 2),
           boxShadow: [
             BoxShadow(
               color: buttonColor.withOpacity(0.6),
