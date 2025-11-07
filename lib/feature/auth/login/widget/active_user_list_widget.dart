@@ -8,6 +8,7 @@ import 'package:flutter_base_app/product/components/button/primary_game_button.d
 import 'package:flutter_base_app/product/components/container/gold_nav.dart';
 import 'package:flutter_base_app/product/constant/color_constants.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 // MARK: - USER LIST DIALOG WIDGET
 /// Temaya uygun aktif kullanıcı listesi iletişim kutusu.
@@ -21,26 +22,54 @@ class ThemedUserListDialog extends StatelessWidget {
         children: [
           // Online Status Indicator
           Container(
-            width: 12,
-            height: 12,
             decoration: BoxDecoration(
-                color: user.status == "Oyunda"
-                    ? kButtonGreen
-                    : user.status == "Bitirdi"
-                        ? kSuitRed
-                        : kSuitGold,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  // Harici sabit kullanılıyor
-                  BoxShadow(
-                    color: user.status == "Oyunda"
-                        ? kButtonGreen.withOpacity(0.8)
-                        : user.status == "Bitirdi"
-                            ? kSuitRed.withOpacity(0.5)
-                            : kSuitGold.withOpacity(0.5), // Harici sabit kullanılıyor
-                    blurRadius: 4,
+              shape: BoxShape.circle,
+              border: Border.all(color: kSuitGold, width: 2),
+              boxShadow: [
+                BoxShadow(color: kSuitGold.withOpacity(0.6), blurRadius: 8),
+              ],
+            ),
+            child: user.image!.isEmpty
+                ? const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Icon(Icons.person, color: Colors.white, size: 50),
                   )
-                ]),
+                : ClipOval(
+                    child: Image.network(
+                      'https://btkgameapi.linsabilisim.com/${user.image!}',
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+          ),
+          SizedBox(
+            width: 10.w,
+          ),
+          Transform.translate(
+            offset: Offset(-25.w, -20.w),
+            child: Container(
+              width: 16.w,
+              height: 16.w,
+              decoration: BoxDecoration(
+                  color: user.status == "Oyunda"
+                      ? kButtonGreen
+                      : user.status == "Bitirdi"
+                          ? kSuitRed
+                          : kSuitGold,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    // Harici sabit kullanılıyor
+                    BoxShadow(
+                      color: user.status == "Oyunda"
+                          ? kButtonGreen.withOpacity(0.8)
+                          : user.status == "Bitirdi"
+                              ? kSuitRed.withOpacity(0.5)
+                              : kSuitGold.withOpacity(0.5), // Harici sabit kullanılıyor
+                      blurRadius: 4,
+                    )
+                  ]),
+            ),
           ),
           const SizedBox(width: 15),
 
@@ -112,13 +141,13 @@ class ThemedUserListDialog extends StatelessWidget {
               BlocBuilder<LoginCubit, LoginState>(
                 builder: (context, state) {
                   // state.userList'teki aktif (isOnline: true) kullanıcı sayısını hesaplar.
-                  final onlineCount = state.userList.where((u) => u.status == true).length;
+                  final onlineCount = state.userList.where((u) => u.status == "Musait" || u.status == "Oyunda").length;
                   return Text(
-                    "AKTİF OYUNCULAR ($onlineCount ONLINE)",
+                    "Leader Board ($onlineCount ONLINE)",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: kSuitGold, // Harici sabit kullanılıyor
-                      fontSize: 24,
+                      fontSize: 22.sp,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.2,
                       shadows: [
@@ -148,7 +177,9 @@ class ThemedUserListDialog extends StatelessWidget {
                       ),
                       itemBuilder: (context, index) {
                         // userList'teki her bir öğeyi _buildUserListItem'a iletir.
-                        return _buildUserListItem(state.userList[index]);
+                        final sortedList = [...state.userList]..sort((a, b) => b.point!.compareTo(a.point!));
+
+                        return _buildUserListItem(sortedList[index]);
                       },
                     ),
                   );
@@ -160,7 +191,7 @@ class ThemedUserListDialog extends StatelessWidget {
               PrimaryGameButton(
                 // Harici widget kullanılıyor
                 buttonColor: kButtonGrey, // Harici sabit kullanılıyor
-                text: 'LİSTEYİ KAPAT',
+                text: 'Close',
                 icon: Icons.close,
                 onTap: () {
                   Navigator.of(context).pop();

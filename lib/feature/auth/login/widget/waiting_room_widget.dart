@@ -24,6 +24,7 @@ class WaitingRoomScreen extends StatefulWidget {
 class _WaitingRoomScreenState extends State<WaitingRoomScreen> {
   Timer? _statusTimer;
   int? createGameId = 0;
+  var image = injector.get<LocalStorage>().getString('image') ?? '';
 
   @override
   void initState() {
@@ -56,7 +57,7 @@ class _WaitingRoomScreenState extends State<WaitingRoomScreen> {
   @override
   Widget build(BuildContext context) {
     final double cardMaxWidth = 550;
-    final double cardMaxHeight = 650;
+    final double cardMaxHeight = 750;
 
     return Scaffold(
       backgroundColor: kTableNavy,
@@ -92,10 +93,9 @@ class _WaitingRoomScreenState extends State<WaitingRoomScreen> {
                 ),
               ),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    "OYUNCU BEKLEME ALANI",
+                    "PLAYER WAITING AREA",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: kSuitGold,
@@ -216,6 +216,7 @@ class _WaitingRoomScreenState extends State<WaitingRoomScreen> {
                       final String statusText = bothReady ? "OYUN BAŞLIYOR..." : "RAKİP BEKLENİYOR...";
 
                       return Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
                             statusText,
@@ -227,14 +228,15 @@ class _WaitingRoomScreenState extends State<WaitingRoomScreen> {
                             status: bothReady ? "Hazır" : "Beklemede",
                             color: bothReady ? kAccentGreen : kSuitGold,
                             isReady: bothReady,
+                            image: image,
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 24.h),
                           _buildPlayerStatus(
-                            title: "RAKİP",
-                            status: bothReady ? "Hazır" : "Bekliyor",
-                            color: bothReady ? kAccentGreen : kSuitGold,
-                            isReady: bothReady,
-                          ),
+                              title: "RAKİP",
+                              status: bothReady ? "Hazır" : "Bekliyor",
+                              color: bothReady ? kAccentGreen : kSuitGold,
+                              isReady: bothReady,
+                              image: ''),
                         ],
                       );
                     },
@@ -283,6 +285,7 @@ Widget _buildPlayerStatus({
   required String status,
   required Color color,
   required bool isReady,
+  required String image,
 }) {
   return Container(
     width: double.infinity,
@@ -294,7 +297,25 @@ Widget _buildPlayerStatus({
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: [
+        image.isEmpty
+            ? CircleAvatar(
+                radius: 30,
+                backgroundColor: Colors.amber.shade100,
+                child: Icon(
+                  Icons.person,
+                  color: Colors.black,
+                  size: 40.sp,
+                ))
+            : ClipOval(
+                child: Image.network(
+                  'https://btkgameapi.linsabilisim.com/$image',
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.cover,
+                ),
+              ),
         Text(
           title,
           style: const TextStyle(

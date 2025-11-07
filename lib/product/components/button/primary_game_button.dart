@@ -9,12 +9,14 @@ class PrimaryGameButton extends StatelessWidget {
     required this.text,
     this.icon,
     this.onTap,
+    this.fontSize = 18,
   });
 
   final Color buttonColor;
   final String text;
   final IconData? icon;
   void Function()? onTap;
+  double? fontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +59,7 @@ class PrimaryGameButton extends StatelessWidget {
               text,
               style: TextStyle(
                 color: kWhiteColor,
-                fontSize: 20.sp, // yazılar büyütüldü
+                fontSize: fontSize,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.2,
                 shadows: [

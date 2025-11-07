@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_base_app/feature/auth/login/cubit/login_cubit.dart';
 import 'package:flutter_base_app/feature/auth/login/cubit/login_state.dart';
+import 'package:flutter_base_app/feature/auth/login/model/user_model.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/active_user_list_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/exit_game_dialog_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/game_room_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/how_to_play_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/login_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/privacy_policy_widget.dart';
+import 'package:flutter_base_app/feature/auth/login/widget/store_widget.dart';
 import 'package:flutter_base_app/product/components/button/image_button.dart';
 import 'package:flutter_base_app/product/components/button/primary_game_button.dart';
 import 'package:flutter_base_app/product/components/container/gold_nav.dart';
@@ -127,7 +129,25 @@ class _LoginViewState extends State<LoginView> {
                         ),
                         ImageButton(
                           imagePath: 'assets/asset/store.png',
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BlocProvider.value(
+                                  value: LoginCubit(),
+                                  child: ThemedStorePage(
+                                    user: UserModel(
+                                        id: userId!,
+                                        name: userName,
+                                        surname: userSurname,
+                                        email: '',
+                                        password: '',
+                                        point: 300),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
