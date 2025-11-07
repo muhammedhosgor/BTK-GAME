@@ -13,6 +13,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class CardGamePage extends StatefulWidget {
   final bool isPlayer1;
@@ -230,6 +231,55 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
     );
   }
 
+  Widget buildTimeChip(int seconds, bool isSpecialEffectPlaying) {
+    final bool isActive = seconds != 15;
+
+    return Chip(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: isActive ? const Color(0xFFFFD700) : Colors.grey.shade700,
+          width: 1.5,
+        ),
+      ),
+      avatar: Icon(
+        Icons.timer,
+        color: isActive ? Colors.amberAccent : Colors.grey.shade300,
+        size: 20,
+      ),
+      backgroundColor: isActive
+          ? const Color(0xFF3B2F0A) // Altınla kontrast koyu arka plan
+          : Colors.grey.shade700,
+      label: Text(
+        isSpecialEffectPlaying ? 'Süre: $seconds' : 'Hazır',
+        style: TextStyle(
+          color: isActive ? Colors.amberAccent : Colors.white70,
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
+          shadows: [
+            Shadow(
+              blurRadius: 4,
+              color: Colors.black.withOpacity(0.4),
+              offset: const Offset(1, 1),
+            ),
+          ],
+        ),
+      ),
+      elevation: 6,
+      shadowColor: Colors.black54,
+    )
+        .animate(
+          onPlay: (controller) => controller.repeat(reverse: true),
+        )
+        .scale(
+          begin: const Offset(1.0, 1.0),
+          end: isActive ? const Offset(1.05, 1.05) : const Offset(1.0, 1.0),
+          curve: Curves.easeInOut,
+          duration: 600.ms,
+        );
+  }
+
   // YENİ: Info Mesajı Overlay'i
   Widget _buildInfoMessageOverlay() {
     return AnimatedSwitcher(
@@ -347,10 +397,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                 // todo: timer ekleyecen yer burası
                                 BlocBuilder<HomeCubit, HomeState>(
                                   builder: (context, state) {
-                                    return Chip(
-                                      backgroundColor: state.seconds != 15 ? kSuitGold : Colors.grey[600],
-                                      label: Text('Süre: ${state.isSpecialEffectPlaying ? state.seconds : ''}'),
-                                    );
+                                    return buildTimeChip(state.seconds, state.isSpecialEffectPlaying);
                                   },
                                 ),
                                 const SizedBox(width: 8),
@@ -442,8 +489,8 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                       child: ListView.builder(
                                         padding: EdgeInsets.symmetric(
                                           horizontal: (1.sw -
-                                                  (state.opponentCards.length * 60 +
-                                                      (state.opponentCards.length - 1) * 24)) /
+                                                  (state.opponentCards.length * 70 +
+                                                      (state.opponentCards.length - 1) * 10)) /
                                               2,
                                         ),
                                         itemCount: state.opponentCards.length,
@@ -470,95 +517,67 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                               ? Colors.red.shade800
                                               : Colors.black;
 
-                                          return AnimatedSwitcher(
-                                            duration: const Duration(milliseconds: 400),
-                                            transitionBuilder: (child, anim) =>
-                                                ScaleTransition(scale: anim, child: child),
-                                            child: GestureDetector(
-                                              onTap: () {
-                                                // 🎯 Kart etkileşimleri
-                                                if (state.karoVar) {
-                                                  // 🟥 Karo: Rakibin kartını devre dışı bırak
-                                                  context.read<HomeCubit>().disableCards(gameId!, card.fullName);
-                                                  context.read<HomeCubit>().setKaroVar(false);
-                                                } else if (state.sinekVar && swappingCards.isNotEmpty) {
-                                                  // ♣ Sinek: Takas işlemi
-                                                  swappingCards.add(card.fullName);
-                                                  context.read<HomeCubit>().sinekle(gameId!, swappingCards.join(','));
-                                                  context.read<HomeCubit>().setSinekVar(false);
-                                                  swappingCards.clear();
-                                                }
-                                              },
-                                              child: TweenAnimationBuilder<Color?>(
-                                                tween: ColorTween(
-                                                  begin: card.isSpecial ? baseBorderColor : Colors.black26,
-                                                  end: card.isSpecial ? baseBorderColor : Colors.black26,
-                                                ),
-                                                duration: const Duration(milliseconds: 700),
-                                                curve: Curves.easeInOut,
-                                                builder: (context, color, child) {
-                                                  return AnimatedContainer(
-                                                    duration: const Duration(milliseconds: 600),
-                                                    curve: Curves.easeInOut,
-                                                    margin: EdgeInsets.only(
-                                                      top: swappingCards.contains(card.fullName) ? 0 : 8,
-                                                    ),
-                                                    transform: Matrix4.translationValues(
-                                                        0, swappingCards.contains(card.fullName) ? -14 : 0, 0),
-                                                    decoration: BoxDecoration(
-                                                      color: state.game.disabledCards! == card.fullName
-                                                          ? Colors.white.withAlpha(160)
-                                                          : Colors.white,
-                                                      borderRadius: BorderRadius.circular(8),
-                                                      border:
-                                                          Border.all(color: baseBorderColor, width: baseBorderWidth),
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                          blurRadius: card.isSpecial ? 20 : 4,
-                                                          color: baseBorderColor.withOpacity(0.6),
-                                                          offset: const Offset(1, 2),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    width: 60,
-                                                    height: 92,
-                                                    child: Stack(
-                                                      clipBehavior: Clip.none,
-                                                      children: [
-                                                        // 🂡 Sol üst köşe
-                                                        Positioned(
-                                                          top: 4,
-                                                          left: 4,
-                                                          child: Column(
-                                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                                            children: [
-                                                              Text(
-                                                                card.rank,
-                                                                style: TextStyle(
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w900,
-                                                                  color: cardSymbolColor,
-                                                                  height: 0.9,
-                                                                ),
-                                                              ),
-                                                              Text(
-                                                                card.symbol,
-                                                                style: TextStyle(
-                                                                  fontSize: 18,
-                                                                  fontWeight: FontWeight.bold,
-                                                                  color: cardSymbolColor,
-                                                                ),
-                                                              ),
-                                                            ],
+                                          return Padding(
+                                            padding: EdgeInsets.symmetric(horizontal: 5.w),
+                                            child: AnimatedSwitcher(
+                                              duration: const Duration(milliseconds: 400),
+                                              transitionBuilder: (child, anim) =>
+                                                  ScaleTransition(scale: anim, child: child),
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  // 🎯 Kart etkileşimleri
+                                                  if (state.karoVar) {
+                                                    // 🟥 Karo: Rakibin kartını devre dışı bırak
+                                                    context.read<HomeCubit>().disableCards(gameId!, card.fullName);
+                                                    context.read<HomeCubit>().setKaroVar(false);
+                                                  } else if (state.sinekVar && swappingCards.isNotEmpty) {
+                                                    // ♣ Sinek: Takas işlemi
+                                                    swappingCards.add(card.fullName);
+                                                    context.read<HomeCubit>().sinekle(gameId!, swappingCards.join(','));
+                                                    context.read<HomeCubit>().setSinekVar(false);
+                                                    swappingCards.clear();
+                                                  }
+                                                },
+                                                child: TweenAnimationBuilder<Color?>(
+                                                  tween: ColorTween(
+                                                    begin: card.isSpecial ? baseBorderColor : Colors.black26,
+                                                    end: card.isSpecial ? baseBorderColor : Colors.black26,
+                                                  ),
+                                                  duration: const Duration(milliseconds: 700),
+                                                  curve: Curves.easeInOut,
+                                                  builder: (context, color, child) {
+                                                    return AnimatedContainer(
+                                                      duration: const Duration(milliseconds: 600),
+                                                      curve: Curves.easeInOut,
+                                                      margin: EdgeInsets.only(
+                                                        top: swappingCards.contains(card.fullName) ? 0 : 8,
+                                                      ),
+                                                      transform: Matrix4.translationValues(
+                                                          0, swappingCards.contains(card.fullName) ? -14 : 0, 0),
+                                                      decoration: BoxDecoration(
+                                                        color: state.game.disabledCards! == card.fullName
+                                                            ? Colors.white.withAlpha(160)
+                                                            : Colors.white,
+                                                        borderRadius: BorderRadius.circular(8),
+                                                        border:
+                                                            Border.all(color: baseBorderColor, width: baseBorderWidth),
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            blurRadius: card.isSpecial ? 20 : 4,
+                                                            color: baseBorderColor.withOpacity(0.6),
+                                                            offset: const Offset(1, 2),
                                                           ),
-                                                        ),
-
-                                                        // 🂡 Sağ alt köşe (180° dönük)
-                                                        Positioned(
-                                                          bottom: 4,
-                                                          right: 4,
-                                                          child: Transform.rotate(
-                                                            angle: math.pi,
+                                                        ],
+                                                      ),
+                                                      width: 60,
+                                                      height: 92,
+                                                      child: Stack(
+                                                        clipBehavior: Clip.none,
+                                                        children: [
+                                                          // 🂡 Sol üst köşe
+                                                          Positioned(
+                                                            top: 4,
+                                                            left: 4,
                                                             child: Column(
                                                               crossAxisAlignment: CrossAxisAlignment.center,
                                                               children: [
@@ -582,62 +601,95 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                               ],
                                                             ),
                                                           ),
-                                                        ),
 
-                                                        // 🔁 Takas edilmiş kart göstergesi
-                                                        if (state.game.swappedCards!.split(',').contains(card.fullName))
+                                                          // 🂡 Sağ alt köşe (180° dönük)
                                                           Positioned(
-                                                            top: -8,
-                                                            right: -8,
-                                                            child: Container(
-                                                              padding: const EdgeInsets.all(2),
-                                                              decoration: const BoxDecoration(
-                                                                color: Color.fromARGB(255, 83, 105, 192),
-                                                                shape: BoxShape.circle,
+                                                            bottom: 4,
+                                                            right: 4,
+                                                            child: Transform.rotate(
+                                                              angle: math.pi,
+                                                              child: Column(
+                                                                crossAxisAlignment: CrossAxisAlignment.center,
+                                                                children: [
+                                                                  Text(
+                                                                    card.rank,
+                                                                    style: TextStyle(
+                                                                      fontSize: 16,
+                                                                      fontWeight: FontWeight.w900,
+                                                                      color: cardSymbolColor,
+                                                                      height: 0.9,
+                                                                    ),
+                                                                  ),
+                                                                  Text(
+                                                                    card.symbol,
+                                                                    style: TextStyle(
+                                                                      fontSize: 18,
+                                                                      fontWeight: FontWeight.bold,
+                                                                      color: cardSymbolColor,
+                                                                    ),
+                                                                  ),
+                                                                ],
                                                               ),
-                                                              child: const Icon(Icons.swap_horiz,
-                                                                  size: 24, color: Colors.white),
                                                             ),
                                                           ),
 
-                                                        // 🚫 Engellenmiş kart overlay
-                                                        if (state.game.disabledCards! == card.fullName)
-                                                          Positioned.fill(
-                                                            child: Container(
-                                                              decoration: BoxDecoration(
-                                                                color: Colors.black38,
-                                                                borderRadius: BorderRadius.circular(8),
+                                                          // 🔁 Takas edilmiş kart göstergesi
+                                                          if (state.game.swappedCards!
+                                                              .split(',')
+                                                              .contains(card.fullName))
+                                                            Positioned(
+                                                              top: -8,
+                                                              right: -8,
+                                                              child: Container(
+                                                                padding: const EdgeInsets.all(2),
+                                                                decoration: const BoxDecoration(
+                                                                  color: Color.fromARGB(255, 83, 105, 192),
+                                                                  shape: BoxShape.circle,
+                                                                ),
+                                                                child: const Icon(Icons.swap_horiz,
+                                                                    size: 24, color: Colors.white),
                                                               ),
-                                                              child: Center(
-                                                                child: Icon(
-                                                                  Icons.block,
-                                                                  size: 40,
-                                                                  color: Colors.white.withOpacity(0.8),
+                                                            ),
+
+                                                          // 🚫 Engellenmiş kart overlay
+                                                          if (state.game.disabledCards! == card.fullName)
+                                                            Positioned.fill(
+                                                              child: Container(
+                                                                decoration: BoxDecoration(
+                                                                  color: Colors.black38,
+                                                                  borderRadius: BorderRadius.circular(8),
+                                                                ),
+                                                                child: Center(
+                                                                  child: Icon(
+                                                                    Icons.block,
+                                                                    size: 40,
+                                                                    color: Colors.white.withOpacity(0.8),
+                                                                  ),
                                                                 ),
                                                               ),
                                                             ),
-                                                          ),
 
-                                                        // ✅ Sinek-2 takas edildi göstergesi
-                                                        if (state.game.swappedCards!.isNotEmpty &&
-                                                            card.fullName == 'Sinek-2')
-                                                          Positioned(
-                                                            top: -20,
-                                                            left: 18,
-                                                            child: Container(
-                                                              padding: const EdgeInsets.all(2),
-                                                              decoration: const BoxDecoration(
-                                                                color: Color.fromARGB(255, 0, 141, 21),
-                                                                shape: BoxShape.circle,
+                                                          // ✅ Sinek-2 takas edildi göstergesi
+                                                          if (state.game.swappedCards!.isNotEmpty &&
+                                                              card.fullName == 'Sinek-2')
+                                                            Positioned(
+                                                              top: -20,
+                                                              left: 18,
+                                                              child: Container(
+                                                                padding: const EdgeInsets.all(2),
+                                                                decoration: const BoxDecoration(
+                                                                  color: Color.fromARGB(255, 0, 141, 21),
+                                                                  shape: BoxShape.circle,
+                                                                ),
+                                                                child: const Icon(Icons.check,
+                                                                    size: 18, color: Colors.white),
                                                               ),
-                                                              child: const Icon(Icons.check,
-                                                                  size: 18, color: Colors.white),
                                                             ),
-                                                          ),
-                                                      ],
-                                                    ),
-                                                  );
-                                                },
+                                                        ],
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
                                               ),
                                             ),
                                           );
@@ -671,29 +723,96 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                         width: 100.w,
                         height: 150.h,
                         decoration: BoxDecoration(
-                          image: DecorationImage(image: Image.asset('assets/asset/deck.png').image, fit: BoxFit.cover),
+                          image: DecorationImage(
+                            image: Image.asset('assets/asset/deck.png').image,
+                            fit: BoxFit.cover,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: Center(
-                            child: Container(
-                          margin: const EdgeInsets.all(1),
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.8),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: kTableNavy, width: 2),
+                          child: Container(
+                            margin: const EdgeInsets.all(4),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.amberAccent.withOpacity(0.95),
+                                  Colors.orangeAccent.withOpacity(0.85),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.8),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.amber.withOpacity(0.5),
+                                  blurRadius: 8,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                            child: BlocBuilder<HomeCubit, HomeState>(
+                              builder: (context, state) {
+                                if (state.getStatusState != GetStatusStates.completed) {
+                                  return const SizedBox();
+                                } else {
+                                  final int playedCount = state.game.playedCards!.split(',').length;
+                                  return Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.2),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white.withOpacity(0.5),
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: const Icon(
+                                          Icons.style_rounded,
+                                          size: 22,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        '$playedCount',
+                                        style: TextStyle(
+                                          color: kTableNavy,
+                                          fontSize: 20.sp,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.5,
+                                          shadows: [
+                                            Shadow(
+                                              blurRadius: 6,
+                                              color: Colors.white.withOpacity(0.9),
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }
+                              },
+                            ),
                           ),
-                          child: BlocBuilder<HomeCubit, HomeState>(
-                            builder: (context, state) {
-                              if (state.getStatusState != GetStatusStates.completed) {
-                                return const SizedBox();
-                              } else {
-                                return Text('${state.game.playedCards!.split(',').length} kart',
-                                    style: TextStyle(color: kTableNavy, fontSize: 20.sp, fontWeight: FontWeight.bold));
-                              }
-                            },
-                          ),
-                        )),
+                        ),
                       ),
+
                       Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -1231,43 +1350,139 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                         }
                                       },
                                       style: ElevatedButton.styleFrom(
-                                        // Arkaplan: Koyu Masa Teması
                                         backgroundColor: kTableNavy,
-                                        // Kenarlık: Altın Sarısı Accent
-                                        side: const BorderSide(color: Colors.amberAccent, width: 3),
-                                        // Köşe yuvarlaklığı
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
                                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                                        elevation: 0, // Kendi gölgemizi kullandığımız için default elevation'ı sıfırla
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(16),
+                                          side: const BorderSide(color: Colors.amberAccent, width: 3),
+                                        ),
+                                        elevation: 0,
+                                      ).copyWith(
+                                        overlayColor: WidgetStateProperty.all(
+                                            Colors.amber.withOpacity(0.15)), // Dokununca altın parlaması
+                                        shadowColor: WidgetStateProperty.all(Colors.amber.withOpacity(0.6)),
                                       ),
-                                      child: Text(
-                                        (state.game.isPlayer1Move! && state.game.isPlayer2Move!) || state.game.turn!
-                                            ? 'Değiştirme işlemleri yapıldı. KARTLAR AÇILDI!'
-                                            : widget.isPlayer1
-                                                ? !state.game.isPlayer1Move!
-                                                    ? 'SEÇİLİ KARTLARI DEĞİŞTİR / ATLA'
-                                                    : 'Karşı oyuncu seçiyor...'
-                                                : !state.game.isPlayer2Move!
-                                                    ? 'SEÇİLİ KARTLARI DEĞİŞTİR / ATLA'
-                                                    : 'Karşı oyuncu seçiyor...',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 17.sp,
-                                          fontWeight: FontWeight.bold,
-                                          shadows: [
-                                            // Yazıya hafif parlaklık
-                                            Shadow(
-                                              blurRadius: 4.0,
-                                              color: Colors.yellow.withOpacity(0.7),
-                                              offset: const Offset(0.5, 0.5),
+                                      child: AnimatedContainer(
+                                        duration: const Duration(milliseconds: 500),
+                                        curve: Curves.easeInOut,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(12),
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              Colors.amberAccent.withOpacity(0.2),
+                                              Colors.transparent,
+                                              Colors.amberAccent.withOpacity(0.2),
+                                            ],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ),
+                                          boxShadow: [
+                                            // BoxShadow(
+                                            //   color: Colors.amber.withOpacity(0.3),
+                                            //   blurRadius: 10,
+                                            //   spreadRadius: 1,
+                                            //   offset: const Offset(0, 3),
+                                            // ),
+                                          ],
+                                        ),
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              (state.game.isPlayer1Move! && state.game.isPlayer2Move!) ||
+                                                      state.game.turn!
+                                                  ? Icons.visibility
+                                                  : Icons.autorenew_rounded,
+                                              color: Colors.amberAccent,
+                                              size: 22,
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Flexible(
+                                              child: Text(
+                                                (state.game.isPlayer1Move! && state.game.isPlayer2Move!) ||
+                                                        state.game.turn!
+                                                    ? 'DEĞİŞTİRME TAMAMLANDI • KARTLAR AÇILDI'
+                                                    : widget.isPlayer1
+                                                        ? !state.game.isPlayer1Move!
+                                                            ? 'SEÇİLİ KARTLARI DEĞİŞTİR / ATLA'
+                                                            : 'Karşı oyuncu seçiyor...'
+                                                        : !state.game.isPlayer2Move!
+                                                            ? 'SEÇİLİ KARTLARI DEĞİŞTİR / ATLA'
+                                                            : 'Karşı oyuncu seçiyor...',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 16.sp,
+                                                  fontWeight: FontWeight.bold,
+                                                  letterSpacing: 0.6,
+                                                  shadows: [
+                                                    Shadow(
+                                                      blurRadius: 6.0,
+                                                      color: Colors.amber.withOpacity(0.9),
+                                                      offset: const Offset(1, 1),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
                                             ),
                                           ],
                                         ),
-                                        textAlign: TextAlign.center,
                                       ),
                                     );
+
+                                    // ElevatedButton(
+                                    //   onPressed: () {
+                                    //     int? userId = injector.get<LocalStorage>().getInt('userId');
+                                    //     if (!state.game.turn! &&
+                                    //         !(widget.isPlayer1
+                                    //             ? state.game.isPlayer1Move!
+                                    //             : state.game.isPlayer2Move!)) {
+                                    //       context.read<HomeCubit>().swapCards(
+                                    //           gameId!, //! ***
+                                    //           userId!,
+                                    //           true,
+                                    //           state.selectedCardsToSwap.map((c) => c.fullName).toList().join(','));
+                                    //     }
+                                    //   },
+                                    //   style: ElevatedButton.styleFrom(
+                                    //     // Arkaplan: Koyu Masa Teması
+                                    //     backgroundColor: kTableNavy,
+                                    //     // Kenarlık: Altın Sarısı Accent
+                                    //     side: const BorderSide(color: Colors.amberAccent, width: 3),
+                                    //     // Köşe yuvarlaklığı
+                                    //     shape: RoundedRectangleBorder(
+                                    //       borderRadius: BorderRadius.circular(12),
+                                    //     ),
+                                    //     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                                    //     elevation: 0, // Kendi gölgemizi kullandığımız için default elevation'ı sıfırla
+                                    //   ),
+                                    //   child: Text(
+                                    //     (state.game.isPlayer1Move! && state.game.isPlayer2Move!) || state.game.turn!
+                                    //         ? 'Değiştirme işlemleri yapıldı. KARTLAR AÇILDI!'
+                                    //         : widget.isPlayer1
+                                    //             ? !state.game.isPlayer1Move!
+                                    //                 ? 'SEÇİLİ KARTLARI DEĞİŞTİR / ATLA'
+                                    //                 : 'Karşı oyuncu seçiyor...'
+                                    //             : !state.game.isPlayer2Move!
+                                    //                 ? 'SEÇİLİ KARTLARI DEĞİŞTİR / ATLA'
+                                    //                 : 'Karşı oyuncu seçiyor...',
+                                    //     style: TextStyle(
+                                    //       color: Colors.white,
+                                    //       fontSize: 17.sp,
+                                    //       fontWeight: FontWeight.bold,
+                                    //       shadows: [
+                                    //         // Yazıya hafif parlaklık
+                                    //         Shadow(
+                                    //           blurRadius: 4.0,
+                                    //           color: Colors.yellow.withOpacity(0.7),
+                                    //           offset: const Offset(0.5, 0.5),
+                                    //         ),
+                                    //       ],
+                                    //     ),
+                                    //     textAlign: TextAlign.center,
+                                    //   ),
+                                    // );
                                   } else {
                                     return const SizedBox();
                                   }
@@ -1342,7 +1557,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                     child: ListView.builder(
                                       padding: EdgeInsets.symmetric(
                                         horizontal:
-                                            (1.sw - (state.cards.length * 60 + (state.cards.length - 1) * 24)) / 2,
+                                            (1.sw - (state.cards.length * 70 + (state.cards.length - 1) * 10)) / 2,
                                       ),
                                       itemCount: state.cards.length,
                                       scrollDirection: Axis.horizontal,
@@ -1371,111 +1586,84 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                 .toList()
                                                 .contains(state.cards[index].fullName);
 
-                                        return AnimatedSwitcher(
-                                          duration: const Duration(milliseconds: 400),
-                                          transitionBuilder: (child, anim) =>
-                                              ScaleTransition(scale: anim, child: child),
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              // 🔹 Kart seçimi / takası
-                                              if (state.sinekVar) {
-                                                if (swappingCards.isNotEmpty) {
-                                                  swappingCards.remove(state.cards[index].fullName);
-                                                  swappingCards.add(state.cards[index].fullName);
-                                                } else {
-                                                  swappingCards.add(state.cards[index].fullName);
-                                                }
-                                              } else {
-                                                if ((state.game.isPlayer1Move! && state.game.isPlayer2Move!) ||
-                                                    state.game.turn!) {
-                                                  print('KART SEÇİMİ ENGELLENDİ');
-                                                } else {
-                                                  print('KART SEÇİMİ YAPILDI:  ${state.game.turn!}');
-                                                  if (widget.isPlayer1) {
-                                                    if (!state.game.isPlayer1Move!) {
-                                                      context.read<HomeCubit>().selectCard(CardModel(
-                                                          symbol: state.cards[index].symbol,
-                                                          rank: state.cards[index].rank,
-                                                          value: state.cards[index].value,
-                                                          fullName: (state.cards[index].fullName)));
-                                                    }
+                                        return Padding(
+                                          padding: EdgeInsets.symmetric(horizontal: 5.w),
+                                          child: AnimatedSwitcher(
+                                            duration: const Duration(milliseconds: 400),
+                                            transitionBuilder: (child, anim) =>
+                                                ScaleTransition(scale: anim, child: child),
+                                            child: GestureDetector(
+                                              onTap: () {
+                                                // 🔹 Kart seçimi / takası
+                                                if (state.sinekVar) {
+                                                  if (swappingCards.isNotEmpty) {
+                                                    swappingCards.remove(state.cards[index].fullName);
+                                                    swappingCards.add(state.cards[index].fullName);
                                                   } else {
-                                                    if (!state.game.isPlayer2Move! && state.game.isPlayer1Move!) {
-                                                      context.read<HomeCubit>().selectCard(CardModel(
-                                                          symbol: state.cards[index].symbol,
-                                                          rank: state.cards[index].rank,
-                                                          value: state.cards[index].value,
-                                                          fullName: (state.cards[index].fullName)));
+                                                    swappingCards.add(state.cards[index].fullName);
+                                                  }
+                                                } else {
+                                                  if ((state.game.isPlayer1Move! && state.game.isPlayer2Move!) ||
+                                                      state.game.turn!) {
+                                                    print('KART SEÇİMİ ENGELLENDİ');
+                                                  } else {
+                                                    print('KART SEÇİMİ YAPILDI:  ${state.game.turn!}');
+                                                    if (widget.isPlayer1) {
+                                                      if (!state.game.isPlayer1Move!) {
+                                                        context.read<HomeCubit>().selectCard(CardModel(
+                                                            symbol: state.cards[index].symbol,
+                                                            rank: state.cards[index].rank,
+                                                            value: state.cards[index].value,
+                                                            fullName: (state.cards[index].fullName)));
+                                                      }
+                                                    } else {
+                                                      if (!state.game.isPlayer2Move! && state.game.isPlayer1Move!) {
+                                                        context.read<HomeCubit>().selectCard(CardModel(
+                                                            symbol: state.cards[index].symbol,
+                                                            rank: state.cards[index].rank,
+                                                            value: state.cards[index].value,
+                                                            fullName: (state.cards[index].fullName)));
+                                                      }
                                                     }
                                                   }
                                                 }
-                                              }
-                                            },
-                                            child: AnimatedContainer(
-                                              duration: const Duration(milliseconds: 600),
-                                              curve: Curves.easeInOutCubic,
-                                              margin: EdgeInsets.only(top: isSelectedToSwap ? 0 : 10),
-                                              transform: Matrix4.identity()
-                                                ..translate(0.0, isSelectedToSwap ? -18.0 : 0.0)
-                                                ..scale(isSelectedToSwap ? 1.08 : 1.0),
-                                              decoration: BoxDecoration(
-                                                color: state.game.disabledCards! == state.cards[index].fullName
-                                                    ? Colors.white.withAlpha(160)
-                                                    : Colors.white,
-                                                borderRadius: BorderRadius.circular(12),
-                                                border: Border.all(color: baseBorderColor, width: baseBorderWidth),
-                                                boxShadow: [
-                                                  if (isSwappedCard || isSelectedToSwap)
+                                              },
+                                              child: AnimatedContainer(
+                                                duration: const Duration(milliseconds: 600),
+                                                curve: Curves.easeInOutCubic,
+                                                margin: EdgeInsets.only(top: isSelectedToSwap ? 0 : 10),
+                                                transform: Matrix4.identity()
+                                                  ..translate(0.0, isSelectedToSwap ? -18.0 : 0.0)
+                                                  ..scale(isSelectedToSwap ? 1.08 : 1.0),
+                                                decoration: BoxDecoration(
+                                                  color: state.game.disabledCards! == state.cards[index].fullName
+                                                      ? Colors.white.withAlpha(160)
+                                                      : Colors.white,
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  border: Border.all(color: baseBorderColor, width: baseBorderWidth),
+                                                  boxShadow: [
+                                                    if (isSwappedCard || isSelectedToSwap)
+                                                      BoxShadow(
+                                                        color: baseBorderColor.withOpacity(0.9),
+                                                        blurRadius: 25,
+                                                        spreadRadius: 3,
+                                                      ),
                                                     BoxShadow(
-                                                      color: baseBorderColor.withOpacity(0.9),
-                                                      blurRadius: 25,
-                                                      spreadRadius: 3,
+                                                      color: Colors.black.withOpacity(0.25),
+                                                      blurRadius: 6,
+                                                      offset: const Offset(2, 3),
                                                     ),
-                                                  BoxShadow(
-                                                    color: Colors.black.withOpacity(0.25),
-                                                    blurRadius: 6,
-                                                    offset: const Offset(2, 3),
-                                                  ),
-                                                ],
-                                              ),
-                                              width: 60,
-                                              height: 95,
-                                              child: Stack(
-                                                clipBehavior: Clip.none,
-                                                children: [
-                                                  // --- Kartın Görsel Yapısı ---
-                                                  Positioned(
-                                                    top: 4,
-                                                    left: 4,
-                                                    child: Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                                      children: [
-                                                        Text(
-                                                          state.cards[index].rank,
-                                                          style: TextStyle(
-                                                            fontSize: 16,
-                                                            fontWeight: FontWeight.w900,
-                                                            color: cardSymbolColor,
-                                                            height: 0.9,
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                          state.cards[index].symbol,
-                                                          style: TextStyle(
-                                                            fontSize: 18,
-                                                            fontWeight: FontWeight.bold,
-                                                            color: cardSymbolColor,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-
-                                                  Positioned(
-                                                    bottom: 4,
-                                                    right: 4,
-                                                    child: Transform.rotate(
-                                                      angle: math.pi,
+                                                  ],
+                                                ),
+                                                width: 60,
+                                                height: 95,
+                                                child: Stack(
+                                                  clipBehavior: Clip.none,
+                                                  children: [
+                                                    // --- Kartın Görsel Yapısı ---
+                                                    Positioned(
+                                                      top: 4,
+                                                      left: 4,
                                                       child: Column(
                                                         crossAxisAlignment: CrossAxisAlignment.center,
                                                         children: [
@@ -1499,73 +1687,103 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                         ],
                                                       ),
                                                     ),
-                                                  ),
 
-                                                  // --- Swap / Durum İndikatörleri ---
-                                                  if (isSwappedCard)
                                                     Positioned(
-                                                      top: -10,
-                                                      right: -10,
-                                                      child: AnimatedOpacity(
-                                                        opacity: 1,
-                                                        duration: const Duration(milliseconds: 400),
+                                                      bottom: 4,
+                                                      right: 4,
+                                                      child: Transform.rotate(
+                                                        angle: math.pi,
+                                                        child: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                                          children: [
+                                                            Text(
+                                                              state.cards[index].rank,
+                                                              style: TextStyle(
+                                                                fontSize: 16,
+                                                                fontWeight: FontWeight.w900,
+                                                                color: cardSymbolColor,
+                                                                height: 0.9,
+                                                              ),
+                                                            ),
+                                                            Text(
+                                                              state.cards[index].symbol,
+                                                              style: TextStyle(
+                                                                fontSize: 18,
+                                                                fontWeight: FontWeight.bold,
+                                                                color: cardSymbolColor,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+
+                                                    // --- Swap / Durum İndikatörleri ---
+                                                    if (isSwappedCard)
+                                                      Positioned(
+                                                        top: -10,
+                                                        right: -10,
+                                                        child: AnimatedOpacity(
+                                                          opacity: 1,
+                                                          duration: const Duration(milliseconds: 400),
+                                                          child: Container(
+                                                            padding: const EdgeInsets.all(3),
+                                                            decoration: const BoxDecoration(
+                                                              color: Color.fromARGB(255, 83, 105, 192),
+                                                              shape: BoxShape.circle,
+                                                              boxShadow: [
+                                                                BoxShadow(
+                                                                  blurRadius: 10,
+                                                                  color: Color.fromARGB(255, 83, 105, 192),
+                                                                  spreadRadius: 2,
+                                                                )
+                                                              ],
+                                                            ),
+                                                            child: const Icon(Icons.swap_horiz,
+                                                                size: 22, color: Colors.white),
+                                                          ),
+                                                        ),
+                                                      ),
+
+                                                    if (state.game.disabledCards! == state.cards[index].fullName)
+                                                      Positioned.fill(
                                                         child: Container(
-                                                          padding: const EdgeInsets.all(3),
+                                                          decoration: BoxDecoration(
+                                                            color: Colors.black38,
+                                                            borderRadius: BorderRadius.circular(8),
+                                                          ),
+                                                          child: Center(
+                                                            child: Icon(
+                                                              Icons.block,
+                                                              size: 40,
+                                                              color: Colors.white.withOpacity(0.8),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+
+                                                    if (state.game.swappedCards!.isNotEmpty &&
+                                                        state.cards[index].fullName == 'Sinek-2')
+                                                      Positioned(
+                                                        top: -22,
+                                                        left: 18,
+                                                        child: Container(
+                                                          padding: const EdgeInsets.all(2),
                                                           decoration: const BoxDecoration(
-                                                            color: Color.fromARGB(255, 83, 105, 192),
+                                                            color: Color.fromARGB(255, 0, 141, 21),
                                                             shape: BoxShape.circle,
                                                             boxShadow: [
                                                               BoxShadow(
-                                                                blurRadius: 10,
-                                                                color: Color.fromARGB(255, 83, 105, 192),
-                                                                spreadRadius: 2,
-                                                              )
+                                                                  blurRadius: 8,
+                                                                  color: Color.fromARGB(255, 0, 141, 21),
+                                                                  spreadRadius: 1)
                                                             ],
                                                           ),
-                                                          child: const Icon(Icons.swap_horiz,
-                                                              size: 22, color: Colors.white),
+                                                          child: const Icon(Icons.check, size: 18, color: Colors.white),
                                                         ),
                                                       ),
-                                                    ),
-
-                                                  if (state.game.disabledCards! == state.cards[index].fullName)
-                                                    Positioned.fill(
-                                                      child: Container(
-                                                        decoration: BoxDecoration(
-                                                          color: Colors.black38,
-                                                          borderRadius: BorderRadius.circular(8),
-                                                        ),
-                                                        child: Center(
-                                                          child: Icon(
-                                                            Icons.block,
-                                                            size: 40,
-                                                            color: Colors.white.withOpacity(0.8),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-
-                                                  if (state.game.swappedCards!.isNotEmpty &&
-                                                      state.cards[index].fullName == 'Sinek-2')
-                                                    Positioned(
-                                                      top: -22,
-                                                      left: 18,
-                                                      child: Container(
-                                                        padding: const EdgeInsets.all(2),
-                                                        decoration: const BoxDecoration(
-                                                          color: Color.fromARGB(255, 0, 141, 21),
-                                                          shape: BoxShape.circle,
-                                                          boxShadow: [
-                                                            BoxShadow(
-                                                                blurRadius: 8,
-                                                                color: Color.fromARGB(255, 0, 141, 21),
-                                                                spreadRadius: 1)
-                                                          ],
-                                                        ),
-                                                        child: const Icon(Icons.check, size: 18, color: Colors.white),
-                                                      ),
-                                                    ),
-                                                ],
+                                                  ],
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -1823,88 +2041,293 @@ class InfoProfile extends StatelessWidget {
     required this.content,
     required this.image,
   });
+
   int? point;
   int userWins;
   int oppWins;
   String name;
   String content;
   String image;
+
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Container(
         width: 0.9.sw,
-        height: 60.h,
-        padding: const EdgeInsets.symmetric(horizontal: 6),
+        height: 80.h,
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.6),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: Colors.yellowAccent, width: 2),
-        ),
-        child: Row(
-          children: [
-            // CircleAvatar(
-            //   radius: 22.sp,
-            //   backgroundColor: Colors.white,
-            //   child: const Icon(Icons.person, color: Colors.grey),
-            // ),
-            image.isEmpty
-                ? const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Icon(Icons.person, color: Colors.white, size: 50),
-                  )
-                : ClipOval(
-                    child: Image.network(
-                      'https://btkgameapi.linsabilisim.com/$image',
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      // YENİ: Toplamı finalTotal() ile büyüt ve renklendir
-                      Text('$name — ',
-                          style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: Colors.white)),
-                      point != null
-                          ? Text('$point', // *** DÜZELTİLDİ: finalTotal kullanılıyor
-                              style: TextStyle(
-                                  fontSize: 22.sp, // *** BÜYÜTÜLDÜ
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.amberAccent, // *** SOFT RENK
-                                  shadows: [
-                                    Shadow(
-                                      blurRadius: 5.0,
-                                      color: Colors.amber.withOpacity(0.8),
-                                      offset: const Offset(1.0, 1.0),
-                                    ),
-                                  ]))
-                          : Image.asset(
-                              'assets/asset/lock.png',
-                              height: 32,
-                            ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  BlocBuilder<HomeCubit, HomeState>(
-                    //! Gel bi
-                    builder: (context, state) {
-                      //'El ${state.game.currentTurnId! + 1} / ${3}  • Skor: Siz $userWins - Rakip $oppWins',
-                      return Text(content.toString(), style: TextStyle(fontSize: 12.sp, color: Colors.white70));
-                    },
-                  ),
-                ],
-              ),
+          borderRadius: BorderRadius.circular(40),
+          gradient: const LinearGradient(
+            colors: [kBlackColor, kTableNavy],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(
+            color: Colors.amberAccent.withOpacity(0.9),
+            width: 2.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.amber.withOpacity(0.3),
+              blurRadius: 16,
+              spreadRadius: 2,
+              offset: const Offset(0, 6),
             ),
           ],
+        ),
+        clipBehavior: Clip.hardEdge,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              children: [
+                // 🧍 Avatar
+                image.isEmpty
+                    ? Container(
+                        width: 60,
+                        height: 60,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [Colors.grey, Colors.black54],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        child: const Icon(Icons.person, color: Colors.white, size: 36),
+                      )
+                    : Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.amberAccent, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.amber.withOpacity(0.5),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: Image.network(
+                            'https://btkgameapi.linsabilisim.com/$image',
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+
+                const SizedBox(width: 14),
+
+                // 📄 Kullanıcı Bilgileri
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 👤 İsim + Puan
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              '$name ',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          point != null
+                              ? Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.amber.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.amberAccent, width: 1),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.monetization_on, size: 16, color: Colors.amberAccent),
+                                      const SizedBox(width: 2),
+                                      Text(
+                                        '$point',
+                                        style: TextStyle(
+                                          fontSize: 18.sp,
+                                          fontWeight: FontWeight.w900,
+                                          color: Colors.amberAccent,
+                                          shadows: [
+                                            Shadow(
+                                              blurRadius: 10,
+                                              color: Colors.amberAccent.withOpacity(0.8),
+                                              offset: const Offset(0, 1),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : Image.asset('assets/asset/lock.png', height: 28),
+                        ],
+                      ),
+
+                      const SizedBox(height: 4),
+
+                      // 💬 Kullanıcı Açıklaması
+                      BlocBuilder<HomeCubit, HomeState>(
+                        builder: (context, state) {
+                          return Text(
+                            content,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: Colors.white70,
+                              fontWeight: FontWeight.w400,
+                              letterSpacing: 0.4,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+
+                // 🏆 Kazanma Bilgisi
+                if (userWins > 0 || oppWins > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.amberAccent.withOpacity(0.8)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.emoji_events, size: 18, color: Colors.amberAccent),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$userWins - $oppWins',
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 }
+// class InfoProfile extends StatelessWidget {
+//   InfoProfile({
+//     super.key,
+//     required this.point,
+//     this.userWins = 0,
+//     this.oppWins = 0,
+//     this.name = '',
+//     required this.content,
+//     required this.image,
+//   });
+//   int? point;
+//   int userWins;
+//   int oppWins;
+//   String name;
+//   String content;
+//   String image;
+//   @override
+//   Widget build(BuildContext context) {
+//     return Center(
+//       child: Container(
+//         width: 0.9.sw,
+//         height: 60.h,
+//         padding: const EdgeInsets.symmetric(horizontal: 6),
+//         decoration: BoxDecoration(
+//           color: Colors.black.withOpacity(0.6),
+//           borderRadius: BorderRadius.circular(30),
+//           border: Border.all(color: Colors.yellowAccent, width: 2),
+//         ),
+//         child: Row(
+//           children: [
+//             // CircleAvatar(
+//             //   radius: 22.sp,
+//             //   backgroundColor: Colors.white,
+//             //   child: const Icon(Icons.person, color: Colors.grey),
+//             // ),
+//             image.isEmpty
+//                 ? const Padding(
+//                     padding: EdgeInsets.all(8.0),
+//                     child: Icon(Icons.person, color: Colors.white, size: 50),
+//                   )
+//                 : ClipOval(
+//                     child: Image.network(
+//                       'https://btkgameapi.linsabilisim.com/$image',
+//                       width: 60,
+//                       height: 60,
+//                       fit: BoxFit.cover,
+//                     ),
+//                   ),
+//             const SizedBox(width: 8),
+//             Expanded(
+//               child: Column(
+//                 mainAxisAlignment: MainAxisAlignment.center,
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   Row(
+//                     children: [
+//                       // YENİ: Toplamı finalTotal() ile büyüt ve renklendir
+//                       Text('$name — ',
+//                           style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: Colors.white)),
+//                       point != null
+//                           ? Text('$point', // *** DÜZELTİLDİ: finalTotal kullanılıyor
+//                               style: TextStyle(
+//                                   fontSize: 22.sp, // *** BÜYÜTÜLDÜ
+//                                   fontWeight: FontWeight.w900,
+//                                   color: Colors.amberAccent, // *** SOFT RENK
+//                                   shadows: [
+//                                     Shadow(
+//                                       blurRadius: 5.0,
+//                                       color: Colors.amber.withOpacity(0.8),
+//                                       offset: const Offset(1.0, 1.0),
+//                                     ),
+//                                   ]))
+//                           : Image.asset(
+//                               'assets/asset/lock.png',
+//                               height: 32,
+//                             ),
+//                     ],
+//                   ),
+//                   const SizedBox(height: 2),
+//                   BlocBuilder<HomeCubit, HomeState>(
+//                     //! Gel bi
+//                     builder: (context, state) {
+//                       //'El ${state.game.currentTurnId! + 1} / ${3}  • Skor: Siz $userWins - Rakip $oppWins',
+//                       return Text(content.toString(), style: TextStyle(fontSize: 12.sp, color: Colors.white70));
+//                     },
+//                   ),
+//                 ],
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
