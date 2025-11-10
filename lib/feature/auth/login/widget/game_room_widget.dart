@@ -48,7 +48,7 @@ class GameRoomSelectionDialog extends StatelessWidget {
             children: [
               // Başlık
               const Text(
-                "OYUN MODU SEÇİN",
+                "SELECT GAME MODE",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: kSuitGold,
@@ -66,7 +66,7 @@ class GameRoomSelectionDialog extends StatelessWidget {
 
               // Açıklama Metni
               const Text(
-                "Yeni bir oyun odası oluşturun veya mevcut bir odaya katılın.",
+                "Create a new playroom or join an existing one.",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: kWhiteColor,
@@ -83,7 +83,7 @@ class GameRoomSelectionDialog extends StatelessWidget {
               // 1. Seçenek: Oda Kur
               PrimaryGameButton(
                 buttonColor: kAccentGreen, // Vurgulu renk (Yeşil)
-                text: 'ODA KUR',
+                text: 'CREATE',
                 icon: Icons.add_business_rounded,
                 onTap: () {
                   context.read<LoginCubit>().createRoom().whenComplete(() {
@@ -106,7 +106,7 @@ class GameRoomSelectionDialog extends StatelessWidget {
 
               // Ayırıcı Metin
               Text(
-                "VEYA",
+                "OR",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: kSuitGold.withOpacity(0.8),
@@ -120,7 +120,7 @@ class GameRoomSelectionDialog extends StatelessWidget {
               // 2. Seçenek: Katıl
               PrimaryGameButton(
                 buttonColor: kButtonGrey, // Daha sakin bir renk (Gri)
-                text: 'KATIL',
+                text: 'JOIN',
                 icon: Icons.group_add_rounded,
                 onTap: () {
                   // Odaya katılma işlemi buraya gelecek
@@ -148,7 +148,7 @@ class GameRoomSelectionDialog extends StatelessWidget {
                 child: const Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Text(
-                    "Geri Dön",
+                    "BACK",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: kSuitGold,

@@ -1,8 +1,10 @@
 // MARK: - CONFIRM EXIT DIALOG WIDGET
 import 'package:flutter/material.dart';
+import 'package:flutter_base_app/feature/auth/login/cubit/login_cubit.dart';
 import 'package:flutter_base_app/product/components/button/primary_game_button.dart';
 import 'package:flutter_base_app/product/components/container/gold_nav.dart';
 import 'package:flutter_base_app/product/constant/color_constants.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Oyundan çıkış onay iletişim kutusu.
 class ThemedConfirmExitDialog extends StatelessWidget {
@@ -71,6 +73,8 @@ class ThemedConfirmExitDialog extends StatelessWidget {
                 text: 'EVET, ÇIK',
                 icon: Icons.exit_to_app,
                 onTap: () {
+                  context.read<LoginCubit>().closeApp();
+
                   // Diyalogu kapat, sonra ana menüye (veya çıkışa) yönlendir.
                   Navigator.of(context).pop();
                   print("Exit Confirmed.");

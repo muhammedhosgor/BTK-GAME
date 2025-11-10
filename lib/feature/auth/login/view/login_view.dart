@@ -36,12 +36,13 @@ class _LoginViewState extends State<LoginView> {
   @override
   void initState() {
     super.initState();
-    context.read<LoginCubit>().getUserPoint(userId!);
+    context.read<LoginCubit>().getUserPoint(userId ?? 0);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Container(
         width: 1.sw,
         height: 1.sh,
@@ -244,13 +245,60 @@ class _LoginViewState extends State<LoginView> {
                             buttonColor: Colors.blueAccent,
                             text: 'Start Game',
                             icon: FontAwesomeIcons.play,
-                            onTap: () => showDialog(
-                              context: context,
-                              builder: (_) => BlocProvider.value(
-                                value: LoginCubit(),
-                                child: const GameRoomSelectionDialog(),
-                              ),
-                            ),
+                            onTap: () {
+                              int? userId = injector.get<LocalStorage>().getInt('userId');
+
+                              if (userId != null && userId != 0) {
+                                // ✅ Giriş yapılmış → Oyun odası seçim penceresi aç
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => BlocProvider.value(
+                                    value: context.read<LoginCubit>(),
+                                    child: const GameRoomSelectionDialog(),
+                                  ),
+                                );
+                              } else {
+                                // ❌ Giriş yapılmamış → Uyarı göster
+                                showDialog(
+                                  context: context,
+                                  builder: (dialogContext) {
+                                    return AlertDialog(
+                                      backgroundColor: Colors.black.withOpacity(0.85),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                        side: const BorderSide(color: Colors.redAccent, width: 2),
+                                      ),
+                                      title: const Row(
+                                        children: [
+                                          Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 30),
+                                          SizedBox(width: 10),
+                                          Text(
+                                            "Warning",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      content: const Text(
+                                        "You must log in first to start the game.",
+                                        style: TextStyle(color: Colors.white70, fontSize: 15),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.of(dialogContext).pop(),
+                                          child: const Text(
+                                            "OK",
+                                            style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              }
+                            },
                           );
                         },
                       ),

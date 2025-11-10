@@ -141,7 +141,7 @@ class _WaitingRoomScreenState extends State<WaitingRoomScreen> {
                                         Lottie.asset('assets/lottie/splash.json'),
                                         SizedBox(height: 20.h),
                                         const Text(
-                                          "Oyun Başlıyor!",
+                                          "THE GAME IS STARTING...",
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                             color: kSuitGold,
@@ -164,7 +164,7 @@ class _WaitingRoomScreenState extends State<WaitingRoomScreen> {
                                         ),
                                         const SizedBox(height: 10),
                                         const Text(
-                                          "Hazırlan, oyun birazdan başlıyor...",
+                                          "Get ready, the game starts soon...",
                                           textAlign: TextAlign.center,
                                           style: TextStyle(color: Colors.white70),
                                         ),
@@ -203,7 +203,7 @@ class _WaitingRoomScreenState extends State<WaitingRoomScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              'Oyun Durumu: ${state.gameStatus ?? 'Durum Bilgisi Yok'}',
+                              'Game Status: ${state.gameStatus ?? 'No Status Information'}',
                               style: TextStyle(color: Colors.white),
                             ),
                             backgroundColor: kSuitGold,
@@ -213,7 +213,7 @@ class _WaitingRoomScreenState extends State<WaitingRoomScreen> {
                     },
                     builder: (context, state) {
                       final bool bothReady = state.gameStatus == 'Hazir';
-                      final String statusText = bothReady ? "OYUN BAŞLIYOR..." : "RAKİP BEKLENİYOR...";
+                      final String statusText = bothReady ? "THE GAME IS STARTING..." : "OPPONENT IS EXPECTED...";
 
                       return Column(
                         mainAxisSize: MainAxisSize.min,
@@ -224,16 +224,16 @@ class _WaitingRoomScreenState extends State<WaitingRoomScreen> {
                           ),
                           const SizedBox(height: 20),
                           _buildPlayerStatus(
-                            title: "SİZ",
-                            status: bothReady ? "Hazır" : "Beklemede",
+                            title: "YOU",
+                            status: bothReady ? "Hazır" : "Ready to start...",
                             color: bothReady ? kAccentGreen : kSuitGold,
                             isReady: bothReady,
                             image: image,
                           ),
                           SizedBox(height: 24.h),
                           _buildPlayerStatus(
-                              title: "RAKİP",
-                              status: bothReady ? "Hazır" : "Bekliyor",
+                              title: "Opponent",
+                              status: bothReady ? "Hazır" : "Waiting for opponent...",
                               color: bothReady ? kAccentGreen : kSuitGold,
                               isReady: bothReady,
                               image: ''),
@@ -262,7 +262,7 @@ class _WaitingRoomScreenState extends State<WaitingRoomScreen> {
                       shadowColor: kSuitRed.withOpacity(0.5),
                     ),
                     child: const Text(
-                      "ODADAN AYRIL",
+                      "LEAVE THE ROOM",
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -329,7 +329,7 @@ Widget _buildPlayerStatus({
           status,
           style: TextStyle(
             color: color,
-            fontSize: 24,
+            fontSize: 20,
             fontWeight: FontWeight.w900,
           ),
         ),

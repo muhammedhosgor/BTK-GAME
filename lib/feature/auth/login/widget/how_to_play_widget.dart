@@ -75,7 +75,7 @@ class ThemedHowToPlayDialog extends StatelessWidget {
             children: [
               // Başlık
               Text(
-                "NASIL OYNANIR: TEMEL KURALLAR",
+                "HOW TO PLAY: BASIC RULES",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: kSuitGold,
@@ -98,41 +98,77 @@ class ThemedHowToPlayDialog extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildRuleSection(
-                          title: "1. Oyunun Amacı",
-                          content:
-                              "Oyunun temel amacı, belirlenen **Koz** rengine göre taahhüt ettiğiniz sayıda el alabilmektir. Kazanılan her el, taahhüdünüzü gerçekleştirmeniz için önemlidir."),
+                        title: "1. Game Objective",
+                        content:
+                            "The main goal of the game is to strategically use your cards to collect as many cards as possible. "
+                            "Each player, on their turn, can either play a card or skip the round. "
+                            "When you play a card, you draw the same number of cards from the center pile as the number of cards you played. "
+                            "The player who collects the most cards by the end of the game wins.",
+                      ),
                       _buildRuleSection(
-                          title: "2. Kart Dağıtımı ve İhale",
-                          content:
-                              "52'lik deste her oyuncuya eşit olarak dağıtılır (Genellikle 13'er kart). Kartlar dağıtıldıktan sonra oyuncular, almayı taahhüt ettikleri el sayısını (İhale) belirler. En yüksek taahhüdü veren, koz rengini seçer."),
+                        title: "2. Game Structure and Turn System",
+                        content: "The game is played online between two real players. "
+                            "Each player is dealt a certain number of cards at the start. "
+                            "Turns alternate between players. "
+                            "When it’s your turn, you can choose between two actions:\n\n"
+                            "• **Play Cards:** You may play one or more cards from your hand (up to three at a time). "
+                            "For every card you play, you draw the same number of cards from the center pile.\n"
+                            "• **Pass:** You can skip your turn without playing any cards.\n\n"
+                            "Both players take turns performing actions. At the end of a round, all cards in the center pile are collected and a new round begins.",
+                      ),
                       _buildRuleSection(
-                          title: "3. El Oynama Zorunluluğu (Renk Mecburi)",
-                          content:
-                              "Oyuna başlayan oyuncunun attığı kartın rengini oynamak mecburidir. Elinizde o renkten kart yoksa, Koz renginden bir kart atarak eli almayı deneyebilir ya da farklı bir renkte kart atarak 'çakabilirsiniz'."),
+                        title: "3. Special Cards",
+                        content:
+                            "There are a total of 3 special cards in the game. These cards have unique effects that can alter the flow and balance of the match. "
+                            "Each special card can only be used once, so timing and strategy are crucial:\n\n"
+                            "• 🔁 **Swap Card:** Takes a random card from your opponent’s hand and gives one of your cards in return.\n"
+                            "• 2X **Double Card:** Doubles the total value of all cards in the current round.\n"
+                            "• 🌀 **Block Card:** Prevents your opponent from making a move on their next turn. They must pass that round.\n\n"
+                            "When a special card is played, an animation (Lottie effect) is triggered to visually show its activation.",
+                      ),
                       _buildRuleSection(
-                          title: "4. Koz Kartları",
-                          content:
-                              "Koz kartları, diğer tüm kartlardan üstündür. Eğer yerde Koz'dan daha yüksek bir kart yoksa, koz kartını atan oyuncu eli alır."),
+                        title: "4. Game Flow",
+                        content: "Each player takes turns making moves. When a player plays cards:\n"
+                            "1️⃣ They draw the same number of cards from the center pile.\n"
+                            "2️⃣ The turn automatically passes to the other player.\n\n"
+                            "When both players either finish their hands or choose to pass, the round ends. "
+                            "The cards collected in that round are added to each player’s total. "
+                            "After three rounds, the player who has collected the most cards wins the game.",
+                      ),
                       _buildRuleSection(
-                          title: "5. Puanlama Sistemi",
-                          content:
-                              "Taahhüt ettiğiniz el sayısını tamamlarsanız pozitif puan alırsınız. Taahhüt edilen el sayısına ulaşamazsanız veya taahhüdünüzü aşarsanız (Gömülen sayılmaz), ceza puanı hanenize yazılır."),
+                        title: "5. Online Connection and Room System",
+                        content: "The game is played online between two real players. "
+                            "Players can either create a room or join an existing one. "
+                            "Once both players set their status to 'Ready', the game begins.",
+                      ),
+                      _buildRuleSection(
+                        title: "6. Scoring System",
+                        content:
+                            "At the end of each round, players earn points based on the number of cards they have collected. "
+                            "After three rounds, the player with the highest total score wins. "
+                            "If both players have the same number of cards, the game ends in a draw and the result is displayed on the screen.",
+                      ),
                       const SizedBox(height: 10),
                       Text(
-                        "Not: Bu kurallar, temel Batak (İhaleli) kurallarına dayanmaktadır. Oyun modlarına göre ufak farklılıklar olabilir.",
-                        style:
-                            TextStyle(color: kWhiteColor.withOpacity(0.7), fontSize: 14, fontStyle: FontStyle.italic),
+                        "Note: There is no trump (koz) system in this game. Players can freely choose which cards to play or when to pass. "
+                        "The gameplay is entirely based on strategy, card management, and using special cards at the right moment.",
+                        style: TextStyle(
+                          color: kWhiteColor.withOpacity(0.7),
+                          fontSize: 14,
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
+
               const SizedBox(height: 20),
 
               // Kapat Butonu
               PrimaryGameButton(
                 buttonColor: kButtonGrey,
-                text: 'ANLADIM (KAPAT)',
+                text: 'I UNDERSTAND (CLOSE)',
                 icon: Icons.check_circle_outline,
                 onTap: () {
                   Navigator.of(context).pop();

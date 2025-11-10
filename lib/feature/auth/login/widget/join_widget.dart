@@ -64,7 +64,7 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
     final borderColor = isJoinable ? kSuitGold : Colors.white24;
 
     // Guid gösterimini basitleştirildi
-    String safeGuid = room.guid ?? 'YOK';
+    String safeGuid = room.guid ?? 'Not Fount';
     final guidDisplay = room.guid! + (safeGuid.length > 8 ? safeGuid.substring(0, 8) : safeGuid);
 
     return Card(
@@ -108,7 +108,7 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                         ),
                       ),
                       Text(
-                        isJoinable ? "Bekliyor" : (isFull ? "Dolu" : "Hazır"),
+                        isJoinable ? "Waiting" : (isFull ? "Full" : "Ready"),
                         style: TextStyle(
                           fontSize: 10,
                           color: statusColor,
@@ -134,7 +134,7 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      "Oyun Durumu: ${room.status ?? 'BİLİNMİYOR'}",
+                      "Game Status: ${room.status == 'Bekliyor' ? 'Waiting' : 'Ready'}",
                       style: const TextStyle(
                         fontSize: 12,
                         color: Colors.white70,
@@ -163,7 +163,7 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                           width: 5.w,
                         ),
                         Text(
-                          "${'${room.player1Name} ${room.player1Surname}' ?? 'BİLİNMİYOR'}",
+                          "${'${room.player1Name} ${room.player1Surname}' ?? 'N/A'}",
                           style: const TextStyle(
                             fontSize: 12,
                             color: Colors.white70,
@@ -188,7 +188,7 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                             ],
                           ),
                           child: const Text(
-                            "KATIL",
+                            "JOIN",
                             style: TextStyle(
                               color: kWhiteColor,
                               fontWeight: FontWeight.bold,
@@ -213,7 +213,7 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
     if (rooms.isEmpty) {
       return const Center(
         child: Text(
-          "Şu anda aktif oda bulunmamaktadır.",
+          "There are currently no active rooms.",
           style: TextStyle(color: Colors.white70, fontSize: 16),
         ),
       );
@@ -276,7 +276,7 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
     return Scaffold(
       backgroundColor: kTableNavy, // Arka planı koyu yap
       appBar: AppBar(
-        title: const Text("Oda Lobisi", style: TextStyle(color: kWhiteColor, fontWeight: FontWeight.bold)),
+        title: const Text("Room Lobby", style: TextStyle(color: kWhiteColor, fontWeight: FontWeight.bold)),
         backgroundColor: kTableNavy,
         elevation: 0,
         iconTheme: const IconThemeData(color: kWhiteColor),
@@ -317,7 +317,7 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                                 Lottie.asset('assets/lottie/splash.json'),
                                 SizedBox(height: 20.h),
                                 const Text(
-                                  "Oyun Başlıyor!",
+                                  "The game is starting!",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: kSuitGold,
@@ -340,7 +340,7 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
                                 ),
                                 const SizedBox(height: 10),
                                 const Text(
-                                  "Hazırlan, oyun birazdan başlıyor...",
+                                  "Get ready, the game is about to start...",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(color: Colors.white70),
                                 ),
@@ -387,7 +387,7 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  'Oyun Durumu: ${state.gameStatus ?? 'Durum Bilgisi Yok'}',
+                  'Game Status: ${state.gameStatus ?? 'No Status Information'}',
                   style: const TextStyle(color: Colors.white),
                 ),
                 backgroundColor: kSuitGold,

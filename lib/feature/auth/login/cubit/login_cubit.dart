@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_base_app/core/network/network_manager/network_manager.dart';
 import 'package:flutter_base_app/feature/auth/login/cubit/login_state.dart';
 import 'package:flutter_base_app/feature/auth/login/model/game_model.dart';
@@ -306,6 +308,27 @@ class LoginCubit extends Cubit<LoginState> {
           errorMessage: response.errorMessage ?? 'Bir Hata Oluştu!',
         ));
       }
+    }
+  }
+
+  void closeApp() {
+    // Kullanıcı verilerini temizle
+    userModel = UserModel();
+    final storage = injector.get<LocalStorage>();
+    storage.remove('userId');
+    storage.remove('userName');
+    storage.remove('userSurname');
+    storage.remove('email');
+    storage.remove('password');
+    storage.remove('image');
+
+    //* Android ve iOS ayrımı
+    if (Platform.isAndroid) {
+      //* Tamamen uygulamayı kapat
+      exit(0);
+    } else if (Platform.isIOS) {
+      //* iOS'te uygulamayı kapatamazsın, kullanıcı ana ekrana döner
+      SystemNavigator.pop();
     }
   }
 }

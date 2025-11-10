@@ -139,7 +139,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            '${state.game.currentTurnId! + 1}. El Başlıyor...',
+                            '${state.game.currentTurnId! + 1}. Its starting...',
                             style: TextStyle(
                               fontSize: 24.sp,
                               fontWeight: FontWeight.bold,
@@ -153,11 +153,11 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                               return Text(
                                 widget.isPlayer1
                                     ? state.game.isPlayer2Ready!
-                                        ? 'Karşı oyuncu hazır. Bekleniyor...'
-                                        : 'Karşı oyuncu bekleniyor...'
+                                        ? 'Opponent ready. Waiting...'
+                                        : 'Opponent is expected...'
                                     : state.game.isPlayer1Ready!
-                                        ? 'Karşı oyuncu hazır. Bekleniyor...'
-                                        : 'Karşı oyuncu bekleniyor...',
+                                        ? 'Opponent ready. Waiting...'
+                                        : 'Opponent is expected...',
                                 style: TextStyle(
                                   fontSize: 16.sp,
                                   color: state.game.isPlayer1Ready! ? Colors.greenAccent : Colors.amberAccent,
@@ -176,15 +176,15 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                 setState(() {
                                   showReadyOverlay = false;
                                 });
-                                _appendLog('Her iki oyuncu das hazır. El başlıyor!');
+                                _appendLog('Both players are ready. The game begins!');
                                 print('İKİ OYUNCU DA HAZIR, EL BAŞLIYOR...');
                               } else if (widget.isPlayer1 && state.game.isPlayer2Ready!) {
                                 // Kullanıcı 1 ve rakip hazırsa
-                                _appendLog('Rakip oyuncu hazır. Siz de hazırsanız el başlayacak.');
+                                _appendLog('Your opponent is ready. If you are ready, the hand will begin.');
                                 print('PLAYER 1 siniz RAKİP HAZIR, KULLANICI BEKLENİYOR...');
                               } else if (!widget.isPlayer1 && state.game.isPlayer1Ready!) {
                                 // Kullanıcı 2 ve rakip hazırsa
-                                _appendLog('Rakip oyuncu hazır. Siz de hazırsanız el başlayacak.');
+                                _appendLog('Your opponent is ready. If you are ready, the hand will begin.');
                                 print('PLAYER 2 siniz RAKİP HAZIR, KULLANICI BEKLENİYOR...');
                               }
                             },
@@ -205,11 +205,11 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                 child: Text(
                                   widget.isPlayer1
                                       ? state.game.isPlayer1Ready!
-                                          ? 'HAZIR'
-                                          : 'HAZIRIM'
+                                          ? 'READY'
+                                          : 'I AM READY'
                                       : state.game.isPlayer2Ready!
-                                          ? 'HAZIR'
-                                          : 'HAZIRIM',
+                                          ? 'READY'
+                                          : 'I AM READY',
                                   style: TextStyle(
                                       fontSize: 18.sp,
                                       color: state.game.isPlayer2Ready! ? Colors.white70 : Colors.black,
@@ -252,7 +252,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
           ? const Color(0xFF3B2F0A) // Altınla kontrast koyu arka plan
           : Colors.grey.shade700,
       label: Text(
-        isSpecialEffectPlaying ? 'Süre: $seconds' : 'Hazır',
+        isSpecialEffectPlaying ? 'Time: $seconds' : 'Ready',
         style: TextStyle(
           color: isActive ? Colors.amberAccent : Colors.white70,
           fontWeight: FontWeight.bold,
@@ -386,7 +386,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                       },
                                       color: Colors.white,
                                     ),
-                                    Text('El ${state.game.currentTurnId! + 1} / ${3}',
+                                    Text('Round ${state.game.currentTurnId! + 1} / ${3}',
                                         style: TextStyle(color: Colors.white, fontSize: 14.sp)),
                                   ],
                                 );
@@ -406,7 +406,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                 if (!selectionPhase && !userReady)
                                   ElevatedButton(
                                     onPressed: null, // Pasif bırak
-                                    child: Text(userReady ? 'Hazır' : 'Bekleniyor...'),
+                                    child: Text(userReady ? 'Ready' : 'Waiting...'),
                                   ),
                               ],
                             ),
@@ -422,8 +422,8 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                             return InfoProfile(
                               image: state.game.player1Image!, // bak bi
                               content: widget.isPlayer1
-                                  ? 'El ${state.game.currentTurnId! + 1} / ${3}  • Skor: Rakip ${state.player2WinCount} - Siz ${state.player1WinCount}'
-                                  : 'El ${state.game.currentTurnId! + 1} / ${3}  • Skor: Rakip ${state.player1WinCount} - Siz ${state.player2WinCount}',
+                                  ? 'Round ${state.game.currentTurnId! + 1} / ${3}  • Score: Opponent ${state.player2WinCount} - You ${state.player1WinCount}'
+                                  : 'Round ${state.game.currentTurnId! + 1} / ${3}  • Score: Opponent ${state.player1WinCount} - You ${state.player2WinCount}',
                               point: // 0
 
                                   (state.game.isPlayer1Move! && state.game.isPlayer2Move!) || state.game.turn!
@@ -584,7 +584,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                                 Text(
                                                                   card.rank,
                                                                   style: TextStyle(
-                                                                    fontSize: 16,
+                                                                    fontSize: 20,
                                                                     fontWeight: FontWeight.w900,
                                                                     color: cardSymbolColor,
                                                                     height: 0.9,
@@ -593,7 +593,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                                 Text(
                                                                   card.symbol,
                                                                   style: TextStyle(
-                                                                    fontSize: 18,
+                                                                    fontSize: 20,
                                                                     fontWeight: FontWeight.bold,
                                                                     color: cardSymbolColor,
                                                                   ),
@@ -614,7 +614,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                                   Text(
                                                                     card.rank,
                                                                     style: TextStyle(
-                                                                      fontSize: 16,
+                                                                      fontSize: 20,
                                                                       fontWeight: FontWeight.w900,
                                                                       color: cardSymbolColor,
                                                                       height: 0.9,
@@ -623,7 +623,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                                   Text(
                                                                     card.symbol,
                                                                     style: TextStyle(
-                                                                      fontSize: 18,
+                                                                      fontSize: 20,
                                                                       fontWeight: FontWeight.bold,
                                                                       color: cardSymbolColor,
                                                                     ),
@@ -891,8 +891,8 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                           : 'assets/file/defeat.png'; // 😔 Kaybeden animasyonu
 
                                       // 🔹 Metin seçimi
-                                      final String resultText = thisPlayerWon ? 'Kazandın!' : 'Kaybettin!';
-                                      final String winnerText = player1Won ? 'Kazanan 1. Oyuncu' : 'Kazanan 2. Oyuncu';
+                                      final String resultText = thisPlayerWon ? 'You won!' : 'You lost!';
+                                      final String winnerText = player1Won ? 'Winner 1. Player' : 'Winner 2. Player';
 
                                       return Scaffold(
                                         backgroundColor: kTableNavy,
@@ -920,7 +920,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                               const SizedBox(height: 20),
                                               // 🏁 Başlık
                                               const Text(
-                                                'El tamamlandı',
+                                                'The round is complete.',
                                                 style: TextStyle(
                                                     color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
                                               ),
@@ -937,7 +937,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                               const SizedBox(height: 10),
                                               // 🏆 Kazanan oyuncu bilgisi
                                               Text(
-                                                'Kazanan oyuncu: $winnerText',
+                                                'Winning player: $winnerText',
                                                 style: const TextStyle(color: Colors.white70, fontSize: 18),
                                               ),
                                               const SizedBox(height: 40),
@@ -971,7 +971,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                   });
                                                 },
                                                 child: const Text(
-                                                  'Tamam',
+                                                  'OK',
                                                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                                 ),
                                               ),
@@ -984,6 +984,9 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                 } else {
                                   //! Oyunun devam ettiği kısım
                                   if (state.game.isPlayer1Move! && state.game.isPlayer2Move! && state.game.turn!) {
+                                    await Future.delayed(
+                                      const Duration(seconds: 2),
+                                    );
                                     await showDialog(
                                       barrierDismissible: false,
                                       context: context,
@@ -994,12 +997,239 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                             child: Column(
                                               mainAxisAlignment: MainAxisAlignment.center,
                                               children: [
+                                                const Text("Player 1 Card"),
+                                                SizedBox(
+                                                  height: 130,
+                                                  child: ListView.builder(
+                                                    padding: EdgeInsets.symmetric(
+                                                      horizontal: (1.sw -
+                                                              (state.opponentCards.length * 70 +
+                                                                  (state.opponentCards.length - 1) * 10)) /
+                                                          2,
+                                                    ),
+                                                    itemCount: state.opponentCards.length,
+                                                    scrollDirection: Axis.horizontal,
+                                                    itemBuilder: (context, index) {
+                                                      final card = state.opponentCards[index];
+
+                                                      // Kart çerçeve rengi belirleme
+                                                      Color baseBorderColor = card.isSpecial
+                                                          ? (state.game.swappedCards!.isNotEmpty &&
+                                                                  card.fullName == 'Sinek-2')
+                                                              ? const Color.fromARGB(255, 30, 149, 34)
+                                                              : const Color.fromARGB(255, 255, 0, 157)
+                                                          : (state.karoVar ||
+                                                                  (state.sinekVar && swappingCards.isNotEmpty))
+                                                              ? const Color.fromARGB(255, 255, 203, 15)
+                                                              : const Color.fromRGBO(0, 0, 0, 0.867);
+
+                                                      double baseBorderWidth = card.isSpecial
+                                                          ? 3
+                                                          : (state.karoVar ||
+                                                                  (state.sinekVar && swappingCards.isNotEmpty))
+                                                              ? 3
+                                                              : 2;
+
+                                                      Color cardSymbolColor = (card.symbol == '♥' || card.symbol == '♦')
+                                                          ? Colors.red.shade800
+                                                          : Colors.black;
+
+                                                      return Padding(
+                                                        padding: EdgeInsets.symmetric(horizontal: 5.w),
+                                                        child: AnimatedSwitcher(
+                                                          duration: const Duration(milliseconds: 400),
+                                                          transitionBuilder: (child, anim) =>
+                                                              ScaleTransition(scale: anim, child: child),
+                                                          child: GestureDetector(
+                                                            onTap: () {
+                                                              // 🎯 Kart etkileşimleri
+                                                              if (state.karoVar) {
+                                                                // 🟥 Karo: Rakibin kartını devre dışı bırak
+                                                                context
+                                                                    .read<HomeCubit>()
+                                                                    .disableCards(gameId!, card.fullName);
+                                                                context.read<HomeCubit>().setKaroVar(false);
+                                                              } else if (state.sinekVar && swappingCards.isNotEmpty) {
+                                                                // ♣ Sinek: Takas işlemi
+                                                                swappingCards.add(card.fullName);
+                                                                context
+                                                                    .read<HomeCubit>()
+                                                                    .sinekle(gameId!, swappingCards.join(','));
+                                                                context.read<HomeCubit>().setSinekVar(false);
+                                                                swappingCards.clear();
+                                                              }
+                                                            },
+                                                            child: TweenAnimationBuilder<Color?>(
+                                                              tween: ColorTween(
+                                                                begin:
+                                                                    card.isSpecial ? baseBorderColor : Colors.black26,
+                                                                end: card.isSpecial ? baseBorderColor : Colors.black26,
+                                                              ),
+                                                              duration: const Duration(milliseconds: 700),
+                                                              curve: Curves.easeInOut,
+                                                              builder: (context, color, child) {
+                                                                return AnimatedContainer(
+                                                                  duration: const Duration(milliseconds: 600),
+                                                                  curve: Curves.easeInOut,
+                                                                  margin: EdgeInsets.only(
+                                                                    top: swappingCards.contains(card.fullName) ? 0 : 8,
+                                                                  ),
+                                                                  transform: Matrix4.translationValues(
+                                                                      0,
+                                                                      swappingCards.contains(card.fullName) ? -14 : 0,
+                                                                      0),
+                                                                  decoration: BoxDecoration(
+                                                                    color: state.game.disabledCards! == card.fullName
+                                                                        ? Colors.white.withAlpha(160)
+                                                                        : Colors.white,
+                                                                    borderRadius: BorderRadius.circular(8),
+                                                                    border: Border.all(
+                                                                        color: baseBorderColor, width: baseBorderWidth),
+                                                                    boxShadow: [
+                                                                      BoxShadow(
+                                                                        blurRadius: card.isSpecial ? 20 : 4,
+                                                                        color: baseBorderColor.withOpacity(0.6),
+                                                                        offset: const Offset(1, 2),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                  width: 60,
+                                                                  height: 92,
+                                                                  child: Stack(
+                                                                    clipBehavior: Clip.none,
+                                                                    children: [
+                                                                      // 🂡 Sol üst köşe
+                                                                      Positioned(
+                                                                        top: 4,
+                                                                        left: 4,
+                                                                        child: Column(
+                                                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                                                          children: [
+                                                                            Text(
+                                                                              card.rank,
+                                                                              style: TextStyle(
+                                                                                fontSize: 20,
+                                                                                fontWeight: FontWeight.w900,
+                                                                                color: cardSymbolColor,
+                                                                                height: 0.9,
+                                                                              ),
+                                                                            ),
+                                                                            Text(
+                                                                              card.symbol,
+                                                                              style: TextStyle(
+                                                                                fontSize: 20,
+                                                                                fontWeight: FontWeight.bold,
+                                                                                color: cardSymbolColor,
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ),
+
+                                                                      // 🂡 Sağ alt köşe (180° dönük)
+                                                                      Positioned(
+                                                                        bottom: 4,
+                                                                        right: 4,
+                                                                        child: Transform.rotate(
+                                                                          angle: math.pi,
+                                                                          child: Column(
+                                                                            crossAxisAlignment:
+                                                                                CrossAxisAlignment.center,
+                                                                            children: [
+                                                                              Text(
+                                                                                card.rank,
+                                                                                style: TextStyle(
+                                                                                  fontSize: 20,
+                                                                                  fontWeight: FontWeight.w900,
+                                                                                  color: cardSymbolColor,
+                                                                                  height: 0.9,
+                                                                                ),
+                                                                              ),
+                                                                              Text(
+                                                                                card.symbol,
+                                                                                style: TextStyle(
+                                                                                  fontSize: 20,
+                                                                                  fontWeight: FontWeight.bold,
+                                                                                  color: cardSymbolColor,
+                                                                                ),
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                                                        ),
+                                                                      ),
+
+                                                                      // 🔁 Takas edilmiş kart göstergesi
+                                                                      if (state.game.swappedCards!
+                                                                          .split(',')
+                                                                          .contains(card.fullName))
+                                                                        Positioned(
+                                                                          top: -8,
+                                                                          right: -8,
+                                                                          child: Container(
+                                                                            padding: const EdgeInsets.all(2),
+                                                                            decoration: const BoxDecoration(
+                                                                              color: Color.fromARGB(255, 83, 105, 192),
+                                                                              shape: BoxShape.circle,
+                                                                            ),
+                                                                            child: const Icon(Icons.swap_horiz,
+                                                                                size: 24, color: Colors.white),
+                                                                          ),
+                                                                        ),
+
+                                                                      // 🚫 Engellenmiş kart overlay
+                                                                      if (state.game.disabledCards! == card.fullName)
+                                                                        Positioned.fill(
+                                                                          child: Container(
+                                                                            decoration: BoxDecoration(
+                                                                              color: Colors.black38,
+                                                                              borderRadius: BorderRadius.circular(8),
+                                                                            ),
+                                                                            child: Center(
+                                                                              child: Icon(
+                                                                                Icons.block,
+                                                                                size: 40,
+                                                                                color: Colors.white.withOpacity(0.8),
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                        ),
+
+                                                                      // ✅ Sinek-2 takas edildi göstergesi
+                                                                      if (state.game.swappedCards!.isNotEmpty &&
+                                                                          card.fullName == 'Sinek-2')
+                                                                        Positioned(
+                                                                          top: -20,
+                                                                          left: 18,
+                                                                          child: Container(
+                                                                            padding: const EdgeInsets.all(2),
+                                                                            decoration: const BoxDecoration(
+                                                                              color: Color.fromARGB(255, 0, 141, 21),
+                                                                              shape: BoxShape.circle,
+                                                                            ),
+                                                                            child: const Icon(Icons.check,
+                                                                                size: 18, color: Colors.white),
+                                                                          ),
+                                                                        ),
+                                                                    ],
+                                                                  ),
+                                                                );
+                                                              },
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  height: 10.h,
+                                                ),
                                                 Image.asset('assets/file/info.png',
                                                     height: 250, width: 250, fit: BoxFit.contain),
                                                 const SizedBox(height: 20),
                                                 // 🔹 Başlık
                                                 const Text(
-                                                  'Bilgi',
+                                                  'Info',
                                                   style: TextStyle(
                                                     color: Colors.white,
                                                     fontSize: 26,
@@ -1009,7 +1239,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                 const SizedBox(height: 10),
                                                 // 🔹 İçerik metni
                                                 Text(
-                                                  '${state.game.currentTurnId! + 1} tamamlandı.\nKartlar açıldı ve puanlar hesaplandı.',
+                                                  '${state.game.currentTurnId! + 1} Its done.\nThe cards were revealed and the points were calculated.',
                                                   textAlign: TextAlign.center,
                                                   style: TextStyle(
                                                     color: Colors.white70,
@@ -1018,6 +1248,259 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                   ),
                                                 ),
                                                 const SizedBox(height: 40),
+                                                Text("Player 2 Card"),
+                                                SizedBox(
+                                                  height: 130, // 🔹 Kart alanını biraz genişlettik
+                                                  width: 1.sw,
+                                                  child: ListView.builder(
+                                                    padding: EdgeInsets.symmetric(
+                                                      horizontal: (1.sw -
+                                                              (state.cards.length * 70 +
+                                                                  (state.cards.length - 1) * 10)) /
+                                                          2,
+                                                    ),
+                                                    itemCount: state.cards.length,
+                                                    scrollDirection: Axis.horizontal,
+                                                    itemBuilder: (context, index) {
+                                                      // 🔹 Kart renkleri
+                                                      Color baseBorderColor = state.cards[index].isSpecial
+                                                          ? state.game.swappedCards!.isNotEmpty &&
+                                                                  state.cards[index].fullName == 'Sinek-2'
+                                                              ? const Color.fromARGB(255, 30, 149, 34)
+                                                              : const Color.fromARGB(255, 255, 0, 157)
+                                                          : const Color.fromRGBO(0, 0, 0, 0.867);
+                                                      double baseBorderWidth = state.cards[index].isSpecial ? 3 : 1.6;
+
+                                                      // 🔹 Symbol rengi
+                                                      Color cardSymbolColor = (state.cards[index].symbol == '♥' ||
+                                                              state.cards[index].symbol == '♦')
+                                                          ? Colors.red.shade800
+                                                          : Colors.black;
+
+                                                      bool isSwappedCard = state.game.swappedCards!
+                                                          .split(',')
+                                                          .contains(state.cards[index].fullName);
+
+                                                      bool isSelectedToSwap =
+                                                          swappingCards.contains(state.cards[index].fullName) ||
+                                                              state.selectedCardsToSwap
+                                                                  .map((c) => c.fullName)
+                                                                  .toList()
+                                                                  .contains(state.cards[index].fullName);
+
+                                                      return Padding(
+                                                        padding: EdgeInsets.symmetric(horizontal: 5.w),
+                                                        child: AnimatedSwitcher(
+                                                          duration: const Duration(milliseconds: 400),
+                                                          transitionBuilder: (child, anim) =>
+                                                              ScaleTransition(scale: anim, child: child),
+                                                          child: GestureDetector(
+                                                            onTap: () {
+                                                              // 🔹 Kart seçimi / takası
+                                                              if (state.sinekVar) {
+                                                                if (swappingCards.isNotEmpty) {
+                                                                  swappingCards.remove(state.cards[index].fullName);
+                                                                  swappingCards.add(state.cards[index].fullName);
+                                                                } else {
+                                                                  swappingCards.add(state.cards[index].fullName);
+                                                                }
+                                                              } else {
+                                                                if ((state.game.isPlayer1Move! &&
+                                                                        state.game.isPlayer2Move!) ||
+                                                                    state.game.turn!) {
+                                                                  print('KART SEÇİMİ ENGELLENDİ');
+                                                                } else {
+                                                                  print('KART SEÇİMİ YAPILDI:  ${state.game.turn!}');
+                                                                  if (widget.isPlayer1) {
+                                                                    if (!state.game.isPlayer1Move!) {
+                                                                      context.read<HomeCubit>().selectCard(CardModel(
+                                                                          symbol: state.cards[index].symbol,
+                                                                          rank: state.cards[index].rank,
+                                                                          value: state.cards[index].value,
+                                                                          fullName: (state.cards[index].fullName)));
+                                                                    }
+                                                                  } else {
+                                                                    if (!state.game.isPlayer2Move! &&
+                                                                        state.game.isPlayer1Move!) {
+                                                                      context.read<HomeCubit>().selectCard(CardModel(
+                                                                          symbol: state.cards[index].symbol,
+                                                                          rank: state.cards[index].rank,
+                                                                          value: state.cards[index].value,
+                                                                          fullName: (state.cards[index].fullName)));
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            },
+                                                            child: AnimatedContainer(
+                                                              duration: const Duration(milliseconds: 600),
+                                                              curve: Curves.easeInOutCubic,
+                                                              margin: EdgeInsets.only(top: isSelectedToSwap ? 0 : 10),
+                                                              transform: Matrix4.identity()
+                                                                ..translate(0.0, isSelectedToSwap ? -18.0 : 0.0)
+                                                                ..scale(isSelectedToSwap ? 1.08 : 1.0),
+                                                              decoration: BoxDecoration(
+                                                                color: state.game.disabledCards! ==
+                                                                        state.cards[index].fullName
+                                                                    ? Colors.white.withAlpha(160)
+                                                                    : Colors.white,
+                                                                borderRadius: BorderRadius.circular(12),
+                                                                border: Border.all(
+                                                                    color: baseBorderColor, width: baseBorderWidth),
+                                                                boxShadow: [
+                                                                  if (isSwappedCard || isSelectedToSwap)
+                                                                    BoxShadow(
+                                                                      color: baseBorderColor.withOpacity(0.9),
+                                                                      blurRadius: 25,
+                                                                      spreadRadius: 3,
+                                                                    ),
+                                                                  BoxShadow(
+                                                                    color: Colors.black.withOpacity(0.25),
+                                                                    blurRadius: 6,
+                                                                    offset: const Offset(2, 3),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              width: 60,
+                                                              height: 95,
+                                                              child: Stack(
+                                                                clipBehavior: Clip.none,
+                                                                children: [
+                                                                  // --- Kartın Görsel Yapısı ---
+                                                                  Positioned(
+                                                                    top: 4,
+                                                                    left: 4,
+                                                                    child: Column(
+                                                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                                                      children: [
+                                                                        Text(
+                                                                          state.cards[index].rank,
+                                                                          style: TextStyle(
+                                                                            fontSize: 20,
+                                                                            fontWeight: FontWeight.w900,
+                                                                            color: cardSymbolColor,
+                                                                            height: 0.9,
+                                                                          ),
+                                                                        ),
+                                                                        Text(
+                                                                          state.cards[index].symbol,
+                                                                          style: TextStyle(
+                                                                            fontSize: 20,
+                                                                            fontWeight: FontWeight.bold,
+                                                                            color: cardSymbolColor,
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+
+                                                                  Positioned(
+                                                                    bottom: 4,
+                                                                    right: 4,
+                                                                    child: Transform.rotate(
+                                                                      angle: math.pi,
+                                                                      child: Column(
+                                                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                                                        children: [
+                                                                          Text(
+                                                                            state.cards[index].rank,
+                                                                            style: TextStyle(
+                                                                              fontSize: 20,
+                                                                              fontWeight: FontWeight.w900,
+                                                                              color: cardSymbolColor,
+                                                                              height: 0.9,
+                                                                            ),
+                                                                          ),
+                                                                          Text(
+                                                                            state.cards[index].symbol,
+                                                                            style: TextStyle(
+                                                                              fontSize: 20,
+                                                                              fontWeight: FontWeight.bold,
+                                                                              color: cardSymbolColor,
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                  ),
+
+                                                                  // --- Swap / Durum İndikatörleri ---
+                                                                  if (isSwappedCard)
+                                                                    Positioned(
+                                                                      top: -10,
+                                                                      right: -10,
+                                                                      child: AnimatedOpacity(
+                                                                        opacity: 1,
+                                                                        duration: const Duration(milliseconds: 400),
+                                                                        child: Container(
+                                                                          padding: const EdgeInsets.all(3),
+                                                                          decoration: const BoxDecoration(
+                                                                            color: Color.fromARGB(255, 83, 105, 192),
+                                                                            shape: BoxShape.circle,
+                                                                            boxShadow: [
+                                                                              BoxShadow(
+                                                                                blurRadius: 10,
+                                                                                color:
+                                                                                    Color.fromARGB(255, 83, 105, 192),
+                                                                                spreadRadius: 2,
+                                                                              )
+                                                                            ],
+                                                                          ),
+                                                                          child: const Icon(Icons.swap_horiz,
+                                                                              size: 22, color: Colors.white),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+
+                                                                  if (state.game.disabledCards! ==
+                                                                      state.cards[index].fullName)
+                                                                    Positioned.fill(
+                                                                      child: Container(
+                                                                        decoration: BoxDecoration(
+                                                                          color: Colors.black38,
+                                                                          borderRadius: BorderRadius.circular(8),
+                                                                        ),
+                                                                        child: Center(
+                                                                          child: Icon(
+                                                                            Icons.block,
+                                                                            size: 40,
+                                                                            color: Colors.white.withOpacity(0.8),
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+
+                                                                  if (state.game.swappedCards!.isNotEmpty &&
+                                                                      state.cards[index].fullName == 'Sinek-2')
+                                                                    Positioned(
+                                                                      top: -22,
+                                                                      left: 18,
+                                                                      child: Container(
+                                                                        padding: const EdgeInsets.all(2),
+                                                                        decoration: const BoxDecoration(
+                                                                          color: Color.fromARGB(255, 0, 141, 21),
+                                                                          shape: BoxShape.circle,
+                                                                          boxShadow: [
+                                                                            BoxShadow(
+                                                                                blurRadius: 8,
+                                                                                color: Color.fromARGB(255, 0, 141, 21),
+                                                                                spreadRadius: 1)
+                                                                          ],
+                                                                        ),
+                                                                        child: const Icon(Icons.check,
+                                                                            size: 18, color: Colors.white),
+                                                                      ),
+                                                                    ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+
                                                 // 🔹 Tamam Butonu
                                                 ElevatedButton(
                                                   style: ElevatedButton.styleFrom(
@@ -1041,7 +1524,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                     //! Resetleme işlemleri burada yapılacak Yeni El başlangıcı
                                                   },
                                                   child: const Text(
-                                                    'Tamam',
+                                                    'OK',
                                                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                                   ),
                                                 ),
@@ -1104,7 +1587,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                               case 'Kupa-K':
                                                 context.read<HomeCubit>().setPlayerMultipliers(2, 1);
                                                 _appendLog(
-                                                    'Kupa Papaz (K♥) kartı masaya konuldu! Kart değeri 2x olacak.');
+                                                    'The Cup of the Priest (K♥) card has been placed on the table! The card value will be 2x.');
 
                                                 break;
                                               case 'Karo-2':
@@ -1114,7 +1597,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                 context.read<HomeCubit>().stopTimer();
 
                                                 _appendLog(
-                                                    'Karo 2 (♦2) kartı masaya konuldu! Bir kart etkisiz hale gelecek.');
+                                                    'The 2 of Diamonds (♦2) card has been placed on the table! One card will be rendered ineffective.');
 
                                                 break;
 
@@ -1126,7 +1609,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                 context.read<HomeCubit>().stopTimer();
 
                                                 _appendLog(
-                                                    'Sinek 2 (♣2) kartı masaya konuldu! Bir kart takas edilecek.');
+                                                    'The 2 of Clubs (♣2) card has been placed on the table! One card will be exchanged.');
 
                                                 break;
 
@@ -1144,7 +1627,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                           switch (element.fullName) {
                                             case 'Kupa-K':
                                               _appendLog(
-                                                  'Kupa Papaz (K♥) kartı masaya konuldu! Kart değeri 2x olacak.');
+                                                  'The Cup of the Priest (K♥) card has been placed on the table! The card value will be 2x.');
 
                                               break;
                                             case 'Karo-2':
@@ -1153,7 +1636,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                               context.read<HomeCubit>().stopTimer();
 
                                               _appendLog(
-                                                  'Karo 2 (♦2) kartı masaya konuldu! Bir kart etkisiz hale gelecek.');
+                                                  'The 2 of Diamonds (♦2) card has been placed on the table! One card will become ineffective.');
 
                                               break;
                                             case 'Sinek-2':
@@ -1161,7 +1644,8 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                               await Future.delayed(const Duration(seconds: 15));
                                               context.read<HomeCubit>().stopTimer();
 
-                                              _appendLog('Sinek 2 (♣2) kartı masaya konuldu! Bir kart takas edilecek.');
+                                              _appendLog(
+                                                  'The 2 of Clubs (♣2) card has been placed on the table! One card will be exchanged.');
 
                                               break;
 
@@ -1183,7 +1667,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                               case 'Kupa-K':
                                                 context.read<HomeCubit>().setPlayerMultipliers(1, 2);
                                                 _appendLog(
-                                                    'Kupa Papaz (K♥) kartı masaya konuldu! Kart değeri 2x olacak.');
+                                                    'The Cup of the Priest (K♥) card has been placed on the table! The card value will be 2x.');
                                                 break;
                                               case 'Karo-2':
                                                 context.read<HomeCubit>().setKaroVar(true);
@@ -1194,7 +1678,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                 print('SÜRE SONU GELDİ');
 
                                                 _appendLog(
-                                                    'Karo 2 (♦2) kartı masaya konuldu! Bir kart etkisiz hale gelecek.');
+                                                    'The 2 of Diamonds (♦2) card has been placed on the table! One card will become ineffective.');
                                                 break;
                                               case 'Sinek-2':
                                                 context.read<HomeCubit>().setSinekVar(true);
@@ -1205,7 +1689,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                 print('SÜRE SONU GELDİ');
 
                                                 _appendLog(
-                                                    'Sinek 2 (♣2) kartı masaya konuldu! Bir kart takas edilecek.');
+                                                    'The 2 of Clubs (♣2) card has been placed on the table! One card will be exchanged.');
                                                 break;
 
                                               default:
@@ -1225,7 +1709,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                           switch (element.fullName) {
                                             case 'Kupa-K':
                                               _appendLog(
-                                                  'Kupa Papaz (K♥) kartı masaya konuldu! Kart değeri 2x olacak.');
+                                                  'The Cup of the Priest (K♥) card has been placed on the table! The card value will be 2x.');
 
                                               break;
                                             case 'Karo-2':
@@ -1234,7 +1718,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                               context.read<HomeCubit>().stopTimer();
 
                                               _appendLog(
-                                                  'Karo 2 (♦2) kartı masaya konuldu! Bir kart etkisiz hale gelecek.');
+                                                  'The 2 of Diamonds (♦2) card has been placed on the table! One card will be rendered ineffective.');
 
                                               break;
                                             case 'Sinek-2':
@@ -1242,7 +1726,8 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                               await Future.delayed(Duration(seconds: state.seconds));
                                               context.read<HomeCubit>().stopTimer();
 
-                                              _appendLog('Sinek 2 (♣2) kartı masaya konuldu! Bir kart takas edilecek.');
+                                              _appendLog(
+                                                  'The 2 of Clubs (♣2) card has been placed on the table! One card will be exchanged.');
 
                                               break;
 
@@ -1258,14 +1743,14 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                           .read<HomeCubit>()
                                           .setPlayerMultipliers(widget.isPlayer1 ? 1 : 2, widget.isPlayer1 ? 2 : 1);
                                       _appendLog(
-                                          'Kupa Papaz (K♥) kartı rakip tarafından masaya konuldu! Kart değeri 2x olacak.');
+                                          'The Cup of the Priest (K♥) card has been placed on the table by your opponent! The card value will be 2x.');
                                     }
                                   }
                                 }
                               },
                               child: SizedBox(height: 15.h),
                             ),
-                            Text('Kart değişimi: En fazla 3 kart seçebilirsiniz.',
+                            Text('Card exchange: You can select up to 3 cards.',
                                 style: TextStyle(color: kWhiteColor, fontSize: 16.sp)),
                             const SizedBox(height: 6),
                             // REVİZE EDİLMİŞ BUTON TASARIMI
@@ -1402,14 +1887,14 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                               child: Text(
                                                 (state.game.isPlayer1Move! && state.game.isPlayer2Move!) ||
                                                         state.game.turn!
-                                                    ? 'DEĞİŞTİRME TAMAMLANDI • KARTLAR AÇILDI'
+                                                    ? 'CHANGE COMPLETED • CARDS OPENED'
                                                     : widget.isPlayer1
                                                         ? !state.game.isPlayer1Move!
-                                                            ? 'SEÇİLİ KARTLARI DEĞİŞTİR / ATLA'
-                                                            : 'Karşı oyuncu seçiyor...'
+                                                            ? 'CHANGE / SKIP SELECTED CARDS'
+                                                            : 'Selecting opponent...'
                                                         : !state.game.isPlayer2Move!
-                                                            ? 'SEÇİLİ KARTLARI DEĞİŞTİR / ATLA'
-                                                            : 'Karşı oyuncu seçiyor...',
+                                                            ? 'CHANGE / SKIP SELECTED CARDS'
+                                                            : 'Selecting opponent...',
                                                 textAlign: TextAlign.center,
                                                 style: TextStyle(
                                                   color: Colors.white,
@@ -1497,7 +1982,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                           if (state.getStatusState == GetStatusStates.loading) {
                             return const CircularProgressIndicator();
                           } else if (state.getStatusState == GetStatusStates.error) {
-                            return Text('Hata: ${state.errorMessage}', style: const TextStyle(color: Colors.red));
+                            return Text('Error: ${state.errorMessage}', style: const TextStyle(color: Colors.red));
                           } else if (state.getStatusState == GetStatusStates.completed) {
                             // Kartları gösterme animasyonu
                             return Column(
@@ -1670,7 +2155,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                           Text(
                                                             state.cards[index].rank,
                                                             style: TextStyle(
-                                                              fontSize: 16,
+                                                              fontSize: 20,
                                                               fontWeight: FontWeight.w900,
                                                               color: cardSymbolColor,
                                                               height: 0.9,
@@ -1679,7 +2164,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                           Text(
                                                             state.cards[index].symbol,
                                                             style: TextStyle(
-                                                              fontSize: 18,
+                                                              fontSize: 20,
                                                               fontWeight: FontWeight.bold,
                                                               color: cardSymbolColor,
                                                             ),
@@ -1699,7 +2184,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                             Text(
                                                               state.cards[index].rank,
                                                               style: TextStyle(
-                                                                fontSize: 16,
+                                                                fontSize: 20,
                                                                 fontWeight: FontWeight.w900,
                                                                 color: cardSymbolColor,
                                                                 height: 0.9,
@@ -1708,7 +2193,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                             Text(
                                                               state.cards[index].symbol,
                                                               style: TextStyle(
-                                                                fontSize: 18,
+                                                                fontSize: 20,
                                                                 fontWeight: FontWeight.bold,
                                                                 color: cardSymbolColor,
                                                               ),
@@ -1876,8 +2361,8 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                   (widget.isPlayer1 ? state.player1Multiplier : state.player2Multiplier),
                               userWins: state.player1WinCount,
                               content: widget.isPlayer1
-                                  ? 'El ${state.game.currentTurnId! + 1} / ${3}  • Skor: Rakip ${state.player2WinCount} - Siz ${state.player1WinCount}'
-                                  : 'El ${state.game.currentTurnId! + 1} / ${3}  • Skor: Rakip ${state.player1WinCount} - Siz ${state.player2WinCount}',
+                                  ? 'Round ${state.game.currentTurnId! + 1} / ${3}  • Score: Oppoinment ${state.player2WinCount} - You ${state.player1WinCount}'
+                                  : 'Round ${state.game.currentTurnId! + 1} / ${3}  • Score: Oppoinment ${state.player1WinCount} - You ${state.player2WinCount}',
                               oppWins: state.player2WinCount,
                               name: widget.isPlayer1
                                   ? '${state.game.player1Name!} ${state.game.player1Surname!} ${state.player1Multiplier > 1 ? '(x${state.player1Multiplier})' : ''}'
@@ -1888,8 +2373,8 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                 image: '',
                                 point: 0,
                                 content: widget.isPlayer1
-                                    ? 'El ${state.game.currentTurnId! + 1} / ${3}  • Skor: Rakip ${state.player2WinCount} - Siz ${state.player1WinCount}'
-                                    : 'El ${state.game.currentTurnId! + 1} / ${3}  • Skor: Rakip ${state.player1WinCount} - Siz ${state.player2WinCount}',
+                                    ? 'Round ${state.game.currentTurnId! + 1} / ${3}  • Score: Oppoinment ${state.player2WinCount} - You ${state.player1WinCount}'
+                                    : 'Round ${state.game.currentTurnId! + 1} / ${3}  • Score: Oppoinment ${state.player1WinCount} - You ${state.player2WinCount}',
                                 userWins: state.player1WinCount,
                                 oppWins: state.player2WinCount);
                           }
