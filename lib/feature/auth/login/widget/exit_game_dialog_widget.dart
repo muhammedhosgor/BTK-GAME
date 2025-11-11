@@ -40,7 +40,7 @@ class ThemedConfirmExitDialog extends StatelessWidget {
             children: [
               // Başlık
               Text(
-                "OYUNDAN ÇIKMAK İSTİYOR MUSUNUZ?",
+                "DO YOU WANT TO LEAVE THE GAME?",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: kSuitRed,
@@ -58,7 +58,7 @@ class ThemedConfirmExitDialog extends StatelessWidget {
 
               // Mesaj
               Text(
-                "Oyundan gerçekten çıkmak istiyor musunuz? Ana menüye yönlendirileceksiniz. Tüm ilerlemeniz kaydedilecektir.",
+                "Are you sure you want to quit the game? ",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: kWhiteColor.withOpacity(0.9),
@@ -70,7 +70,7 @@ class ThemedConfirmExitDialog extends StatelessWidget {
               // EVET, ÇIK Butonu (Kırmızı)
               PrimaryGameButton(
                 buttonColor: kSuitRed,
-                text: 'EVET, ÇIK',
+                text: 'YES, CLOSE',
                 icon: Icons.exit_to_app,
                 onTap: () {
                   context.read<LoginCubit>().closeApp();
@@ -85,7 +85,7 @@ class ThemedConfirmExitDialog extends StatelessWidget {
               // İPTAL Butonu (Gri)
               PrimaryGameButton(
                 buttonColor: kButtonGrey,
-                text: 'İPTAL',
+                text: 'CANCEL',
                 icon: Icons.cancel_schedule_send_outlined,
                 onTap: () {
                   Navigator.of(context).pop(); // Sadece diyaloğu kapat

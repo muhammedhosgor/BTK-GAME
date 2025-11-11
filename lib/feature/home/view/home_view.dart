@@ -421,6 +421,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                             // Her iki oyuncu da hamle yaptıysa, el sonucu göster
                             return InfoProfile(
                               image: state.game.player1Image!, // bak bi
+                              isPlayer1: widget.isPlayer1,
                               content: widget.isPlayer1
                                   ? 'Round ${state.game.currentTurnId! + 1} / ${3}  • Score: Opponent ${state.player2WinCount} - You ${state.player1WinCount}'
                                   : 'Round ${state.game.currentTurnId! + 1} / ${3}  • Score: Opponent ${state.player1WinCount} - You ${state.player2WinCount}',
@@ -435,8 +436,12 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                               .reduce((a, b) => a + b) *
                                           (widget.isPlayer1 ? state.player2Multiplier : state.player1Multiplier))
                                       : null,
-                              userWins: state.player1WinCount,
-                              oppWins: state.player2WinCount,
+                              userWins: widget.isPlayer1
+                                  ? state.player2WinCount // Cihaz P1 ise, userWins P2 skorudur (Rakip).
+                                  : state.player1WinCount, // Cihaz P2 ise, userWins P1 skorudur (Rakip).
+                              oppWins: widget.isPlayer1
+                                  ? state.player1WinCount // Cihaz P1 ise, oppWins P1 skorudur (Kullanıcı).
+                                  : state.player2WinCount, // Cihaz P2 ise, oppWins P2 skorudur (Kullanıcı).
                               name: widget.isPlayer1
                                   ? '${state.game.player2Name!} ${state.game.player2Surname!} ${state.player2Multiplier > 1 ? '(x${state.player2Multiplier})' : ''}'
                                   : '${state.game.player1Name!} ${state.game.player1Surname!} ${state.player1Multiplier > 1 ? '(x${state.player1Multiplier})' : ''}',
@@ -824,6 +829,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                   previous.game.isPlayer2Move != current.game.isPlayer2Move,
                               listener: (contextl, state) async {
                                 print('listener -- player : ${widget.isPlayer1}');
+
                                 if (state.game.currentTurnId! > 2) {
                                   //* VERİ TABANINDA SAYAC 0 DAN BAŞLADIĞI İÇİN 2
                                   // showDialog(
@@ -884,6 +890,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                       // 🔹 Bu cihaza göre kazandı mı kaybetti mi?
                                       final bool thisPlayerWon =
                                           (isPlayer1 && player1Won) || (!isPlayer1 && !player1Won);
+                                      final String resultText = thisPlayerWon ? 'You won!' : 'You lost!';
 
                                       // 🔹 Animasyon seçimi
                                       final String lottiePath = thisPlayerWon
@@ -891,7 +898,6 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                           : 'assets/file/defeat.png'; // 😔 Kaybeden animasyonu
 
                                       // 🔹 Metin seçimi
-                                      final String resultText = thisPlayerWon ? 'You won!' : 'You lost!';
                                       final String winnerText = player1Won ? 'Winner 1. Player' : 'Winner 2. Player';
 
                                       return Scaffold(
@@ -985,19 +991,66 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                   //! Oyunun devam ettiği kısım
                                   if (state.game.isPlayer1Move! && state.game.isPlayer2Move! && state.game.turn!) {
                                     await Future.delayed(
-                                      const Duration(seconds: 2),
+                                      const Duration(seconds: 1),
                                     );
                                     await showDialog(
                                       barrierDismissible: false,
                                       context: context,
                                       builder: (dialogContext) {
+                                        int youScore = (state.cards
+                                                .where((card) => card.fullName != state.game.disabledCards)
+                                                .toList()
+                                                .map((c) => c.value)
+                                                .toList()
+                                                .reduce((a, b) => a + b)) *
+                                            (widget.isPlayer1 ? state.player1Multiplier : state.player2Multiplier);
+                                        int opponentScore = (state.opponentCards
+                                                .where((oc) => oc.fullName != state.game.disabledCards)
+                                                .toList()
+                                                .map((c) => c.value)
+                                                .toList()
+                                                .reduce((a, b) => a + b) *
+                                            (widget.isPlayer1 ? state.player2Multiplier : state.player1Multiplier));
+
+                                        // 🔹 Kazanan / Kaybeden kontrolü
+                                        bool thisPlayerWon = youScore > opponentScore;
+                                        bool draw = youScore == opponentScore;
+
+                                        String resultText;
+                                        String winnerText;
+
+                                        if (draw) {
+                                          resultText = "It's a Draw!";
+                                          winnerText = "No winner this round";
+                                        } else if (thisPlayerWon) {
+                                          resultText = "You Win!";
+                                          winnerText = widget.isPlayer1 ? "Player 1" : "Player 2";
+                                        } else {
+                                          resultText = "You Lost!";
+                                          winnerText = widget.isPlayer1 ? "Player 2" : "Player 1";
+                                        }
+
                                         return Scaffold(
                                           backgroundColor: kTableNavy,
                                           body: Center(
                                             child: Column(
                                               mainAxisAlignment: MainAxisAlignment.center,
+                                              crossAxisAlignment: CrossAxisAlignment.center,
                                               children: [
-                                                const Text("Player 1 Card"),
+                                                Text(
+                                                  "${state.game.currentTurnId! + 1}. Round Over! ",
+                                                  style: TextStyle(
+                                                      fontSize: 24.sp,
+                                                      color: Colors.white,
+                                                      fontWeight: FontWeight.bold),
+                                                ),
+                                                Text(
+                                                  "Opponent Card (Score: ${opponentScore})",
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 18.sp),
+                                                ),
                                                 SizedBox(
                                                   height: 130,
                                                   child: ListView.builder(
@@ -1225,21 +1278,36 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                   height: 10.h,
                                                 ),
                                                 Image.asset('assets/file/info.png',
-                                                    height: 250, width: 250, fit: BoxFit.contain),
-                                                const SizedBox(height: 20),
-                                                // 🔹 Başlık
-                                                const Text(
-                                                  'Info',
+                                                    height: 200, width: 200, fit: BoxFit.contain),
+                                                SizedBox(
+                                                  height: 10.h,
+                                                ),
+                                                Text(
+                                                  resultText,
                                                   style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 26,
+                                                    color: draw
+                                                        ? Colors.amberAccent
+                                                        : thisPlayerWon
+                                                            ? Colors.greenAccent
+                                                            : Colors.redAccent,
+                                                    fontSize: 22,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
-                                                const SizedBox(height: 10),
+                                                SizedBox(height: 5.h),
+
+                                                // 🥇 Kazanan Oyuncu Bilgisi
+                                                Text(
+                                                  draw ? '' : 'Winning player: $winnerText',
+                                                  style: const TextStyle(
+                                                    color: Colors.white70,
+                                                    fontSize: 18,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 20),
                                                 // 🔹 İçerik metni
                                                 Text(
-                                                  '${state.game.currentTurnId! + 1} Its done.\nThe cards were revealed and the points were calculated.',
+                                                  'The cards were revealed and the points were calculated.',
                                                   textAlign: TextAlign.center,
                                                   style: TextStyle(
                                                     color: Colors.white70,
@@ -1248,7 +1316,13 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                   ),
                                                 ),
                                                 const SizedBox(height: 40),
-                                                Text("Player 2 Card"),
+                                                Text(
+                                                  "Your Card (Score: ${(state.cards.where((card) => card.fullName != state.game.disabledCards).toList().map((c) => c.value).toList().reduce((a, b) => a + b)) * (widget.isPlayer1 ? state.player1Multiplier : state.player2Multiplier)})",
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 18.sp),
+                                                ),
                                                 SizedBox(
                                                   height: 130, // 🔹 Kart alanını biraz genişlettik
                                                   width: 1.sw,
@@ -1297,13 +1371,30 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                           child: GestureDetector(
                                                             onTap: () {
                                                               // 🔹 Kart seçimi / takası
+                                                              // if (state.sinekVar) {
+                                                              //   if (swappingCards.isNotEmpty) {
+                                                              //     swappingCards.remove(state.cards[index].fullName);
+                                                              //     swappingCards.add(state.cards[index].fullName);
+                                                              //   } else {
+                                                              //     swappingCards.add(state.cards[index].fullName);
+                                                              //   }
+                                                              // 🔹 Kart seçimi / takası
                                                               if (state.sinekVar) {
-                                                                if (swappingCards.isNotEmpty) {
-                                                                  swappingCards.remove(state.cards[index].fullName);
-                                                                  swappingCards.add(state.cards[index].fullName);
-                                                                } else {
-                                                                  swappingCards.add(state.cards[index].fullName);
-                                                                }
+                                                                // Sinek-2 (Takas) özel kartı aktifse
+                                                                // setState kullanmalıyız ki kartın görseli (isSelectedToSwap) güncellensin
+                                                                setState(() {
+                                                                  if (swappingCards
+                                                                      .contains(state.cards[index].fullName)) {
+                                                                    // Eğer aynı karta tekrar tıklarsa: Seçimi kaldır (swappingCards boşalır)
+                                                                    swappingCards.clear();
+                                                                  } else {
+                                                                    // Yeni bir kart seçerse:
+                                                                    swappingCards
+                                                                        .clear(); // Önceki seçimi temizle (1 kart kuralı garanti edilir)
+                                                                    swappingCards.add(
+                                                                        state.cards[index].fullName); // Yeni kartı ekle
+                                                                  }
+                                                                });
                                                               } else {
                                                                 if ((state.game.isPlayer1Move! &&
                                                                         state.game.isPlayer2Move!) ||
@@ -1500,7 +1591,9 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                     },
                                                   ),
                                                 ),
-
+                                                SizedBox(
+                                                  height: 20.h,
+                                                ),
                                                 // 🔹 Tamam Butonu
                                                 ElevatedButton(
                                                   style: ElevatedButton.styleFrom(
@@ -1515,16 +1608,16 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                     Navigator.of(dialogContext).pop();
                                                     context.read<HomeCubit>().setIsMoveFirstTime(true);
 
-                                                    context.read<HomeCubit>().resetHandComplete();
                                                     if (!widget.isPlayer1) {
                                                       await context.read<HomeCubit>().handComplete(state.game.id!);
                                                     }
 
                                                     context.read<HomeCubit>().determineWinner(widget.isPlayer1);
                                                     //! Resetleme işlemleri burada yapılacak Yeni El başlangıcı
+                                                    context.read<HomeCubit>().resetHandComplete();
                                                   },
                                                   child: const Text(
-                                                    'OK',
+                                                    'NEXT ROUND',
                                                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                                   ),
                                                 ),
@@ -1626,8 +1719,10 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                         if (element.isSpecial) {
                                           switch (element.fullName) {
                                             case 'Kupa-K':
+                                              context.read<HomeCubit>().setPlayerMultipliers(
+                                                  widget.isPlayer1 ? 1 : 2, widget.isPlayer1 ? 2 : 1);
                                               _appendLog(
-                                                  'The Cup of the Priest (K♥) card has been placed on the table! The card value will be 2x.');
+                                                  'The Cup of the Priest (K♥) card has been placed on the table by your opponent! The card value will be 2x.');
 
                                               break;
                                             case 'Karo-2':
@@ -1708,8 +1803,10 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                         if (element.isSpecial) {
                                           switch (element.fullName) {
                                             case 'Kupa-K':
+                                              context.read<HomeCubit>().setPlayerMultipliers(
+                                                  widget.isPlayer1 ? 1 : 2, widget.isPlayer1 ? 2 : 1);
                                               _appendLog(
-                                                  'The Cup of the Priest (K♥) card has been placed on the table! The card value will be 2x.');
+                                                  'The Cup of the Priest (K♥) card has been placed on the table by your opponent! The card value will be 2x.');
 
                                               break;
                                             case 'Karo-2':
@@ -1735,15 +1832,6 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                           }
                                         }
                                       }
-                                    }
-                                  }
-                                  for (var element in state.opponentCards) {
-                                    if (element.isSpecial && element.fullName == 'Kupa-K') {
-                                      context
-                                          .read<HomeCubit>()
-                                          .setPlayerMultipliers(widget.isPlayer1 ? 1 : 2, widget.isPlayer1 ? 2 : 1);
-                                      _appendLog(
-                                          'The Cup of the Priest (K♥) card has been placed on the table by your opponent! The card value will be 2x.');
                                     }
                                   }
                                 }
@@ -2080,13 +2168,27 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                             child: GestureDetector(
                                               onTap: () {
                                                 // 🔹 Kart seçimi / takası
+                                                // if (state.sinekVar) {
+                                                //   if (swappingCards.isNotEmpty) {
+                                                //     swappingCards.remove(state.cards[index].fullName);
+                                                //     swappingCards.add(state.cards[index].fullName);
+                                                //   } else {
+                                                //     swappingCards.add(state.cards[index].fullName);
+                                                //   }
                                                 if (state.sinekVar) {
-                                                  if (swappingCards.isNotEmpty) {
-                                                    swappingCards.remove(state.cards[index].fullName);
-                                                    swappingCards.add(state.cards[index].fullName);
-                                                  } else {
-                                                    swappingCards.add(state.cards[index].fullName);
-                                                  }
+                                                  // Sinek-2 (Takas) özel kartı aktifse
+                                                  // setState kullanmalıyız ki kartın görseli (isSelectedToSwap) güncellensin
+                                                  setState(() {
+                                                    if (swappingCards.contains(state.cards[index].fullName)) {
+                                                      // Eğer aynı karta tekrar tıklarsa: Seçimi kaldır (swappingCards boşalır)
+                                                      swappingCards.clear();
+                                                    } else {
+                                                      // Yeni bir kart seçerse:
+                                                      swappingCards
+                                                          .clear(); // Önceki seçimi temizle (1 kart kuralı garanti edilir)
+                                                      swappingCards.add(state.cards[index].fullName); // Yeni kartı ekle
+                                                    }
+                                                  });
                                                 } else {
                                                   if ((state.game.isPlayer1Move! && state.game.isPlayer2Move!) ||
                                                       state.game.turn!) {
@@ -2352,6 +2454,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                           if (state.getStatusState == GetStatusStates.completed && state.cards.isNotEmpty) {
                             return InfoProfile(
                               image: state.game.player2Image ?? '',
+                              isPlayer1: widget.isPlayer1,
                               point: (state.cards
                                       .where((card) => card.fullName != state.game.disabledCards)
                                       .toList()
@@ -2359,17 +2462,22 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                       .toList()
                                       .reduce((a, b) => a + b)) *
                                   (widget.isPlayer1 ? state.player1Multiplier : state.player2Multiplier),
-                              userWins: state.player1WinCount,
+                              userWins: widget.isPlayer1
+                                  ? state.player1WinCount // Cihaz P1 ise, userWins P1 skorudur.
+                                  : state.player2WinCount, // Cihaz P2 ise, userWins P2 skorudur.
                               content: widget.isPlayer1
                                   ? 'Round ${state.game.currentTurnId! + 1} / ${3}  • Score: Oppoinment ${state.player2WinCount} - You ${state.player1WinCount}'
                                   : 'Round ${state.game.currentTurnId! + 1} / ${3}  • Score: Oppoinment ${state.player1WinCount} - You ${state.player2WinCount}',
-                              oppWins: state.player2WinCount,
+                              oppWins: widget.isPlayer1
+                                  ? state.player2WinCount // Cihaz P1 ise, oppWins P2 skorudur.
+                                  : state.player1WinCount, // Cihaz P2 ise, oppWins P1 skorudur.
                               name: widget.isPlayer1
                                   ? '${state.game.player1Name!} ${state.game.player1Surname!} ${state.player1Multiplier > 1 ? '(x${state.player1Multiplier})' : ''}'
                                   : '${state.game.player2Name!} ${state.game.player2Surname!} ${state.player2Multiplier > 1 ? '(x${state.player2Multiplier})' : ''}',
                             );
                           } else {
                             return InfoProfile(
+                                isPlayer1: widget.isPlayer1,
                                 image: '',
                                 point: 0,
                                 content: widget.isPlayer1
@@ -2525,6 +2633,7 @@ class InfoProfile extends StatelessWidget {
     this.name = '',
     required this.content,
     required this.image,
+    required this.isPlayer1,
   });
 
   int? point;
@@ -2533,6 +2642,7 @@ class InfoProfile extends StatelessWidget {
   String name;
   String content;
   String image;
+  bool isPlayer1;
 
   @override
   Widget build(BuildContext context) {
@@ -2668,6 +2778,7 @@ class InfoProfile extends StatelessWidget {
                       // 💬 Kullanıcı Açıklaması
                       BlocBuilder<HomeCubit, HomeState>(
                         builder: (context, state) {
+                          print("Contetn: $content");
                           return Text(
                             content,
                             maxLines: 1,
@@ -2702,6 +2813,7 @@ class InfoProfile extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(
                             '$userWins - $oppWins',
+                            //  isPlayer1 == true ? '$userWins - $oppWins' : '$oppWins - $userWins',
                             style: TextStyle(
                               fontSize: 13.sp,
                               fontWeight: FontWeight.bold,

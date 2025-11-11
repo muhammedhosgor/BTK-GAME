@@ -574,6 +574,8 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   void resetHandComplete() {
+    print('reset player');
+
     emit(state.copyWith(
       sinekVar: false,
       karoVar: false,
@@ -656,10 +658,6 @@ class HomeCubit extends Cubit<HomeState> {
 
     // 🔍 Konsola log bas (debug amaçlı)
     print('🎯 Player 1 Score: $player1Score | Player 2 Score: $player2Score');
-  }
-
-  Future<void> startNewRound(int gameId) async {
-    await _homeService.startNewRound(gameId);
   }
 
   void setIsSpecialEffectPlaying(bool value) {
