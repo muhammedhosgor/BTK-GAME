@@ -232,7 +232,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
   }
 
   Widget buildTimeChip(int seconds, bool isSpecialEffectPlaying) {
-    final bool isActive = seconds != 15;
+    final bool isActive = seconds != 10;
 
     return Chip(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -1378,6 +1378,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                               //   } else {
                                                               //     swappingCards.add(state.cards[index].fullName);
                                                               //   }
+
                                                               // 🔹 Kart seçimi / takası
                                                               if (state.sinekVar) {
                                                                 // Sinek-2 (Takas) özel kartı aktifse
@@ -1686,7 +1687,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                               case 'Karo-2':
                                                 context.read<HomeCubit>().setKaroVar(true);
                                                 context.read<HomeCubit>().startTimer();
-                                                await Future.delayed(const Duration(seconds: 15));
+                                                await Future.delayed(const Duration(seconds: 10));
                                                 context.read<HomeCubit>().stopTimer();
 
                                                 _appendLog(
@@ -1698,7 +1699,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                 context.read<HomeCubit>().setSinekVar(true);
                                                 context.read<HomeCubit>().startTimer();
 
-                                                await Future.delayed(const Duration(seconds: 15));
+                                                await Future.delayed(const Duration(seconds: 10));
                                                 context.read<HomeCubit>().stopTimer();
 
                                                 _appendLog(
@@ -1727,7 +1728,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                               break;
                                             case 'Karo-2':
                                               context.read<HomeCubit>().startTimer();
-                                              await Future.delayed(const Duration(seconds: 15));
+                                              await Future.delayed(const Duration(seconds: 10));
                                               context.read<HomeCubit>().stopTimer();
 
                                               _appendLog(
@@ -1736,7 +1737,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                               break;
                                             case 'Sinek-2':
                                               context.read<HomeCubit>().startTimer();
-                                              await Future.delayed(const Duration(seconds: 15));
+                                              await Future.delayed(const Duration(seconds: 10));
                                               context.read<HomeCubit>().stopTimer();
 
                                               _appendLog(
@@ -2175,6 +2176,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                 //   } else {
                                                 //     swappingCards.add(state.cards[index].fullName);
                                                 //   }
+
                                                 if (state.sinekVar) {
                                                   // Sinek-2 (Takas) özel kartı aktifse
                                                   // setState kullanmalıyız ki kartın görseli (isSelectedToSwap) güncellensin

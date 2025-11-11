@@ -667,7 +667,7 @@ class HomeCubit extends Cubit<HomeState> {
   Timer? timerPer;
 
   void startTimer() {
-    emit(state.copyWith(seconds: 15, isSpecialEffectPlaying: true));
+    emit(state.copyWith(seconds: 10, isSpecialEffectPlaying: true));
     timerPer = Timer.periodic(const Duration(seconds: 1), (v) {
       if (state.seconds > 0) {
         emit(state.copyWith(seconds: state.seconds - 1));
@@ -677,7 +677,7 @@ class HomeCubit extends Cubit<HomeState> {
 
   void stopTimer() {
     timerPer!.cancel();
-    emit(state.copyWith(isSpecialEffectPlaying: false, seconds: 15));
+    emit(state.copyWith(isSpecialEffectPlaying: false, seconds: 10));
   }
 
   Future<void> finish(int gameId, bool isPlayer1, int playerId, int point) async {
