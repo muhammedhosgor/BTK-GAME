@@ -97,7 +97,7 @@ class _LoginViewState extends State<LoginView> {
                               style: TextStyle(
                                 color: kWhiteColor,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 18.sp,
+                                fontSize: 16.sp,
                                 shadows: [Shadow(color: Colors.black.withOpacity(0.8), blurRadius: 4)],
                               )),
                           Text('Welcome back!',
@@ -217,7 +217,7 @@ class _LoginViewState extends State<LoginView> {
                 },
               ),
 
-              SizedBox(height: 30.h),
+              SizedBox(height: 20.h),
 
               // === Ana Menü Butonları ===
               Expanded(

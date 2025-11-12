@@ -420,7 +420,9 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                           if (state.getStatusState == GetStatusStates.completed) {
                             // Her iki oyuncu da hamle yaptıysa, el sonucu göster
                             return InfoProfile(
-                              image: state.game.player1Image!, // bak bi
+                              image: widget.isPlayer1
+                                  ? state.game.player2Image! // P1 ise rakip P2
+                                  : state.game.player1Image!, // P2 ise rakip P1
                               isPlayer1: widget.isPlayer1,
                               content: widget.isPlayer1
                                   ? 'Round ${state.game.currentTurnId! + 1} / ${3}  • Score: Opponent ${state.player2WinCount} - You ${state.player1WinCount}'
@@ -1053,15 +1055,17 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                 ),
                                                 SizedBox(
                                                   height: 130,
-                                                  child: ListView.builder(
-                                                    padding: EdgeInsets.symmetric(
-                                                      horizontal: (1.sw -
-                                                              (state.opponentCards.length * 70 +
-                                                                  (state.opponentCards.length - 1) * 10)) /
-                                                          2,
-                                                    ),
-                                                    itemCount: state.opponentCards.length,
+                                                  child: ListView.separated(
+                                                    // padding: EdgeInsets.symmetric(
+                                                    //   horizontal: (1.sw -
+                                                    //           (state.opponentCards.length * 70 +
+                                                    //               (state.opponentCards.length - 1) * 10)) /
+                                                    //       2,
+                                                    // ),
+                                                    shrinkWrap: true,
                                                     scrollDirection: Axis.horizontal,
+                                                    separatorBuilder: (_, __) => const SizedBox(width: 10),
+                                                    itemCount: state.opponentCards.length,
                                                     itemBuilder: (context, index) {
                                                       final card = state.opponentCards[index];
 
@@ -1325,16 +1329,17 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                 ),
                                                 SizedBox(
                                                   height: 130, // 🔹 Kart alanını biraz genişlettik
-                                                  width: 1.sw,
-                                                  child: ListView.builder(
-                                                    padding: EdgeInsets.symmetric(
-                                                      horizontal: (1.sw -
-                                                              (state.cards.length * 70 +
-                                                                  (state.cards.length - 1) * 10)) /
-                                                          2,
-                                                    ),
-                                                    itemCount: state.cards.length,
+                                                  child: ListView.separated(
+                                                    // padding: EdgeInsets.symmetric(
+                                                    //   horizontal: (1.sw -
+                                                    //           (state.cards.length * 70 +
+                                                    //               (state.cards.length - 1) * 10)) /
+                                                    //       2,
+                                                    // ),
+                                                    shrinkWrap: true,
                                                     scrollDirection: Axis.horizontal,
+                                                    separatorBuilder: (_, __) => const SizedBox(width: 10),
+                                                    itemCount: state.cards.length,
                                                     itemBuilder: (context, index) {
                                                       // 🔹 Kart renkleri
                                                       Color baseBorderColor = state.cards[index].isSpecial
@@ -2455,7 +2460,11 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                         builder: (context, state) {
                           if (state.getStatusState == GetStatusStates.completed && state.cards.isNotEmpty) {
                             return InfoProfile(
-                              image: state.game.player2Image ?? '',
+                              //  image: state.game.player2Image ?? '',
+                              image: widget.isPlayer1
+                                  ? state.game.player1Image! // P1 ise kendi resmi
+                                  : state.game.player2Image!, // P2 ise kendi resmi
+
                               isPlayer1: widget.isPlayer1,
                               point: (state.cards
                                       .where((card) => card.fullName != state.game.disabledCards)
