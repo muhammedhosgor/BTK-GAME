@@ -162,7 +162,7 @@ class _LoginViewState extends State<LoginView> {
                 child: Text(
                   'BTK CARD GAME',
                   style: TextStyle(
-                    fontSize: 32.sp,
+                    fontSize: 28.sp,
                     fontWeight: FontWeight.bold,
                     color: kSuitGold,
                     letterSpacing: 2,
@@ -174,14 +174,14 @@ class _LoginViewState extends State<LoginView> {
                 ),
               ),
 
-              SizedBox(height: 20.h),
+              SizedBox(height: 5.h),
 
               // === Puan Alanı (Ortada büyük coin göstergesi) ===
               BlocBuilder<LoginCubit, LoginState>(
                 builder: (context, state) {
                   return Container(
-                    width: 0.45.sw,
-                    height: 0.45.sw,
+                    width: 0.40.sw,
+                    height: 0.40.sw,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.black.withOpacity(0.7),
@@ -217,127 +217,145 @@ class _LoginViewState extends State<LoginView> {
                 },
               ),
 
-              SizedBox(height: 20.h),
+              SizedBox(height: 5.h),
 
               // === Ana Menü Butonları ===
               Expanded(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 40.w),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      PrimaryGameButton(
-                        buttonColor: kButtonGreen,
-                        text: 'Login',
-                        icon: FontAwesomeIcons.rightToBracket,
-                        onTap: () => showDialog(
-                          context: context,
-                          builder: (_) => BlocProvider.value(
-                            value: LoginCubit(),
-                            child: const ThemedLoginDialog(),
-                          ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    PrimaryGameButton(
+                      buttonColor: kButtonGreen,
+                      text: 'Login',
+                      icon: FontAwesomeIcons.rightToBracket,
+                      onTap: () => showDialog(
+                        context: context,
+                        builder: (_) => BlocProvider.value(
+                          value: LoginCubit(),
+                          child: const ThemedLoginDialog(),
                         ),
                       ),
-                      SizedBox(height: 15.h),
-                      BlocBuilder<LoginCubit, LoginState>(
-                        builder: (context, state) {
-                          return PrimaryGameButton(
-                            buttonColor: Colors.blueAccent,
-                            text: 'Start Game',
-                            icon: FontAwesomeIcons.play,
-                            onTap: () {
-                              int? userId = injector.get<LocalStorage>().getInt('userId');
+                    ),
+                    SizedBox(height: 15.h),
+                    BlocBuilder<LoginCubit, LoginState>(
+                      builder: (context, state) {
+                        return PrimaryGameButton(
+                          buttonColor: Colors.blueAccent,
+                          text: 'Start Game',
+                          icon: FontAwesomeIcons.play,
+                          onTap: () {
+                            int? userId = injector.get<LocalStorage>().getInt('userId');
 
-                              if (userId != null && userId != 0) {
-                                // ✅ Giriş yapılmış → Oyun odası seçim penceresi aç
-                                showDialog(
-                                  context: context,
-                                  builder: (_) => BlocProvider.value(
-                                    value: context.read<LoginCubit>(),
-                                    child: const GameRoomSelectionDialog(),
-                                  ),
-                                );
-                              } else {
-                                // ❌ Giriş yapılmamış → Uyarı göster
-                                showDialog(
-                                  context: context,
-                                  builder: (dialogContext) {
-                                    return AlertDialog(
-                                      backgroundColor: Colors.black.withOpacity(0.85),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                        side: const BorderSide(color: Colors.redAccent, width: 2),
-                                      ),
-                                      title: const Row(
-                                        children: [
-                                          Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 30),
-                                          SizedBox(width: 10),
-                                          Text(
-                                            "Warning",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      content: const Text(
-                                        "You must log in first to start the game.",
-                                        style: TextStyle(color: Colors.white70, fontSize: 15),
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.of(dialogContext).pop(),
-                                          child: const Text(
-                                            "OK",
-                                            style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                            if (userId != null && userId != 0) {
+                              // ✅ Giriş yapılmış → Oyun odası seçim penceresi aç
+                              showDialog(
+                                context: context,
+                                builder: (_) => BlocProvider.value(
+                                  value: context.read<LoginCubit>(),
+                                  child: const GameRoomSelectionDialog(),
+                                ),
+                              );
+                            } else {
+                              // ❌ Giriş yapılmamış → Uyarı göster
+                              showDialog(
+                                context: context,
+                                builder: (dialogContext) {
+                                  return AlertDialog(
+                                    backgroundColor: Colors.black.withOpacity(0.85),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      side: const BorderSide(color: Colors.redAccent, width: 2),
+                                    ),
+                                    title: const Row(
+                                      children: [
+                                        Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 30),
+                                        SizedBox(width: 10),
+                                        Text(
+                                          "Warning",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
                                           ),
                                         ),
                                       ],
-                                    );
-                                  },
-                                );
-                              }
-                            },
-                          );
-                        },
-                      ),
-                      SizedBox(height: 15.h),
-                      PrimaryGameButton(
-                        buttonColor: Colors.deepPurpleAccent,
-                        text: 'Privacy Policy',
-                        icon: FontAwesomeIcons.shieldHalved,
-                        onTap: () => showDialog(
-                          context: context,
-                          builder: (_) => BlocProvider.value(
-                            value: LoginCubit(),
-                            child: const ThemedPrivacyPolicyDialog(),
-                          ),
+                                    ),
+                                    content: const Text(
+                                      "You must log in first to start the game.",
+                                      style: TextStyle(color: Colors.white70, fontSize: 15),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.of(dialogContext).pop(),
+                                        child: const Text(
+                                          "OK",
+                                          style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            }
+                          },
+                        );
+                      },
+                    ),
+                    SizedBox(height: 15.h),
+                    PrimaryGameButton(
+                      buttonColor: Colors.deepPurpleAccent,
+                      text: 'Privacy Policy',
+                      icon: FontAwesomeIcons.shieldHalved,
+                      onTap: () => showDialog(
+                        context: context,
+                        builder: (_) => BlocProvider.value(
+                          value: LoginCubit(),
+                          child: const ThemedPrivacyPolicyDialog(),
                         ),
                       ),
-                      SizedBox(height: 15.h),
-                      PrimaryGameButton(
-                        buttonColor: kSuitRed,
-                        text: 'Exit Game',
-                        icon: FontAwesomeIcons.doorOpen,
-                        onTap: () => showDialog(
-                          context: context,
-                          builder: (_) => BlocProvider.value(
-                            value: LoginCubit(),
-                            child: const ThemedConfirmExitDialog(),
-                          ),
+                    ),
+                    SizedBox(height: 15.h),
+                    PrimaryGameButton(
+                      buttonColor: kSuitRed,
+                      text: 'Exit Game',
+                      icon: FontAwesomeIcons.doorOpen,
+                      onTap: () => showDialog(
+                        context: context,
+                        builder: (_) => BlocProvider.value(
+                          value: LoginCubit(),
+                          child: const ThemedConfirmExitDialog(),
                         ),
                       ),
-                      SizedBox(height: 15.h),
-                      PrimaryGameButton(
-                        buttonColor: Colors.deepOrange,
-                        text: 'Sign Up',
-                        icon: FontAwesomeIcons.userPlus,
-                        onTap: () => context.pushReplacement('/register_view'),
+                    ),
+                    SizedBox(height: 15.h),
+                    PrimaryGameButton(
+                      buttonColor: Colors.deepOrange,
+                      text: 'Sign Up',
+                      icon: FontAwesomeIcons.userPlus,
+                      onTap: () => context.pushReplacement('/register_view'),
+                    ),
+                    SizedBox(height: 15.h),
+                    // PrimaryGameButton(
+                    //   buttonColor: Colors.black38,
+                    //   text: 'Forgot Password',
+                    //   icon: FontAwesomeIcons.arrowsRotate,
+                    //   onTap: () =>
+                    // ),
+                    TextButton(
+                      onPressed: () {
+                        context.pushReplacement('/forget_password_view');
+                      },
+                      child: Text(
+                        "Forgot your password?",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                            decorationColor: kSuitGold),
                       ),
-                      SizedBox(height: 15.h)
-                    ],
-                  ),
+                    ),
+                    SizedBox(height: 15.h),
+                  ],
                 ),
               ),
 

@@ -9,4 +9,7 @@ abstract class IRegisterService {
   final NetworkManager dio;
   Future<ApiResult?> insert(UserModel userModel, File? imageFile);
   Future<ApiResult?> userLogin(String email, String password);
+  Future<ApiResult?> sendOTP(String email);
+  Future<ApiResult?> checkOTP(String email, String code);
+  Future<ApiResult?> resetPassword(String email, String newPassword);
 }

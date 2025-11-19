@@ -539,10 +539,24 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                                     context.read<HomeCubit>().setKaroVar(false);
                                                   } else if (state.sinekVar && swappingCards.isNotEmpty) {
                                                     // ♣ Sinek: Takas işlemi
-                                                    swappingCards.add(card.fullName);
-                                                    context.read<HomeCubit>().sinekle(gameId!, swappingCards.join(','));
-                                                    context.read<HomeCubit>().setSinekVar(false);
-                                                    swappingCards.clear();
+
+                                                    if (state.game.disabledCards != 'Sinek-2') {
+                                                      swappingCards.add(card.fullName);
+
+                                                      context
+                                                          .read<HomeCubit>()
+                                                          .sinekle(gameId!, swappingCards.join(','));
+                                                      context.read<HomeCubit>().setSinekVar(false);
+                                                      swappingCards.clear();
+                                                    } else {
+                                                      //! snakbar
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        const SnackBar(
+                                                          content: Text(
+                                                              "Your special card power is passive, you cannot use this card in this hand.\nAt the end of the period, you will be redirected to a new hand."),
+                                                        ),
+                                                      );
+                                                    }
                                                   }
                                                 },
                                                 child: TweenAnimationBuilder<Color?>(
@@ -1633,45 +1647,6 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                         );
                                       },
                                     );
-                                    // await showDialog(
-                                    //   barrierDismissible: false,
-                                    //   context: context,
-                                    //   builder: (dialogContext) {
-                                    //     return AlertDialog(
-                                    //       backgroundColor: Colors.black87,
-                                    //       title: const Text(
-                                    //         'Bilgi',
-                                    //         style: TextStyle(color: Colors.white),
-                                    //       ),
-                                    //       content: Text(
-                                    //         '${state.game.currentTurnId! + 1} tamamlandı. Kartlar açıldı ve puanlar hesaplandı.',
-                                    //         style: const TextStyle(color: Colors.white70),
-                                    //       ),
-                                    //       actions: [
-                                    //         TextButton(
-                                    //           onPressed: () async {
-                                    //             Navigator.of(dialogContext).pop();
-                                    //             context.read<HomeCubit>().setIsMoveFirstTime(true);
-
-                                    //             context.read<HomeCubit>().resetHandComplete();
-                                    //             if (!widget.isPlayer1) {
-                                    //               await context.read<HomeCubit>().handComplete(state.game.id!);
-                                    //             }
-
-                                    //             context.read<HomeCubit>().determineWinner(widget.isPlayer1);
-                                    //             //! Resetleme işlemleri burada yapılacak Yeni El başlangıcı
-                                    //             // context.read<HomeCubit>().resetHandComplete();
-                                    //             //! Eli kazananı belirleme
-                                    //           },
-                                    //           child: const Text(
-                                    //             'Tamam',
-                                    //             style: TextStyle(color: Colors.amberAccent),
-                                    //           ),
-                                    //         )
-                                    //       ],
-                                    //     );
-                                    //   },
-                                    // );
                                   }
 
                                   if (!state.game.isPlayer1Move! && !state.game.isPlayer2Move! && state.game.turn!) {
@@ -1684,9 +1659,18 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                           if (element.isSpecial) {
                                             switch (element.fullName) {
                                               case 'Kupa-K':
-                                                context.read<HomeCubit>().setPlayerMultipliers(2, 1);
-                                                _appendLog(
-                                                    'The Cup of the Priest (K♥) card has been placed on the table! The card value will be 2x.');
+                                                if (state.game.disabledCards != 'Kupa-K' ||
+                                                    state.game.swappedCards != 'Kupa-K') {
+                                                  context.read<HomeCubit>().setPlayerMultipliers(2, 1);
+                                                  _appendLog(
+                                                      'The Cup of the Priest (K♥) card has been placed on the table! The card value will be 2x.');
+                                                } else {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text("player1 için 2x engelleme"),
+                                                    ),
+                                                  );
+                                                }
 
                                                 break;
                                               case 'Karo-2':
@@ -1725,10 +1709,19 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                         if (element.isSpecial) {
                                           switch (element.fullName) {
                                             case 'Kupa-K':
-                                              context.read<HomeCubit>().setPlayerMultipliers(
-                                                  widget.isPlayer1 ? 1 : 2, widget.isPlayer1 ? 2 : 1);
-                                              _appendLog(
-                                                  'The Cup of the Priest (K♥) card has been placed on the table by your opponent! The card value will be 2x.');
+                                              if (state.game.disabledCards != 'Kupa-K' ||
+                                                  state.game.swappedCards != 'Kupa-K') {
+                                                context.read<HomeCubit>().setPlayerMultipliers(
+                                                    widget.isPlayer1 ? 1 : 2, widget.isPlayer1 ? 2 : 1);
+                                                _appendLog(
+                                                    'The Cup of the Priest (K♥) card has been placed on the table by your opponent! The card value will be 2x.');
+                                              } else {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text("player2 için 2x engelleme"),
+                                                  ),
+                                                );
+                                              }
 
                                               break;
                                             case 'Karo-2':
@@ -1767,6 +1760,7 @@ class _CardGamePageState extends State<CardGamePage> with TickerProviderStateMix
                                             switch (element.fullName) {
                                               case 'Kupa-K':
                                                 context.read<HomeCubit>().setPlayerMultipliers(1, 2);
+
                                                 _appendLog(
                                                     'The Cup of the Priest (K♥) card has been placed on the table! The card value will be 2x.');
                                                 break;

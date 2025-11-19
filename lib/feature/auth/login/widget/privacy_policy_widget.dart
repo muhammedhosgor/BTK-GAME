@@ -4,11 +4,11 @@ import 'package:flutter_base_app/product/components/button/primary_game_button.d
 import 'package:flutter_base_app/product/components/container/gold_nav.dart';
 import 'package:flutter_base_app/product/constant/color_constants.dart';
 
-/// Temaya uygun Gizlilik Politikası iletişim kutusu.
+/// Privacy Policy dialog styled according to the game's theme.
 class ThemedPrivacyPolicyDialog extends StatelessWidget {
   const ThemedPrivacyPolicyDialog({super.key});
 
-  // Politika bölüm başlığı ve içeriği için yardımcı widget
+  // Helper widget for policy section title and content
   Widget _buildPolicySection({required String title, required String content}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15.0),
@@ -18,7 +18,7 @@ class ThemedPrivacyPolicyDialog extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              color: kSuitGold, // Başlıklar altın rengi
+              color: kSuitGold, // Gold-colored titles
               fontSize: 18,
               fontWeight: FontWeight.bold,
               shadows: [Shadow(color: kBlackColor, blurRadius: 2)],
@@ -60,7 +60,7 @@ class ThemedPrivacyPolicyDialog extends StatelessWidget {
                 offset: const Offset(0, 10),
               ),
             ],
-            // Arkaplan deseni
+            // Background pattern
             image: DecorationImage(
               image: NetworkImage(
                   'https://placehold.co/600x900/${kTableNavy.value.toRadixString(16).substring(2, 8)}/${kSuitGold.value.toRadixString(16).substring(2, 8)}?text=PRIVACY'),
@@ -72,9 +72,9 @@ class ThemedPrivacyPolicyDialog extends StatelessWidget {
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Başlık
+              // Title
               Text(
-                "GİZLİLİK POLİTİKASI",
+                "PRIVACY POLICY",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: kSuitGold,
@@ -90,33 +90,40 @@ class ThemedPrivacyPolicyDialog extends StatelessWidget {
               const GoldNavContainer(),
               const SizedBox(height: 20),
 
-              // Politika İçeriği (Scrollable)
+              // Policy Content (Scrollable)
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildPolicySection(
-                          title: "1. Toplanan Veriler",
-                          content:
-                              "Oyun, yalnızca oyun içi deneyiminizi sağlamak ve iyileştirmek amacıyla verileri toplar. Bu veriler: **Oyun İçi Takma Adınız**, **Kullanıcı Kimliğiniz (UserID)**, **Oyun İlerlemeniz** (Seviye, Puan, İstatistikler) ve **Cihaz Tanımlayıcıları** (performans analizi için) içerir. Kişisel kimliğinizi doğrudan ortaya çıkaracak (ad, soyad, e-posta, telefon numarası) bilgileri toplamıyoruz."),
+                        title: "1. Collected Data",
+                        content:
+                            "The game collects data solely to provide and improve your in-game experience. These include: **Your In-Game Nickname**, **User ID**, **Game Progress** (levels, scores, statistics), and **Device Identifiers** (for performance analytics). We do NOT collect personally identifiable information such as your real name, surname, email address, or phone number.",
+                      ),
                       _buildPolicySection(
-                          title: "2. Verilerin Kullanımı",
-                          content:
-                              "Toplanan veriler, hesabınızı yönetmek, oyun içi sıralamaları göstermek, çok oyunculu eşleştirmeler yapmak, teknik sorunları gidermek ve oyunun performansını analiz etmek için kullanılır. Verileriniz, reklam ortakları veya üçüncü taraflarla kar amacı gütmeksizin paylaşılmaz."),
+                        title: "2. Use of Data",
+                        content:
+                            "Collected data is used to manage your account, display leaderboards, perform multiplayer matchmaking, resolve technical issues, and analyze game performance. Your data is not shared with advertising partners or third parties for profit.",
+                      ),
                       _buildPolicySection(
-                          title: "3. Güvenlik Önlemleri",
-                          content:
-                              "Verilerinizi yetkisiz erişime, değişikliğe, ifşaya veya yok edilmeye karşı korumak için gerekli teknik ve idari önlemleri almaktayız. Tüm oyun verileri şifreli olarak sunucularımızda saklanır."),
+                        title: "3. Security Measures",
+                        content:
+                            "We take necessary technical and administrative measures to protect your data from unauthorized access, alteration, disclosure, or destruction. All game data is stored encrypted on our servers.",
+                      ),
                       _buildPolicySection(
-                          title: "4. Veri Saklama ve Silme",
-                          content:
-                              "Hesabınızı sildiğinizde veya bizden silmemizi talep ettiğinizde, yasal zorunluluklar haricinde tüm oyun verileriniz makul bir süre içinde sunucularımızdan kalıcı olarak silinir."),
+                        title: "4. Data Retention and Deletion",
+                        content:
+                            "When you delete your account or request deletion, all your game data (except where legally required) will be permanently removed from our servers within a reasonable time.",
+                      ),
                       const SizedBox(height: 10),
                       Text(
-                        "Bu politika, son olarak 06 Ekim 2025 tarihinde güncellenmiştir.",
-                        style:
-                            TextStyle(color: kWhiteColor.withOpacity(0.7), fontSize: 14, fontStyle: FontStyle.italic),
+                        "This policy was last updated on October 6, 2025.",
+                        style: TextStyle(
+                          color: kWhiteColor.withOpacity(0.7),
+                          fontSize: 14,
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
                     ],
                   ),
@@ -124,10 +131,10 @@ class ThemedPrivacyPolicyDialog extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              // Kapat Butonu
+              // Close Button
               PrimaryGameButton(
                 buttonColor: kButtonGrey,
-                text: 'ANLADIM',
+                text: 'OKAY',
                 icon: Icons.policy,
                 onTap: () {
                   Navigator.of(context).pop();

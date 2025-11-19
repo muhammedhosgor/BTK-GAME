@@ -42,7 +42,7 @@ class RegisterCubit extends Cubit<RegisterState> {
 
         userModel = UserModel.fromJson(response.data as Map<String, dynamic>);
         injector.get<LocalStorage>().saveInt('userId', userModel.id ?? 0);
-        injector.get<LocalStorage>().saveString('userName', userModel.name ?? '');
+        injector.get<LocalStorage>().saveString('"userName"', userModel.name ?? '');
         injector.get<LocalStorage>().saveString('userSurname', userModel.surname ?? '');
         // changeLoginStatus(true);
         emit(
@@ -82,6 +82,15 @@ class RegisterCubit extends Cubit<RegisterState> {
     } else {
       if (response.success!) {
         emit(state.copyWith(registerState: RegisterStates.completed, message: response.message));
+        injector<LocalStorage>().saveInt("registerUserId", response.data['id']);
+        injector<LocalStorage>().saveString("registerEmail", emailController.text);
+
+        print("RRR ID: ${response.data['id']}");
+        print("RRR Email: ${emailController.text}");
+        int? PlayerId = await injector<LocalStorage>().getInt('registerUserId');
+        String? email = await injector<LocalStorage>().getString('registerEmail');
+        await sendOtp(email!);
+
         // await lobby(); // Oda oluşturduktan sonra lobi listesini güncelle
       } else {
         emit(state.copyWith(
@@ -98,5 +107,102 @@ class RegisterCubit extends Cubit<RegisterState> {
 
   void setImage(File imageFile) {
     emit(state.copyWith(imageFile: imageFile));
+  }
+
+  Future<void> sendOtp(String email) async {
+    // final response =
+    await _registerService.sendOTP(email);
+
+    // if (response != null) {
+    //   if (response.success!) {
+    //     injector<LocalStorage>().saveString('code', response.data['code']);
+    //   }
+    // }
+  }
+
+  Future<void> checkOtp(String code) async {
+    String? email = await injector<LocalStorage>().getString('registerEmail');
+    // String? code = await injector<LocalStorage>().getString('code');
+
+    emit(state.copyWith(otpState: OtpStates.loading, errorMessage: ''));
+    final response = await _registerService.checkOTP(email ?? '', code);
+
+    if (response == null) {
+      emit(
+        state.copyWith(
+          otpState: OtpStates.error,
+          errorMessage: '',
+        ),
+      );
+    } else {
+      if (response.success!) {
+        emit(state.copyWith(otpState: OtpStates.completed, message: response.message));
+      } else {
+        emit(state.copyWith(
+          otpState: OtpStates.error,
+          errorMessage: response.errorMessage ?? 'Player Active',
+        ));
+      }
+    }
+  }
+
+  Future<void> checkResetPasswordOtp(String email, String code) async {
+    // String? code = await injector<LocalStorage>().getString('code');
+
+    emit(state.copyWith(otpState: OtpStates.loading, errorMessage: ''));
+    final response = await _registerService.checkOTP(email, code);
+
+    if (response == null) {
+      emit(
+        state.copyWith(
+          otpState: OtpStates.error,
+          errorMessage: '',
+        ),
+      );
+    } else {
+      if (response.success!) {
+        emit(state.copyWith(otpState: OtpStates.completed, message: response.message));
+      } else {
+        emit(state.copyWith(
+          otpState: OtpStates.error,
+          errorMessage: response.errorMessage ?? 'Player Active',
+        ));
+      }
+    }
+  }
+
+  Future<bool> resetPassword(String email, String newPassword) async {
+    emit(state.copyWith(resetEmailState: resetEmailStates.loading, errorMessage: ''));
+    final response = await _registerService.resetPassword(email, newPassword);
+
+    if (response == null) {
+      emit(
+        state.copyWith(
+          resetEmailState: resetEmailStates.error,
+          errorMessage: '',
+        ),
+      );
+      return false;
+    } else {
+      if (response.success!) {
+        emit(state.copyWith(resetEmailState: resetEmailStates.completed, message: response.message));
+        return true;
+      } else {
+        emit(state.copyWith(
+          resetEmailState: resetEmailStates.error,
+          errorMessage: response.errorMessage ?? 'failed',
+        ));
+        return false;
+      }
+    }
+  }
+
+  void resetLogin() {
+    emit(state.copyWith(loginState: LoginStates.initial));
+
+    injector<LocalStorage>().remove("userName");
+    injector<LocalStorage>().remove("userId");
+    injector<LocalStorage>().remove("userSurname");
+    injector<LocalStorage>().remove("image");
   }
 }

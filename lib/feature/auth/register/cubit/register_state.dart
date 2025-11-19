@@ -6,6 +6,8 @@ class RegisterState extends Equatable {
   RegisterState({
     required this.registerState,
     required this.loginState,
+    required this.resetEmailState,
+    required this.otpState,
     required this.errorMessage,
     required this.message,
     required this.obscureText,
@@ -16,6 +18,8 @@ class RegisterState extends Equatable {
     return RegisterState(
       registerState: RegisterStates.initial,
       loginState: LoginStates.initial,
+      resetEmailState: resetEmailStates.initial,
+      otpState: OtpStates.initial,
       errorMessage: '',
       message: '',
       obscureText: false,
@@ -25,17 +29,21 @@ class RegisterState extends Equatable {
 
   final RegisterStates registerState;
   final LoginStates loginState;
+  final OtpStates otpState;
+  final resetEmailStates resetEmailState;
   final String errorMessage;
   final String message;
   final bool obscureText;
   File? imageFile;
 
   @override
-  List<Object?> get props => [registerState, loginState, errorMessage, message, obscureText, imageFile];
+  List<Object?> get props => [registerState, loginState, otpState, errorMessage, message, obscureText, imageFile];
 
   RegisterState copyWith({
     RegisterStates? registerState,
     LoginStates? loginState,
+    OtpStates? otpState,
+    resetEmailStates? resetEmailState,
     String? errorMessage,
     String? message,
     bool? obscureText,
@@ -44,6 +52,8 @@ class RegisterState extends Equatable {
     return RegisterState(
       registerState: registerState ?? this.registerState,
       loginState: loginState ?? this.loginState,
+      resetEmailState: resetEmailState ?? this.resetEmailState,
+      otpState: otpState ?? this.otpState,
       errorMessage: errorMessage ?? this.errorMessage,
       message: message ?? this.message,
       obscureText: obscureText ?? this.obscureText,
@@ -60,6 +70,20 @@ enum RegisterStates {
 }
 
 enum LoginStates {
+  initial,
+  loading,
+  completed,
+  error,
+}
+
+enum OtpStates {
+  initial,
+  loading,
+  completed,
+  error,
+}
+
+enum resetEmailStates {
   initial,
   loading,
   completed,

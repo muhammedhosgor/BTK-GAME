@@ -19,7 +19,7 @@ class _SplashViewState extends State<SplashView> {
   bool isRinging = false;
   @override
   void initState() {
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 1), () {
       if (isRinging == false) context.pushReplacement('/login_view');
     });
     super.initState();

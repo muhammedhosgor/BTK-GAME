@@ -279,8 +279,8 @@ class _RegisterViewState extends State<RegisterView> {
                             listener: (context, state) {
                               if (state.registerState == RegisterStates.completed) {
                                 ScaffoldMessenger.of(context)
-                                    .showSnackBar(SnackBar(content: Text(state.message ?? "Registration successful")));
-                                Future.microtask(() => context.pushReplacement('/login_view'));
+                                    .showSnackBar(const SnackBar(content: Text("Registration successful")));
+                                Future.microtask(() => context.pushReplacement('/otp_view'));
                               } else if (state.registerState == RegisterStates.error) {
                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.errorMessage)));
                               }
@@ -295,18 +295,7 @@ class _RegisterViewState extends State<RegisterView> {
                                   text: 'Create Account',
                                   icon: Icons.save,
                                   onTap: () {
-                                    if (_formKey.currentState!.validate()) {
-                                      context.read<RegisterCubit>().insertUser(
-                                            UserModel(
-                                              id: 0,
-                                              name: context.read<RegisterCubit>().nameController.text,
-                                              surname: context.read<RegisterCubit>().surnameController.text,
-                                              email: context.read<RegisterCubit>().emailController.text,
-                                              password: context.read<RegisterCubit>().passwordController.text,
-                                            ),
-                                            state.imageFile,
-                                          );
-                                    } else if (context.read<RegisterCubit>().state.imageFile == null) {
+                                    if (context.read<RegisterCubit>().state.imageFile == null) {
                                       showDialog(
                                         context: context,
                                         builder: (dialogContext) {
@@ -346,6 +335,17 @@ class _RegisterViewState extends State<RegisterView> {
                                           );
                                         },
                                       );
+                                    } else if (_formKey.currentState!.validate()) {
+                                      context.read<RegisterCubit>().insertUser(
+                                            UserModel(
+                                              id: 0,
+                                              name: context.read<RegisterCubit>().nameController.text,
+                                              surname: context.read<RegisterCubit>().surnameController.text,
+                                              email: context.read<RegisterCubit>().emailController.text,
+                                              password: context.read<RegisterCubit>().passwordController.text,
+                                            ),
+                                            state.imageFile,
+                                          );
                                     } else {
                                       showDialog(
                                         context: context,

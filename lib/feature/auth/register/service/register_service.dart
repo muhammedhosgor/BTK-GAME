@@ -35,7 +35,7 @@ class RegisterService extends IRegisterService {
         'Platform': Platform.isAndroid ? 'Android' : 'IOS',
         'CreatedDate': DateTime.now().toIso8601String(),
         'Status': 'Yeni Kayıt',
-        'IsActive': true,
+        'IsActive': false,
 
         // 🖼️ Dosya alanı (isteğe bağlı)
         if (imageFile != null)
@@ -78,6 +78,83 @@ class RegisterService extends IRegisterService {
           'KeyGen': KeyGen,
           'email': email,
           'password': password,
+        },
+      );
+
+      print('Login Response : $response');
+
+      if (response.statusCode == HttpStatus.ok) {
+        return ApiResult.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      print('error : $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<ApiResult?> sendOTP(String email) async {
+    try {
+      final response = await dio.get(
+        path: '/api/User/SendOtp',
+        queryParameters: {
+          'KeyGen': KeyGen,
+          'email': email,
+        },
+      );
+
+      print('Join Room Response : $response');
+
+      if (response.statusCode == HttpStatus.ok) {
+        return ApiResult.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      print('error : $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<ApiResult?> checkOTP(String email, String code) async {
+    try {
+      final response = await dio.post(
+        path: '/api/User/Check',
+        queryParameters: {
+          'KeyGen': KeyGen,
+          'email': email,
+          'code': code,
+        },
+      );
+
+      print('Join Room Response : $response');
+
+      if (response.statusCode == HttpStatus.ok) {
+        return ApiResult.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      print('error : $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<ApiResult?> resetPassword(String email, String newPassword) async {
+    try {
+      final response = await dio.post(
+        path: '/api/User/ResetPassword',
+        queryParameters: {
+          'KeyGen': KeyGen,
+          'email': email,
+          'newPassword': newPassword,
         },
       );
 

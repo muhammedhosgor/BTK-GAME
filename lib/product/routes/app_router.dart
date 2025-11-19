@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_base_app/feature/auth/login/cubit/login_cubit.dart';
 import 'package:flutter_base_app/feature/auth/register/cubit/register_cubit.dart';
+import 'package:flutter_base_app/feature/auth/register/view/forget_password_view.dart';
+import 'package:flutter_base_app/feature/auth/register/view/otp_forget_password.dart';
+import 'package:flutter_base_app/feature/auth/register/view/otp_view.dart';
 import 'package:flutter_base_app/feature/auth/register/view/register_view.dart';
+import 'package:flutter_base_app/feature/auth/register/view/reset_password_view.dart';
 import 'package:flutter_base_app/feature/auth/splash/view/splash_view.dart';
 import 'package:flutter_base_app/feature/auth/login/view/login_view.dart';
 import 'package:flutter_base_app/feature/home/cubit/home_cubit.dart';
@@ -48,47 +52,43 @@ class AppRoute {
               );
             },
           ),
-          // GoRoute(
-          //   path: 'initial',
-          //   builder: (BuildContext context, GoRouterState state) {
-          //     return BlocProvider(
-          //       create: (context) => RegisterCubit(),
-          //       child: InitialView(),
-          //     );
-          //   },
-          // ),
-          // GoRoute(
-          //   path: 'login',
-          //   builder: (BuildContext context, GoRouterState state) {
-          //     return BlocProvider(
-          //       create: (context) => LoginCubit(),
-          //       child: const LoginView(),
-          //     );
-          //   },
-          // ),
-          // GoRoute(
-          //   path: 'register',
-          //   builder: (BuildContext context, GoRouterState state) {
-          //     return RegisterView(
-          //       license: state.extra as LicenseModel?,
-          //     );
-          //   },
-          // ),
-          // GoRoute(
-          //   path: 'store',
-          //   builder: (BuildContext context, GoRouterState state) {
-          //     return BlocProvider.value(
-          //       value: (state.extra as Map<String, dynamic>)['storeCubit']
-          //           as StoreCubit,
-          //       child: StoreView(
-          //         // packageId: (state.extra as Map<String, dynamic>)['packageId'] as int,
-          //         // isBackButtonVisible: (state.extra as Map<String, dynamic>)['isBackButtonVisible'] as bool,
-          //         pageType:
-          //             (state.extra as Map<String, dynamic>)['pageType'] as int,
-          //       ),
-          //     );
-          //   },
-          // ),
+          GoRoute(
+            path: 'otp_view',
+            builder: (BuildContext context, GoRouterState state) {
+              return BlocProvider(
+                create: (context) => RegisterCubit(),
+                child: const OTPView(),
+              );
+            },
+          ),
+          GoRoute(
+            path: 'otp_forget_password_view',
+            builder: (BuildContext context, GoRouterState state) {
+              return BlocProvider(
+                create: (context) => RegisterCubit(),
+                child: const OTPForgetPasswordView(),
+              );
+            },
+          ),
+          GoRoute(
+            path: 'reset_password_view',
+            builder: (BuildContext context, GoRouterState state) {
+              return BlocProvider(
+                create: (context) => RegisterCubit(),
+                child: const ResetPasswordView(),
+              );
+            },
+          ),
+
+          GoRoute(
+            path: 'forget_password_view',
+            builder: (BuildContext context, GoRouterState state) {
+              return BlocProvider(
+                create: (context) => RegisterCubit(),
+                child: const ForgetPasswordView(),
+              );
+            },
+          ),
         ],
       ),
     ],
