@@ -20,7 +20,8 @@ class ResetPasswordView extends StatefulWidget {
 
 class _ResetPasswordViewState extends State<ResetPasswordView> {
   final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   bool _hideNewPassword = true;
   bool _hideConfirmPassword = true;
@@ -63,7 +64,9 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
     }
     String? email = await injector<LocalStorage>().getString("resetEmail");
 
-    bool response = await context.read<RegisterCubit>().resetPassword(email ?? '', newPassword); //!
+    bool response = await context
+        .read<RegisterCubit>()
+        .resetPassword(email ?? '', newPassword); //!
     if (response == true) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -134,7 +137,8 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                     fontWeight: FontWeight.bold,
                     color: kSuitGold,
                     shadows: [
-                      Shadow(color: Colors.black.withOpacity(0.8), blurRadius: 6),
+                      Shadow(
+                          color: Colors.black.withOpacity(0.8), blurRadius: 6),
                       Shadow(color: kSuitGold.withOpacity(0.6), blurRadius: 10),
                     ],
                   ),
@@ -168,7 +172,9 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                       labelStyle: TextStyle(color: Colors.white70),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _hideNewPassword ? Icons.visibility_off : Icons.visibility,
+                          _hideNewPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                           color: kSuitGold,
                         ),
                         onPressed: () {
@@ -199,11 +205,14 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                       labelStyle: TextStyle(color: Colors.white70),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _hideConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                          _hideConfirmPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                           color: kSuitGold,
                         ),
                         onPressed: () {
-                          setState(() => _hideConfirmPassword = !_hideConfirmPassword);
+                          setState(() =>
+                              _hideConfirmPassword = !_hideConfirmPassword);
                         },
                       ),
                     ),
@@ -231,12 +240,14 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                   children: [
                     Text(
                       'Version 1.0.0',
-                      style: TextStyle(color: Colors.grey[300], fontSize: 12.sp),
+                      style:
+                          TextStyle(color: Colors.grey[300], fontSize: 12.sp),
                     ),
                     SizedBox(height: 5.h),
                     Text(
-                      '© 2025 YourGameCompany',
-                      style: TextStyle(color: Colors.grey[300], fontSize: 12.sp),
+                      '© 2025 Valor of Cards',
+                      style:
+                          TextStyle(color: Colors.grey[300], fontSize: 12.sp),
                     ),
                     SizedBox(height: 10.h),
                   ],

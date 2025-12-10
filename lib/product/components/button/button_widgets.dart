@@ -28,7 +28,7 @@ class ButtonWidgets extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 8),
       child: SizedBox(
         height: height,
         width: width,
@@ -36,12 +36,12 @@ class ButtonWidgets extends StatelessWidget {
           onPressed: onPressed,
           style: ButtonStyle(
               backgroundColor: butonColor != null
-                  ? MaterialStateProperty.all<Color>(butonColor)
+                  ? WidgetStateProperty.all<Color>(butonColor)
                   : null,
-              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                   RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(18.0),
-                      side: BorderSide(color: Colors.white)))),
+                      side: const BorderSide(color: Colors.white)))),
           child: Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

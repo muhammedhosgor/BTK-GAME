@@ -1,4 +1,4 @@
-package com.example.flutter_base_app
+package com.thinkedgeapps.valorofcards
 
 import io.flutter.embedding.android.FlutterActivity
 

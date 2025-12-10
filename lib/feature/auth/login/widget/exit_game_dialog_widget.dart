@@ -1,5 +1,8 @@
 // MARK: - CONFIRM EXIT DIALOG WIDGET
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_base_app/feature/auth/login/cubit/login_cubit.dart';
 import 'package:flutter_base_app/product/components/button/primary_game_button.dart';
 import 'package:flutter_base_app/product/components/container/gold_nav.dart';
@@ -7,9 +10,15 @@ import 'package:flutter_base_app/product/constant/color_constants.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Oyundan çıkış onay iletişim kutusu.
-class ThemedConfirmExitDialog extends StatelessWidget {
+class ThemedConfirmExitDialog extends StatefulWidget {
   const ThemedConfirmExitDialog({super.key});
 
+  @override
+  State<ThemedConfirmExitDialog> createState() =>
+      _ThemedConfirmExitDialogState();
+}
+
+class _ThemedConfirmExitDialogState extends State<ThemedConfirmExitDialog> {
   @override
   Widget build(BuildContext context) {
     // Dialog boyutunu ekranın yaklaşık %60'ı olarak ayarla (Daha küçük bir onay penceresi).
@@ -48,7 +57,10 @@ class ThemedConfirmExitDialog extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.2,
                   shadows: [
-                    Shadow(color: kBlackColor.withOpacity(0.8), blurRadius: 5, offset: const Offset(1, 2)),
+                    Shadow(
+                        color: kBlackColor.withOpacity(0.8),
+                        blurRadius: 5,
+                        offset: const Offset(1, 2)),
                   ],
                 ),
               ),
@@ -77,7 +89,9 @@ class ThemedConfirmExitDialog extends StatelessWidget {
 
                   // Diyalogu kapat, sonra ana menüye (veya çıkışa) yönlendir.
                   Navigator.of(context).pop();
-                  print("Exit Confirmed.");
+                  setState(() {});
+                  SystemNavigator.pop();
+                  exit(0);
                 },
               ),
               const SizedBox(height: 10),

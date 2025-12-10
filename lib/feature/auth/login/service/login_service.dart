@@ -85,7 +85,8 @@ class LoginService extends ILoginService {
   }
 
   @override
-  Future<ApiResult?> joinRoom(int roomId, String name, String surname, String player2Image) async {
+  Future<ApiResult?> joinRoom(
+      int roomId, String name, String surname, String player2Image) async {
     int? userId = injector.get<LocalStorage>().getInt('userId');
     try {
       final response = await dio.post(
@@ -118,11 +119,13 @@ class LoginService extends ILoginService {
   Future<ApiResult?> createRoom() async {
     int? userId = injector.get<LocalStorage>().getInt('userId');
     String? player1Name = injector.get<LocalStorage>().getString('userName');
-    String? player1Surname = injector.get<LocalStorage>().getString('userSurname');
+    String? player1Surname =
+        injector.get<LocalStorage>().getString('userSurname');
     String? image = injector.get<LocalStorage>().getString('image');
 
     try {
-      final response = await dio.post(path: '/api/Game/Create', queryParameters: {
+      final response =
+          await dio.post(path: '/api/Game/Create', queryParameters: {
         'KeyGen': KeyGen,
         'Player1Id': userId,
         'name': player1Name,
@@ -212,6 +215,109 @@ class LoginService extends ILoginService {
       );
 
       print('Join Room Response : $response');
+
+      if (response.statusCode == HttpStatus.ok) {
+        return ApiResult.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      print('error : $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<ApiResult?> deleteAccount(int userId) async {
+    try {
+      final response = await dio.post(
+        path: '/api/User/SoftDelete',
+        queryParameters: {
+          'KeyGen': KeyGen,
+          'Id': userId,
+        },
+      );
+
+      print('Delete Response : $response');
+
+      if (response.statusCode == HttpStatus.ok) {
+        return ApiResult.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      print('error : $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<ApiResult?> getGifts() async {
+    try {
+      final response = await dio.get(
+        path: '/api/Gifts/GetAll',
+        queryParameters: {
+          'KeyGen': KeyGen,
+        },
+      );
+
+      print('Login Response : $response');
+
+      if (response.statusCode == HttpStatus.ok) {
+        return ApiResult.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      print('error : $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<ApiResult?> claimGift(
+      String email, String type, int userId, int userPoint, int giftId) async {
+    try {
+      final response = await dio.get(
+        path: '/api/Codes/SendGiftCode',
+        queryParameters: {
+          'KeyGen': KeyGen,
+          'email': email,
+          'type': type,
+          'userId': userId,
+          'userPoint': userPoint,
+          'giftId': giftId,
+        },
+      );
+
+      print('Login Response : $response');
+
+      if (response.statusCode == HttpStatus.ok) {
+        return ApiResult.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      print('error : $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<ApiResult?> visible() async {
+    try {
+      final response = await dio.post(
+        path: '/api/User/Visible',
+        queryParameters: {
+          'KeyGen': KeyGen,
+        },
+      );
+
+      print('Login Response : $response');
 
       if (response.statusCode == HttpStatus.ok) {
         return ApiResult.fromJson(response.data as Map<String, dynamic>);

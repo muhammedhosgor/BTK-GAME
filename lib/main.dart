@@ -13,8 +13,14 @@ import 'package:get_storage/get_storage.dart';
 
 Future<void> main() async {
   _initMain();
-  await EasyLocalization.ensureInitialized(); // Uygulama dil desteği için gerekli olan kütüphane
-  runApp(LanguageLocalization(child: const MyApp()));
+  await EasyLocalization
+      .ensureInitialized(); // Uygulama dil desteği için gerekli olan kütüphane
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]).then((_) {
+    runApp(LanguageLocalization(child: const MyApp()));
+  });
 }
 
 Future<void> _initMain() async {
@@ -32,7 +38,8 @@ class MyApp extends StatelessWidget {
       designSize: const Size(430, 932),
       minTextAdapt: true,
       builder: (context, child) => MaterialApp.router(
-          localizationsDelegates: context.localizationDelegates, //* Your delegates for this app
+          localizationsDelegates:
+              context.localizationDelegates, //* Your delegates for this app
           supportedLocales: context.supportedLocales, //* Your supported locales
           locale: context.locale, //* Your locale
           builder: (context, child) {
@@ -40,7 +47,9 @@ class MyApp extends StatelessWidget {
                 value: SystemUiOverlayStyle.light,
                 child: MediaQuery(
                   data: MediaQuery.of(context).copyWith(
-                      textScaler: const TextScaler.linear(TextConfig.textScaleFactor), alwaysUse24HourFormat: true),
+                      textScaler:
+                          const TextScaler.linear(TextConfig.textScaleFactor),
+                      alwaysUse24HourFormat: true),
                   child: Platform.isIOS
                       ? Container(
                           color: Colors.transparent,

@@ -1,4 +1,5 @@
 // NUMBER FORMAT : 123,456,789.04
+
 String numberFormat(String number) {
   if (number.contains('.')) {
     var value = number.substring(0, number.indexOf('.'));

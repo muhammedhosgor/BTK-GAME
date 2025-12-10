@@ -18,7 +18,8 @@ class OTPView extends StatefulWidget {
 }
 
 class _OTPViewState extends State<OTPView> {
-  final List<TextEditingController> _controllers = List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _controllers =
+      List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
 
   Timer? _timer;
@@ -86,16 +87,21 @@ class _OTPViewState extends State<OTPView> {
             focusNode: _focusNodes[index],
             maxLength: 1,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold, color: kWhiteColor),
+            style: TextStyle(
+                fontSize: 24.sp,
+                fontWeight: FontWeight.bold,
+                color: kWhiteColor),
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
               counterText: "",
               filled: true,
               fillColor: Colors.black.withOpacity(0.3),
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r), borderSide: BorderSide(color: kSuitGold, width: 2.w)),
+                  borderRadius: BorderRadius.circular(8.r),
+                  borderSide: BorderSide(color: kSuitGold, width: 2.w)),
               focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r), borderSide: BorderSide(color: kSuitGold, width: 2.w)),
+                  borderRadius: BorderRadius.circular(8.r),
+                  borderSide: BorderSide(color: kSuitGold, width: 2.w)),
             ),
             onChanged: (value) {
               if (value.isNotEmpty && index < 5) {
@@ -124,7 +130,10 @@ class _OTPViewState extends State<OTPView> {
             fit: BoxFit.cover,
           ),
           gradient: LinearGradient(
-            colors: [Colors.black.withOpacity(0.85), kTableNavy.withOpacity(0.85)],
+            colors: [
+              Colors.black.withOpacity(0.85),
+              kTableNavy.withOpacity(0.85)
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -147,7 +156,8 @@ class _OTPViewState extends State<OTPView> {
                     fontWeight: FontWeight.bold,
                     color: kSuitGold,
                     shadows: [
-                      Shadow(color: Colors.black.withOpacity(0.8), blurRadius: 6),
+                      Shadow(
+                          color: Colors.black.withOpacity(0.8), blurRadius: 6),
                       Shadow(color: kSuitGold.withOpacity(0.7), blurRadius: 10),
                     ],
                   ),
@@ -193,7 +203,9 @@ class _OTPViewState extends State<OTPView> {
                       buttonColor: kButtonGreen,
                       text: "Verify OTP",
                       icon: Icons.check,
-                      onTap: state.otpState == OtpStates.loading ? () {} : _submitOTP,
+                      onTap: state.otpState == OtpStates.loading
+                          ? () {}
+                          : _submitOTP,
                     );
                   },
                 ),
@@ -202,26 +214,39 @@ class _OTPViewState extends State<OTPView> {
                   children: [
                     Text(
                       _canResend ? "" : "Resend OTP in $_remainingSeconds s",
-                      style: TextStyle(color: kSuitGold, fontSize: 15.sp, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: kSuitGold,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 5.h),
                     Text(
                       "Didn't receive code?",
-                      style: TextStyle(color: Colors.grey[300], fontSize: 14.sp, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                          color: Colors.grey[300],
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w500),
                     ),
                     if (_canResend)
                       BlocBuilder<RegisterCubit, RegisterState>(
                         builder: (context, state) {
                           return TextButton(
                             onPressed: () async {
-                              int? PlayerId = await injector<LocalStorage>().getInt('registerUserId');
-                              String? email = await injector<LocalStorage>().getString('registerEmail');
-                              context.read<RegisterCubit>().sendOtp(email ?? '');
+                              int? PlayerId = await injector<LocalStorage>()
+                                  .getInt('registerUserId');
+                              String? email = await injector<LocalStorage>()
+                                  .getString('registerEmail');
+                              context
+                                  .read<RegisterCubit>()
+                                  .sendOtp(email ?? '');
                               _startTimer();
                             },
                             child: Text(
                               "Resend",
-                              style: TextStyle(color: kSuitGold, fontSize: 15.sp, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                  color: kSuitGold,
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.bold),
                             ),
                           );
                         },
@@ -233,12 +258,18 @@ class _OTPViewState extends State<OTPView> {
                   children: [
                     Text(
                       'Version 1.0.0',
-                      style: TextStyle(color: Colors.grey[300], fontWeight: FontWeight.bold, fontSize: 12.sp),
+                      style: TextStyle(
+                          color: Colors.grey[300],
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.sp),
                     ),
                     SizedBox(height: 5.h),
                     Text(
-                      '© 2025 YourGameCompany',
-                      style: TextStyle(color: Colors.grey[300], fontWeight: FontWeight.bold, fontSize: 12.sp),
+                      '© 2025 Valor of Cards',
+                      style: TextStyle(
+                          color: Colors.grey[300],
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.sp),
                     ),
                     SizedBox(height: 10.h),
                   ],

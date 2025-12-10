@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_base_app/core/network/network_manager/network_manager.dart';
 import 'package:flutter_base_app/feature/auth/login/cubit/login_state.dart';
 import 'package:flutter_base_app/feature/auth/login/model/game_model.dart';
+import 'package:flutter_base_app/feature/auth/login/model/gifts_model.dart';
 import 'package:flutter_base_app/feature/auth/login/model/user_model.dart';
 import 'package:flutter_base_app/feature/auth/login/service/i_login_service.dart';
 import 'package:flutter_base_app/feature/auth/login/service/login_service.dart';
@@ -26,7 +27,11 @@ class LoginCubit extends Cubit<LoginState> {
   int? userId = injector<LocalStorage>().getInt('userId');
 
   init() async {
-    await getUserList();
+    await visible();
+    Future.wait({
+      getUserList(),
+      getAllGifts(),
+    });
     if (userId != null) {
       getUserPoint(userId!);
     }
@@ -40,7 +45,8 @@ class LoginCubit extends Cubit<LoginState> {
       emit(
         state.copyWith(
           loginState: LoginStates.error,
-          errorMessage: 'Veriler yüklenemedi. Lütfen internet bağlantınızı kontrol ediniz...',
+          errorMessage:
+              'Veriler yüklenemedi. Lütfen internet bağlantınızı kontrol ediniz...',
         ),
       );
     } else {
@@ -49,10 +55,17 @@ class LoginCubit extends Cubit<LoginState> {
 
         userModel = UserModel.fromJson(response.data as Map<String, dynamic>);
         injector.get<LocalStorage>().saveInt('userId', userModel.id ?? 0);
-        injector.get<LocalStorage>().saveString('userName', userModel.name ?? '');
-        injector.get<LocalStorage>().saveString('userSurname', userModel.surname ?? '');
+        injector
+            .get<LocalStorage>()
+            .saveString('userName', userModel.name ?? '');
+        injector
+            .get<LocalStorage>()
+            .saveString('userSurname', userModel.surname ?? '');
+
         injector.get<LocalStorage>().saveString('email', userModel.email ?? '');
-        injector.get<LocalStorage>().saveString('password', userModel.password ?? '');
+        injector
+            .get<LocalStorage>()
+            .saveString('password', userModel.password ?? '');
         injector.get<LocalStorage>().saveString('image', userModel.image ?? '');
         changeLoginStatus(true);
         emit(
@@ -80,7 +93,8 @@ class LoginCubit extends Cubit<LoginState> {
       emit(
         state.copyWith(
           getUserState: GetUserStates.error,
-          errorMessage: 'Veriler yüklenemedi. Lütfen internet bağlantınızı kontrol ediniz...',
+          errorMessage:
+              'Veriler yüklenemedi. Lütfen internet bağlantınızı kontrol ediniz...',
         ),
       );
     } else {
@@ -89,7 +103,10 @@ class LoginCubit extends Cubit<LoginState> {
         emit(
           state.copyWith(
               getUserState: GetUserStates.completed,
-              userList: dataList.map((dynamic item) => UserModel.fromJson(item as Map<String, dynamic>)).toList()),
+              userList: dataList
+                  .map((dynamic item) =>
+                      UserModel.fromJson(item as Map<String, dynamic>))
+                  .toList()),
         );
       } else {
         emit(state.copyWith(
@@ -112,7 +129,8 @@ class LoginCubit extends Cubit<LoginState> {
       emit(
         state.copyWith(
           lobbyState: LobbyStates.error,
-          errorMessage: 'Veriler yüklenemedi. Lütfen internet bağlantınızı kontrol ediniz...',
+          errorMessage:
+              'Veriler yüklenemedi. Lütfen internet bağlantınızı kontrol ediniz...',
         ),
       );
     } else {
@@ -121,7 +139,10 @@ class LoginCubit extends Cubit<LoginState> {
         emit(
           state.copyWith(
               lobbyState: LobbyStates.completed,
-              gameList: dataList.map((dynamic item) => GameModel.fromJson(item as Map<String, dynamic>)).toList()),
+              gameList: dataList
+                  .map((dynamic item) =>
+                      GameModel.fromJson(item as Map<String, dynamic>))
+                  .toList()),
         );
       } else {
         emit(state.copyWith(
@@ -132,22 +153,28 @@ class LoginCubit extends Cubit<LoginState> {
     }
   }
 
-  Future<bool> joinRoom(int roomId, String name, String surname, String player2Image) async {
-    emit(state.copyWith(joinRoomState: JoinRoomStates.loading, errorMessage: ''));
-    final response = await _loginService.joinRoom(roomId, name, surname, player2Image);
+  Future<bool> joinRoom(
+      int roomId, String name, String surname, String player2Image) async {
+    emit(state.copyWith(
+        joinRoomState: JoinRoomStates.loading, errorMessage: ''));
+    final response =
+        await _loginService.joinRoom(roomId, name, surname, player2Image);
 
     if (response == null) {
       emit(
         state.copyWith(
           joinRoomState: JoinRoomStates.error,
-          errorMessage: 'Odaya katılım sağlanamadı. Lütfen internet bağlantınızı kontrol ediniz...',
+          errorMessage:
+              'Odaya katılım sağlanamadı. Lütfen internet bağlantınızı kontrol ediniz...',
         ),
       );
       return false;
     } else {
       if (response.success!) {
         //await lobby(); // Odaya katıldıktan sonra lobi listesini güncelle
-        emit(state.copyWith(joinRoomState: JoinRoomStates.completed, message: response.message));
+        emit(state.copyWith(
+            joinRoomState: JoinRoomStates.completed,
+            message: response.message));
         return true;
       } else {
         emit(state.copyWith(
@@ -160,14 +187,16 @@ class LoginCubit extends Cubit<LoginState> {
   }
 
   Future<bool> createRoom() async {
-    emit(state.copyWith(createRoomState: CreateRoomStates.loading, errorMessage: ''));
+    emit(state.copyWith(
+        createRoomState: CreateRoomStates.loading, errorMessage: ''));
     final response = await _loginService.createRoom();
 
     if (response == null) {
       emit(
         state.copyWith(
           joinRoomState: JoinRoomStates.error,
-          errorMessage: 'Oda oluşturulamadı. Lütfen internet bağlantınızı kontrol ediniz...',
+          errorMessage:
+              'Oda oluşturulamadı. Lütfen internet bağlantınızı kontrol ediniz...',
         ),
       );
       return false;
@@ -178,7 +207,9 @@ class LoginCubit extends Cubit<LoginState> {
         localStorage.remove('createGameId');
         int createGameId = response.data['id'];
         localStorage.saveInt('createGameId', createGameId);
-        emit(state.copyWith(createRoomState: CreateRoomStates.completed, message: response.message));
+        emit(state.copyWith(
+            createRoomState: CreateRoomStates.completed,
+            message: response.message));
         return true;
       } else {
         emit(state.copyWith(
@@ -198,7 +229,8 @@ class LoginCubit extends Cubit<LoginState> {
       emit(
         state.copyWith(
           statusState: StatusStates.error,
-          errorMessage: 'Veriler yüklenemedi. Lütfen internet bağlantınızı kontrol ediniz...',
+          errorMessage:
+              'Veriler yüklenemedi. Lütfen internet bağlantınızı kontrol ediniz...',
         ),
       );
     } else {
@@ -221,21 +253,25 @@ class LoginCubit extends Cubit<LoginState> {
   }
 
   Future<bool> leaveRoom(int gameId) async {
-    emit(state.copyWith(leaveRoomState: LeaveRoomStates.loading, errorMessage: ''));
+    emit(state.copyWith(
+        leaveRoomState: LeaveRoomStates.loading, errorMessage: ''));
     final response = await _loginService.leaveRoom(gameId);
 
     if (response == null) {
       emit(
         state.copyWith(
           leaveRoomState: LeaveRoomStates.error,
-          errorMessage: 'Oda oluşturulamadı. Lütfen internet bağlantınızı kontrol ediniz...',
+          errorMessage:
+              'Oda oluşturulamadı. Lütfen internet bağlantınızı kontrol ediniz...',
         ),
       );
       return false;
     } else {
       if (response.success!) {
         await lobby(); // Oda oluşturduktan sonra lobi listesini güncelle
-        emit(state.copyWith(leaveRoomState: LeaveRoomStates.completed, message: response.message));
+        emit(state.copyWith(
+            leaveRoomState: LeaveRoomStates.completed,
+            message: response.message));
         return true;
       } else {
         emit(state.copyWith(
@@ -256,7 +292,8 @@ class LoginCubit extends Cubit<LoginState> {
       if (state.countDownWaitingRoom == 0) {
         timer.cancel();
       } else {
-        emit(state.copyWith(countDownWaitingRoom: state.countDownWaitingRoom - 1));
+        emit(state.copyWith(
+            countDownWaitingRoom: state.countDownWaitingRoom - 1));
       }
     });
   }
@@ -289,7 +326,8 @@ class LoginCubit extends Cubit<LoginState> {
       emit(
         state.copyWith(
           pointState: PointStates.error,
-          errorMessage: 'Veriler yüklenemedi. Lütfen internet bağlantınızı kontrol ediniz...',
+          errorMessage:
+              'Veriler yüklenemedi. Lütfen internet bağlantınızı kontrol ediniz...',
         ),
       );
     } else {
@@ -299,12 +337,40 @@ class LoginCubit extends Cubit<LoginState> {
           state.copyWith(
             pointState: PointStates.completed,
             userPoint: dataMap["point"] as int?,
+            userGiftsIds: dataMap["giftsIds"] as String?,
           ),
         );
         print("User Point: ${dataMap["point"]}");
       } else {
         emit(state.copyWith(
           pointState: PointStates.error,
+          errorMessage: response.errorMessage ?? 'Bir Hata Oluştu!',
+        ));
+      }
+    }
+  }
+
+  Future<void> deleteAccount(int userId) async {
+    emit(state.copyWith(
+        deleteAccountState: DeleteAccountStates.loading, errorMessage: ''));
+    final response = await _loginService.deleteAccount(userId);
+
+    if (response == null) {
+      emit(
+        state.copyWith(
+          deleteAccountState: DeleteAccountStates.error,
+          errorMessage:
+              'Veriler yüklenemedi. Lütfen internet bağlantınızı kontrol ediniz...',
+        ),
+      );
+    } else {
+      if (response.success!) {
+        emit(state.copyWith(
+            deleteAccountState: DeleteAccountStates.completed,
+            message: response.message));
+      } else {
+        emit(state.copyWith(
+          deleteAccountState: DeleteAccountStates.error,
           errorMessage: response.errorMessage ?? 'Bir Hata Oluştu!',
         ));
       }
@@ -329,6 +395,83 @@ class LoginCubit extends Cubit<LoginState> {
     } else if (Platform.isIOS) {
       //* iOS'te uygulamayı kapatamazsın, kullanıcı ana ekrana döner
       SystemNavigator.pop();
+    }
+  }
+
+  //* Gifts
+  Future<void> getAllGifts() async {
+    emit(state.copyWith(giftsState: GiftsStates.loading, errorMessage: ''));
+    final response = await _loginService.getGifts();
+
+    if (response == null) {
+      emit(
+        state.copyWith(
+          giftsState: GiftsStates.error,
+          errorMessage:
+              'Veriler yüklenemedi. Lütfen internet bağlantınızı kontrol ediniz...',
+        ),
+      );
+    } else {
+      if (response.success!) {
+        final dataList = response.data as List<dynamic>;
+        emit(
+          state.copyWith(
+              giftsState: GiftsStates.completed,
+              giftsList: dataList
+                  .map((dynamic item) =>
+                      GiftsModel.fromJson(item as Map<String, dynamic>))
+                  .toList()),
+        );
+      } else {
+        emit(state.copyWith(
+          giftsState: GiftsStates.error,
+          errorMessage: response.errorMessage ?? 'Bir Hata Oluştu!',
+        ));
+      }
+    }
+  }
+
+  Future<bool> claimGift(
+      String email, String type, int userId, int userPoint, int giftId) async {
+    emit(state.copyWith(
+        claimGiftState: ClaimGiftStates.loading, errorMessage: ''));
+    final response =
+        await _loginService.claimGift(email, type, userId, userPoint, giftId);
+
+    if (response == null) {
+      emit(
+        state.copyWith(
+          claimGiftState: ClaimGiftStates.error,
+          errorMessage:
+              'Veriler yüklenemedi. Lütfen internet bağlantınızı kontrol ediniz...',
+        ),
+      );
+      return false;
+    } else {
+      if (response.success!) {
+        emit(
+          state.copyWith(
+            claimGiftState: ClaimGiftStates.completed,
+            message: response.message,
+          ),
+        );
+        return true;
+      } else {
+        emit(state.copyWith(
+          claimGiftState: ClaimGiftStates.error,
+          errorMessage: response.errorMessage ?? 'Bir Hata Oluştu!',
+        ));
+        return false;
+      }
+    }
+  }
+
+  Future<void> visible() async {
+    final response = await _loginService.visible();
+
+    if (response != null && response.success!) {
+      emit(state.copyWith(visible: response.data == "True" ? true : false));
+      print("Visiblex: ${state.visible}");
     }
   }
 }

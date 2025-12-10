@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CustomCheckBox extends StatelessWidget {
-  CustomCheckBox({
+  const CustomCheckBox({
     super.key,
     required this.onChanged,
     required this.value,
@@ -19,7 +19,7 @@ class CustomCheckBox extends StatelessWidget {
         radius: 10.r,
         backgroundColor: Colors.white,
         child: Checkbox(
-          fillColor: MaterialStatePropertyAll(Colors.blue),
+          fillColor: const WidgetStatePropertyAll(Colors.blue),
           value: value,
           side: BorderSide.none,
           shape: const CircleBorder(side: BorderSide(color: Colors.blue)),

@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_base_app/feature/auth/login/cubit/login_cubit.dart';
 import 'package:flutter_base_app/feature/auth/login/cubit/login_state.dart';
 import 'package:flutter_base_app/feature/auth/login/model/user_model.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/active_user_list_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/exit_game_dialog_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/game_room_widget.dart';
+import 'package:flutter_base_app/feature/auth/login/widget/how_to_play_step_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/how_to_play_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/login_widget.dart';
 import 'package:flutter_base_app/feature/auth/login/widget/privacy_policy_widget.dart';
@@ -17,6 +21,7 @@ import 'package:flutter_base_app/product/injector/injector.dart';
 import 'package:flutter_base_app/product/storage/local_get_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -29,6 +34,7 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView> {
   var userName = injector.get<LocalStorage>().getString('userName') ?? 'Guest';
+  var email = injector.get<LocalStorage>().getString('email') ?? '';
   int? userId = injector.get<LocalStorage>().getInt('userId');
   var userSurname = injector.get<LocalStorage>().getString('userSurname') ?? '';
   var image = injector.get<LocalStorage>().getString('image') ?? '';
@@ -36,7 +42,9 @@ class _LoginViewState extends State<LoginView> {
   @override
   void initState() {
     super.initState();
+
     context.read<LoginCubit>().getUserPoint(userId ?? 0);
+    setState(() {});
   }
 
   @override
@@ -52,7 +60,10 @@ class _LoginViewState extends State<LoginView> {
             fit: BoxFit.cover,
           ),
           gradient: LinearGradient(
-            colors: [Colors.black.withOpacity(0.8), kTableNavy.withOpacity(0.8)],
+            colors: [
+              Colors.black.withOpacity(0.8),
+              kTableNavy.withOpacity(0.8)
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -71,13 +82,15 @@ class _LoginViewState extends State<LoginView> {
                         shape: BoxShape.circle,
                         border: Border.all(color: kSuitGold, width: 2),
                         boxShadow: [
-                          BoxShadow(color: kSuitGold.withOpacity(0.6), blurRadius: 8),
+                          BoxShadow(
+                              color: kSuitGold.withOpacity(0.6), blurRadius: 8),
                         ],
                       ),
                       child: image.isEmpty
                           ? const Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Icon(Icons.person, color: Colors.white, size: 50),
+                              child: Icon(Icons.person,
+                                  color: Colors.white, size: 50),
                             )
                           : ClipOval(
                               child: Image.network(
@@ -98,10 +111,17 @@ class _LoginViewState extends State<LoginView> {
                                 color: kWhiteColor,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16.sp,
-                                shadows: [Shadow(color: Colors.black.withOpacity(0.8), blurRadius: 4)],
+                                shadows: [
+                                  Shadow(
+                                      color: Colors.black.withOpacity(0.8),
+                                      blurRadius: 4)
+                                ],
                               )),
                           Text('Welcome back!',
-                              style: TextStyle(color: Colors.grey[300], fontSize: 14.sp, fontWeight: FontWeight.w400)),
+                              style: TextStyle(
+                                  color: Colors.grey[300],
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w400)),
                         ],
                       ),
                     ),
@@ -124,28 +144,38 @@ class _LoginViewState extends State<LoginView> {
                             context: context,
                             builder: (_) => BlocProvider.value(
                               value: LoginCubit(),
-                              child: const ThemedHowToPlayDialog(),
+                              //  child: const ThemedHowToPlayDialog(),
+                              child: const HowToPlayStepDialog(),
                             ),
                           ),
                         ),
-                        ImageButton(
-                          imagePath: 'assets/asset/store.png',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => BlocProvider.value(
-                                  value: LoginCubit(),
-                                  child: ThemedStorePage(
-                                    user: UserModel(
-                                        id: userId!,
-                                        name: userName,
-                                        surname: userSurname,
-                                        email: '',
-                                        password: '',
-                                        point: 300),
-                                  ),
-                                ),
+                        BlocBuilder<LoginCubit, LoginState>(
+                          builder: (context, state) {
+                            return Visibility(
+                              visible: state.visible,
+                              child: ImageButton(
+                                imagePath: 'assets/asset/store.png',
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => BlocProvider.value(
+                                        value: LoginCubit(),
+                                        child: ThemedStorePage(
+                                          user: UserModel(
+                                            id: userId!,
+                                            name: userName,
+                                            surname: userSurname,
+                                            email: email,
+                                            password: '',
+                                            point: state.userPoint,
+                                            giftsIds: state.userGiftsIds,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             );
                           },
@@ -157,21 +187,26 @@ class _LoginViewState extends State<LoginView> {
               ),
 
               // === Oyun Başlığı ===
-              Padding(
-                padding: EdgeInsets.only(top: 10.h),
-                child: Text(
-                  'BTK CARD GAME',
-                  style: TextStyle(
-                    fontSize: 28.sp,
-                    fontWeight: FontWeight.bold,
-                    color: kSuitGold,
-                    letterSpacing: 2,
-                    shadows: [
-                      Shadow(color: Colors.black.withOpacity(0.8), blurRadius: 8),
-                      Shadow(color: kSuitGold.withOpacity(0.7), blurRadius: 12),
-                    ],
-                  ),
-                ),
+              // Padding(
+              //   padding: EdgeInsets.only(top: 10.h),
+              //   child: Text(
+              //     'BTK CARD GAME',
+              //     style: TextStyle(
+              //       fontSize: 28.sp,
+              //       fontWeight: FontWeight.bold,
+              //       color: kSuitGold,
+              //       letterSpacing: 2,
+              //       shadows: [
+              //         Shadow(
+              //             color: Colors.black.withOpacity(0.8), blurRadius: 8),
+              //         Shadow(color: kSuitGold.withOpacity(0.7), blurRadius: 12),
+              //       ],
+              //     ),
+              //   ),
+              // ),
+              Image.asset(
+                'assets/asset/valor3.png',
+                width: 0.6.sw,
               ),
 
               SizedBox(height: 5.h),
@@ -186,7 +221,10 @@ class _LoginViewState extends State<LoginView> {
                       shape: BoxShape.circle,
                       color: Colors.black.withOpacity(0.7),
                       boxShadow: [
-                        BoxShadow(color: kSuitGold.withOpacity(0.4), blurRadius: 20, spreadRadius: 2),
+                        BoxShadow(
+                            color: kSuitGold.withOpacity(0.4),
+                            blurRadius: 20,
+                            spreadRadius: 2),
                       ],
                       border: Border.all(color: Colors.amberAccent, width: 3),
                     ),
@@ -194,22 +232,30 @@ class _LoginViewState extends State<LoginView> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(FontAwesomeIcons.coins, color: kSuitGold, size: 45.sp),
+                        Icon(FontAwesomeIcons.coins,
+                            color: kSuitGold, size: 45.sp),
                         SizedBox(height: 5.h),
                         Text(
-                          state.userPoint != 0 ? state.userPoint.toString() : '0',
+                          state.userPoint != 0
+                              ? state.userPoint.toString()
+                              : '0',
                           style: TextStyle(
                             color: kWhiteColor,
                             fontSize: 34.sp,
                             fontWeight: FontWeight.bold,
                             shadows: [
-                              Shadow(color: kSuitGold.withOpacity(0.7), blurRadius: 10),
+                              Shadow(
+                                  color: kSuitGold.withOpacity(0.7),
+                                  blurRadius: 10),
                             ],
                           ),
                         ),
                         Text(
                           'Your Points',
-                          style: TextStyle(color: Colors.grey[300], fontSize: 16.sp, fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                              color: Colors.grey[300],
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w500),
                         )
                       ],
                     ),
@@ -224,81 +270,98 @@ class _LoginViewState extends State<LoginView> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    PrimaryGameButton(
-                      buttonColor: kButtonGreen,
-                      text: 'Login',
-                      icon: FontAwesomeIcons.rightToBracket,
-                      onTap: () => showDialog(
-                        context: context,
-                        builder: (_) => BlocProvider.value(
-                          value: LoginCubit(),
-                          child: const ThemedLoginDialog(),
+                    Visibility(
+                      visible: injector.get<LocalStorage>().getInt('userId') ==
+                              null ||
+                          injector.get<LocalStorage>().getInt('userId') == 0,
+                      child: PrimaryGameButton(
+                        buttonColor: kButtonGreen,
+                        text: 'Login',
+                        icon: FontAwesomeIcons.rightToBracket,
+                        onTap: () => showDialog(
+                          context: context,
+                          builder: (_) => BlocProvider.value(
+                            value: LoginCubit(),
+                            child: const ThemedLoginDialog(),
+                          ),
                         ),
                       ),
                     ),
                     SizedBox(height: 15.h),
-                    BlocBuilder<LoginCubit, LoginState>(
-                      builder: (context, state) {
-                        return PrimaryGameButton(
-                          buttonColor: Colors.blueAccent,
-                          text: 'Start Game',
-                          icon: FontAwesomeIcons.play,
-                          onTap: () {
-                            int? userId = injector.get<LocalStorage>().getInt('userId');
-
-                            if (userId != null && userId != 0) {
-                              // ✅ Giriş yapılmış → Oyun odası seçim penceresi aç
-                              showDialog(
-                                context: context,
-                                builder: (_) => BlocProvider.value(
-                                  value: context.read<LoginCubit>(),
-                                  child: const GameRoomSelectionDialog(),
-                                ),
-                              );
-                            } else {
-                              // ❌ Giriş yapılmamış → Uyarı göster
-                              showDialog(
-                                context: context,
-                                builder: (dialogContext) {
-                                  return AlertDialog(
-                                    backgroundColor: Colors.black.withOpacity(0.85),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                      side: const BorderSide(color: Colors.redAccent, width: 2),
-                                    ),
-                                    title: const Row(
-                                      children: [
-                                        Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 30),
-                                        SizedBox(width: 10),
-                                        Text(
-                                          "Warning",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
+                    Visibility(
+                      visible: injector.get<LocalStorage>().getInt('userId') !=
+                              null &&
+                          injector.get<LocalStorage>().getInt('userId') != 0,
+                      child: BlocBuilder<LoginCubit, LoginState>(
+                        builder: (context, state) {
+                          return PrimaryGameButton(
+                            buttonColor: Colors.blueAccent,
+                            text: 'Start Game',
+                            icon: FontAwesomeIcons.play,
+                            onTap: () {
+                              if (userId != null && userId != 0) {
+                                // ✅ Giriş yapılmış → Oyun odası seçim penceresi aç
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => BlocProvider.value(
+                                    value: context.read<LoginCubit>(),
+                                    child: const GameRoomSelectionDialog(),
+                                  ),
+                                );
+                              } else {
+                                // ❌ Giriş yapılmamış → Uyarı göster
+                                showDialog(
+                                  context: context,
+                                  builder: (dialogContext) {
+                                    return AlertDialog(
+                                      backgroundColor:
+                                          Colors.black.withOpacity(0.85),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                        side: const BorderSide(
+                                            color: Colors.redAccent, width: 2),
+                                      ),
+                                      title: const Row(
+                                        children: [
+                                          Icon(Icons.warning_amber_rounded,
+                                              color: Colors.redAccent,
+                                              size: 30),
+                                          SizedBox(width: 10),
+                                          Text(
+                                            "Warning",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      content: const Text(
+                                        "You must log in first to start the game.",
+                                        style: TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 15),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(dialogContext).pop(),
+                                          child: const Text(
+                                            "OK",
+                                            style: TextStyle(
+                                                color: Colors.redAccent,
+                                                fontWeight: FontWeight.bold),
                                           ),
                                         ),
                                       ],
-                                    ),
-                                    content: const Text(
-                                      "You must log in first to start the game.",
-                                      style: TextStyle(color: Colors.white70, fontSize: 15),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.of(dialogContext).pop(),
-                                        child: const Text(
-                                          "OK",
-                                          style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            }
-                          },
-                        );
-                      },
+                                    );
+                                  },
+                                );
+                              }
+                            },
+                          );
+                        },
+                      ),
                     ),
                     SizedBox(height: 15.h),
                     PrimaryGameButton(
@@ -327,12 +390,18 @@ class _LoginViewState extends State<LoginView> {
                       ),
                     ),
                     SizedBox(height: 15.h),
-                    PrimaryGameButton(
-                      buttonColor: Colors.deepOrange,
-                      text: 'Sign Up',
-                      icon: FontAwesomeIcons.userPlus,
-                      onTap: () => context.pushReplacement('/register_view'),
+                    Visibility(
+                      visible: injector.get<LocalStorage>().getInt('userId') ==
+                              null ||
+                          injector.get<LocalStorage>().getInt('userId') == 0,
+                      child: PrimaryGameButton(
+                        buttonColor: Colors.deepOrange,
+                        text: 'Sign Up',
+                        icon: FontAwesomeIcons.userPlus,
+                        onTap: () => context.pushReplacement('/register_view'),
+                      ),
                     ),
+
                     SizedBox(height: 15.h),
                     // PrimaryGameButton(
                     //   buttonColor: Colors.black38,
@@ -354,6 +423,120 @@ class _LoginViewState extends State<LoginView> {
                             decorationColor: kSuitGold),
                       ),
                     ),
+
+                    SizedBox(height: 15.h),
+                    Visibility(
+                      visible: injector.get<LocalStorage>().getInt('userId') !=
+                              null &&
+                          injector.get<LocalStorage>().getInt('userId') != 0,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: kButtonRed,
+                            side: const BorderSide(color: Colors.white30)),
+                        onPressed: () => showDialog(
+                            context: context,
+                            builder: (dialogContext) => BlocProvider.value(
+                                  value: LoginCubit(),
+                                  child: AlertDialog(
+                                    // 1. More emphatic title with a warning icon
+                                    title: const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text('Confirm Account\nDeletion',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                    // 2. More informative and clear content
+                                    content: const Text(
+                                        'You are about to delete your account. This action **cannot be undone**.\n\nAll your data will be permanently erased. Are you absolutely sure you want to proceed?',
+                                        textAlign: TextAlign.center),
+                                    actions: [
+                                      // 3. Keep the 'Cancel' button less aggressive
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.of(dialogContext).pop(),
+                                        child: const Text(
+                                          "Cancel",
+                                          style: TextStyle(
+                                              color: Colors.black54,
+                                              fontWeight: FontWeight.normal),
+                                        ),
+                                      ),
+                                      // 4. Make the 'Delete' action the primary, high-contrast button
+                                      BlocBuilder<LoginCubit, LoginState>(
+                                        builder: (context, state) {
+                                          return ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  Colors.red, // Red background
+                                              foregroundColor:
+                                                  Colors.white, // White text
+                                              elevation: 3,
+                                            ),
+                                            onPressed: () async {
+                                              ScaffoldMessenger.of(context)
+                                                  .hideCurrentSnackBar();
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    'Account deleted successfully',
+                                                    style: TextStyle(
+                                                        color: Colors.green,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 15.sp),
+                                                  ),
+                                                  duration: const Duration(
+                                                      seconds: 2),
+                                                ),
+                                              );
+                                              context
+                                                  .read<LoginCubit>()
+                                                  .deleteAccount(injector
+                                                      .get<LocalStorage>()
+                                                      .getInt('userId')!);
+
+                                              context
+                                                  .read<LoginCubit>()
+                                                  .closeApp();
+
+                                              Navigator.of(context).pop();
+                                              setState(() {});
+                                              SystemNavigator.pop();
+                                              exit(0);
+                                            },
+                                            child: const Text(
+                                              "Permanently Delete Account",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                    // 5. Align actions to the right
+                                    actionsAlignment: MainAxisAlignment.end,
+                                    // 6. Slightly rounded corners for a modern look
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                  ),
+                                )),
+                        child: const Text(
+                          'Delete my account',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+
                     SizedBox(height: 15.h),
                   ],
                 ),
@@ -365,9 +548,15 @@ class _LoginViewState extends State<LoginView> {
                   const GoldNavContainer(),
                   SizedBox(height: 8.h),
                   Text('Version 1.0.0',
-                      style: TextStyle(color: kWhiteColor, fontWeight: FontWeight.bold, fontSize: 13.sp)),
-                  Text('© 2025 YourGameCompany',
-                      style: TextStyle(color: kWhiteColor, fontWeight: FontWeight.bold, fontSize: 13.sp)),
+                      style: TextStyle(
+                          color: kWhiteColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13.sp)),
+                  Text('© 2025 Valor of Cards',
+                      style: TextStyle(
+                          color: kWhiteColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13.sp)),
                   SizedBox(height: 10.h),
                 ],
               ),

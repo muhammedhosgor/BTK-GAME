@@ -42,7 +42,8 @@ class _ForgetPasswordViewState extends State<ForgetPasswordView> {
     }
 
     // Dummy PlayerId or local saved
-    int? playerId = await injector<LocalStorage>().getInt('registerUserId') ?? -1;
+    int? playerId =
+        await injector<LocalStorage>().getInt('registerUserId') ?? -1;
 
     context.read<RegisterCubit>().sendOtp(email);
 
@@ -102,7 +103,8 @@ class _ForgetPasswordViewState extends State<ForgetPasswordView> {
                     fontWeight: FontWeight.bold,
                     color: kSuitGold,
                     shadows: [
-                      Shadow(color: Colors.black.withOpacity(0.8), blurRadius: 6),
+                      Shadow(
+                          color: Colors.black.withOpacity(0.8), blurRadius: 6),
                       Shadow(color: kSuitGold.withOpacity(0.7), blurRadius: 10),
                     ],
                   ),
@@ -145,9 +147,13 @@ class _ForgetPasswordViewState extends State<ForgetPasswordView> {
                   builder: (context, state) {
                     return PrimaryGameButton(
                       buttonColor: kButtonGreen,
-                      text: state.otpState == OtpStates.loading ? "Sending..." : "Send Reset Code",
+                      text: state.otpState == OtpStates.loading
+                          ? "Sending..."
+                          : "Send Reset Code",
                       icon: Icons.email_outlined,
-                      onTap: state.otpState == OtpStates.loading ? () {} : _sendResetCode,
+                      onTap: state.otpState == OtpStates.loading
+                          ? () {}
+                          : _sendResetCode,
                     );
                   },
                 ),
@@ -159,12 +165,14 @@ class _ForgetPasswordViewState extends State<ForgetPasswordView> {
                   children: [
                     Text(
                       'Version 1.0.0',
-                      style: TextStyle(color: Colors.grey[300], fontSize: 12.sp),
+                      style:
+                          TextStyle(color: Colors.grey[300], fontSize: 12.sp),
                     ),
                     SizedBox(height: 5.h),
                     Text(
-                      '© 2025 YourGameCompany',
-                      style: TextStyle(color: Colors.grey[300], fontSize: 12.sp),
+                      '© 2025 Valor of Cards',
+                      style:
+                          TextStyle(color: Colors.grey[300], fontSize: 12.sp),
                     ),
                     SizedBox(height: 10.h),
                   ],

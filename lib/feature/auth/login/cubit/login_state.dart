@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_base_app/feature/auth/login/model/game_model.dart';
+import 'package:flutter_base_app/feature/auth/login/model/gifts_model.dart';
 import 'package:flutter_base_app/feature/auth/login/model/user_model.dart';
 
 class LoginState extends Equatable {
@@ -12,6 +13,9 @@ class LoginState extends Equatable {
     required this.createRoomState,
     required this.leaveRoomState,
     required this.statusState,
+    required this.deleteAccountState,
+    required this.giftsState,
+    required this.claimGiftState,
     required this.errorMessage,
     required this.message,
     required this.userList,
@@ -21,6 +25,9 @@ class LoginState extends Equatable {
     required this.countDownWaitingRoom,
     required this.countDownJoinRoom,
     required this.userPoint,
+    required this.userGiftsIds,
+    required this.giftsList,
+    required this.visible,
   });
   factory LoginState.initial() {
     return LoginState(
@@ -32,6 +39,9 @@ class LoginState extends Equatable {
       leaveRoomState: LeaveRoomStates.initial,
       statusState: StatusStates.initial,
       lobbyState: LobbyStates.initial,
+      deleteAccountState: DeleteAccountStates.initial,
+      giftsState: GiftsStates.initial,
+      claimGiftState: ClaimGiftStates.initial,
       errorMessage: '',
       message: '',
       userList: [],
@@ -41,6 +51,9 @@ class LoginState extends Equatable {
       countDownWaitingRoom: 5,
       countDownJoinRoom: 5,
       userPoint: 0,
+      userGiftsIds: '',
+      giftsList: [],
+      visible: false,
     );
   }
   final LoginStates loginState;
@@ -51,6 +64,9 @@ class LoginState extends Equatable {
   final CreateRoomStates createRoomState;
   final LeaveRoomStates leaveRoomState;
   final StatusStates statusState;
+  final DeleteAccountStates deleteAccountState;
+  final GiftsStates giftsState;
+  final ClaimGiftStates claimGiftState;
   final String errorMessage;
   final String message;
   List<UserModel> userList;
@@ -60,6 +76,10 @@ class LoginState extends Equatable {
   int countDownWaitingRoom;
   int countDownJoinRoom;
   int userPoint;
+  //* Gifts
+  String userGiftsIds;
+  List<GiftsModel> giftsList;
+  bool visible;
 
   @override
   List<Object?> get props => [
@@ -71,6 +91,9 @@ class LoginState extends Equatable {
         createRoomState,
         leaveRoomState,
         statusState,
+        deleteAccountState,
+        giftsState,
+        claimGiftState,
         errorMessage,
         message,
         userList,
@@ -80,6 +103,9 @@ class LoginState extends Equatable {
         countDownWaitingRoom,
         countDownJoinRoom,
         userPoint,
+        userGiftsIds,
+        giftsList,
+        visible,
       ];
 
   LoginState copyWith({
@@ -91,6 +117,9 @@ class LoginState extends Equatable {
     CreateRoomStates? createRoomState,
     LeaveRoomStates? leaveRoomState,
     StatusStates? statusState,
+    DeleteAccountStates? deleteAccountState,
+    GiftsStates? giftsState,
+    ClaimGiftStates? claimGiftState,
     String? errorMessage,
     String? message,
     List<UserModel>? userList,
@@ -100,6 +129,9 @@ class LoginState extends Equatable {
     int? countDownWaitingRoom,
     int? countDownJoinRoom,
     int? userPoint,
+    String? userGiftsIds,
+    List<GiftsModel>? giftsList,
+    bool? visible,
   }) {
     return LoginState(
       loginState: loginState ?? this.loginState,
@@ -110,6 +142,9 @@ class LoginState extends Equatable {
       createRoomState: createRoomState ?? this.createRoomState,
       leaveRoomState: leaveRoomState ?? this.leaveRoomState,
       statusState: statusState ?? this.statusState,
+      deleteAccountState: deleteAccountState ?? this.deleteAccountState,
+      giftsState: giftsState ?? this.giftsState,
+      claimGiftState: claimGiftState ?? this.claimGiftState,
       errorMessage: errorMessage ?? this.errorMessage,
       message: message ?? this.message,
       userList: userList ?? this.userList,
@@ -119,6 +154,9 @@ class LoginState extends Equatable {
       countDownWaitingRoom: countDownWaitingRoom ?? this.countDownWaitingRoom,
       countDownJoinRoom: countDownJoinRoom ?? this.countDownJoinRoom,
       userPoint: userPoint ?? this.userPoint,
+      userGiftsIds: userGiftsIds ?? this.userGiftsIds,
+      giftsList: giftsList ?? this.giftsList,
+      visible: visible ?? this.visible,
     );
   }
 }
@@ -173,6 +211,27 @@ enum StatusStates {
 }
 
 enum PointStates {
+  initial,
+  loading,
+  completed,
+  error,
+}
+
+enum DeleteAccountStates {
+  initial,
+  loading,
+  completed,
+  error,
+}
+
+enum GiftsStates {
+  initial,
+  loading,
+  completed,
+  error,
+}
+
+enum ClaimGiftStates {
   initial,
   loading,
   completed,
