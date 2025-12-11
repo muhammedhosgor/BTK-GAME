@@ -330,4 +330,33 @@ class LoginService extends ILoginService {
       return null;
     }
   }
+
+  @override
+  Future<ApiResult?> giftsMove(int userId, int giftId) async {
+    try {
+      final response = await dio.post(
+        path: '/api/Gifts/GiftInsertMove',
+        data: {
+          'userId': userId,
+          'giftId': giftId,
+          'useDate': DateTime.now().toIso8601String(),
+        },
+        queryParameters: {
+          'KeyGen': KeyGen,
+        },
+      );
+
+      print('Login Response : $response');
+
+      if (response.statusCode == HttpStatus.ok) {
+        return ApiResult.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      print('error : $e');
+      return null;
+    }
+  }
 }

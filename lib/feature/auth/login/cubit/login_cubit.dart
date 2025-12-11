@@ -474,4 +474,8 @@ class LoginCubit extends Cubit<LoginState> {
       print("Visiblex: ${state.visible}");
     }
   }
+
+  Future<void> giftsMove(int userId, int giftId) async {
+    await _loginService.giftsMove(userId, giftId);
+  }
 }

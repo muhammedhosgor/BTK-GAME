@@ -19,4 +19,5 @@ abstract class ILoginService {
   Future<ApiResult?> claimGift(
       String email, String type, int userId, int userPoint, int giftId);
   Future<ApiResult?> visible();
+  Future<ApiResult?> giftsMove(int userId, int giftId);
 }

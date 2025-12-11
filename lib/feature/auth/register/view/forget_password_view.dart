@@ -132,7 +132,7 @@ class _ForgetPasswordViewState extends State<ForgetPasswordView> {
                     controller: _emailController,
                     style: TextStyle(color: Colors.white, fontSize: 16.sp),
                     keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       border: InputBorder.none,
                       labelText: "Email Address",
                       labelStyle: TextStyle(color: Colors.white70),
@@ -164,7 +164,7 @@ class _ForgetPasswordViewState extends State<ForgetPasswordView> {
                 Column(
                   children: [
                     Text(
-                      'Version 1.0.0',
+                      'Version 1.0.1',
                       style:
                           TextStyle(color: Colors.grey[300], fontSize: 12.sp),
                     ),

@@ -205,22 +205,6 @@ class _ThemedStorePageState extends State<ThemedStorePage> {
                                           ),
                                         ),
                                         SizedBox(height: 8.h),
-                                        Text(
-                                          "${card.title!.substring(0, 1).toUpperCase() + card.title!.substring(1)}",
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12.sp),
-                                        ),
-                                        Text(
-                                          "${widget.user.giftsIds!.contains(card.id.toString())}",
-                                          style: TextStyle(color: Colors.red),
-                                        ),
-                                        Text(
-                                          "${card.id}",
-                                          style: const TextStyle(
-                                            color: Colors.red,
-                                          ),
-                                        ),
                                         SizedBox(
                                           width: 0.32.sw,
                                           height: 40.h,
@@ -428,6 +412,7 @@ class _ThemedStorePageState extends State<ThemedStorePage> {
                                                                                       );
                                                                                       var password = injector.get<LocalStorage>().getString('password') ?? '';
                                                                                       int? userId = injector<LocalStorage>().getInt('userId');
+                                                                                      await context.read<LoginCubit>().giftsMove(userId!, card.id!);
                                                                                       Future.wait({
                                                                                         context.read<LoginCubit>().getUserList(),
                                                                                         context.read<LoginCubit>().getAllGifts(),

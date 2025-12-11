@@ -547,7 +547,7 @@ class _LoginViewState extends State<LoginView> {
                 children: [
                   const GoldNavContainer(),
                   SizedBox(height: 8.h),
-                  Text('Version 1.0.0',
+                  Text('Version 1.0.1',
                       style: TextStyle(
                           color: kWhiteColor,
                           fontWeight: FontWeight.bold,

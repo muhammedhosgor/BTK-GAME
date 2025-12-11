@@ -255,7 +255,7 @@ class _OTPForgetPasswordViewState extends State<OTPForgetPasswordView> {
                 Column(
                   children: [
                     Text(
-                      'Version 1.0.0',
+                      'Version 1.0.1',
                       style: TextStyle(
                           color: Colors.grey[300],
                           fontWeight: FontWeight.bold,
